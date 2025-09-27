@@ -1,5 +1,16 @@
 extends: default
 rules:
-  line-length: disable
+  # 行長制限を緩和（実用性重視）
+  line-length:
+    max: 120
+    level: warning
+  # indentationを緩和（2スペースと4スペース混在を許可）
+  indentation:
+    spaces: consistent
+    indent-sequences: whatever
+  # truthyルールを実用的に設定
   truthy:
-    allowed-values: ['true', 'false', 'on', 'off', 'yes', 'no']
+    allowed-values: ["true", "false", "on", "off", "yes", "no"]
+    check-keys: false
+  # コメントインデント緩和
+  comments-indentation: disable

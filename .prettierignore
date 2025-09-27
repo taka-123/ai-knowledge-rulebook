@@ -1,0 +1,26 @@
+# 既存Linterが管理するファイルは除外（競合回避）
+.config/.markdownlint.jsonc
+.config/.yamllint.yml
+
+# Git関連
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# 自動生成ファイル
+node_modules/
+__pycache__/
+.pytest_cache/
+
+# バイナリファイル
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+
+# ログファイル
+*.log

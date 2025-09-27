@@ -1,0 +1,65 @@
+{
+  // 📝 エディター基本設定
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": false,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  // 🎨 Prettier設定（既存Linterと競合回避）
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": true,
+  // 📄 Markdown設定（markdownlintを優先）
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+  // 🗂️ YAML設定（yamllintを優先、Prettierは補助）
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.autoIndent": "advanced"
+  },
+  "[yml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.autoIndent": "advanced"
+  },
+  // 📋 JSON設定（VSCode内蔵+schema検証）
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  // 🔧 Markdownlint設定
+  "markdownlint.config": {
+    "extends": "./.config/.markdownlint.jsonc"
+  },
+  // 🔍 YAML拡張設定
+  "yaml.validate": true,
+  "yaml.schemas": {
+    "./schemas/ai_profile.schema.json": "ai/**/*.json",
+    "./schemas/notes.schema.json": "notes/**/*.json"
+  },
+  // 🚫 不要な警告を抑制
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  // 📁 ファイル除外設定
+  "files.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/__pycache__": true,
+    "**/.pytest_cache": true
+  },
+  // 🔎 検索除外設定
+  "search.exclude": {
+    "**/.git": true,
+    "**/node_modules": true,
+    "**/__pycache__": true
+  }
+}

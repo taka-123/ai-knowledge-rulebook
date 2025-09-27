@@ -6,5 +6,7 @@ node_modules/
 *.log
 __pycache__/
 *.pyc
-.vscode/
 .idea/
+
+# IDE Settings
+.claude/settings.local.json

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "DavidAnson.vscode-markdownlint",
+    "redhat.vscode-yaml",
+    "esbenp.prettier-vscode",
+    "EditorConfig.EditorConfig",
+    "ms-python.python"
+  ],
+  "unwantedRecommendations": []
+}

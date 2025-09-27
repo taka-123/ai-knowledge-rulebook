@@ -31,11 +31,6 @@
       "format": "date"
     }
   },
-  "required": [
-    "title",
-    "created",
-    "updated",
-    "tags"
-  ],
+  "required": ["title", "created", "updated", "tags"],
   "additionalProperties": true
 }
