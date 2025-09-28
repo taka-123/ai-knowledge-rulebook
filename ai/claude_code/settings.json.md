@@ -1,3 +1,6 @@
+<!-- ~/.claude/settings.json -->
+
+```json
 {
   "cleanupPeriodDays": 30,
   "env": {
@@ -210,3 +213,5 @@
     ]
   }
 }
+
+```
