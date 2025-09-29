@@ -14,6 +14,15 @@
       ],
       "env": {}
     },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {}
+    },
     "context7": {
       "args": [
         "-y",
@@ -46,6 +55,14 @@
       "command": "npx",
       "env": {},
       "type": "stdio"
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "chrome-devtools-mcp@latest"
+      ],
+      "env": {}
     }
   }
 }
