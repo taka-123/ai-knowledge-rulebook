@@ -34,7 +34,31 @@ AI 運用 5 原則
 </project_overview>
 
 <development_commands>
-# (開発コマンドを記載してください)
+# 開発コマンド
+
+## フォーマット・整形
+- `npm run format` または `./format.sh fix` - 全ファイル自動整形（Markdown/YAML/JSON）
+- `npm run format:check` または `./format.sh check` - フォーマット検証（CI用）
+
+## Lint チェック
+- `npm run lint` - 全体のフォーマットチェック
+- `npm run lint:md` - Markdown構文チェック
+- `npm run lint:yaml` - YAML構文チェック
+- `npm run lint:json` - JSON構文チェック
+
+## 自動修正
+- `npm run fix` - 全ファイル自動整形（format と同じ）
+- `npm run fix:md` - Markdown自動修正
+- `npm run fix:yaml` - YAML自動整形
+- `npm run fix:json` - JSON自動整形
+
+## スキーマ検証
+- `npm run schema:check` - JSON Schemaによるデータ整合性検証（ai/、notes/配下）
+
+## Git運用
+- ブランチ作成後、変更を加えてPR作成
+- CI（Lint/Schema/Secret Scan）がグリーンであることを確認
+- レビュー1名以上の承認後に`main`へマージ
 
 </development_commands>
 

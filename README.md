@@ -5,17 +5,13 @@
 - AI アシスタント向けルール・プロファイルと学習ノート/クリップ/スニペットを一元管理し、差分追跡と再利用性を高める。
 - GitHub 上で閲覧・レビューしやすいプレーンテキスト形式（Markdown/JSON/YAML）を採用し、構成管理をシンプルに保つ。
 
-## ディレクトリ構成（初期）
+## ディレクトリ構成
 
-- `policy/`: リポジトリ運用指針とコントリビュート手順。
-- `ai/`: Cursor・Windsurf・ChatGPT・Claude・Gemini 用プロファイル原本。
-- `notes/`: 日次ログおよびテーマ別ノート。FrontMatter でメタデータを管理。
-- `clips/`: 記事要約・引用を取得日付きで保存。
-- `snippets/`: プロンプトや小スクリプトのメモ。
-- `schemas/`: AI プロファイルやノートの JSON Schema 雛形。
-- `tools/`: 生成補助・整形・同期スクリプト格納場所。
-- `.config/`: Lint・検証設定（Markdownlint/Yamllint/JSONSchema）。
-- `.github/`: Issue/PR テンプレートと CI ワークフロー。
+- @directorystructure.md 参照
+
+## 技術スタック
+
+- @technologystack.md 参照
 
 ## 運用フロー
 
