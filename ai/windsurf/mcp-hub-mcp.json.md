@@ -1,41 +1,37 @@
-<!-- ~/.claude.json -->
+<!-- ~/.codeium/windsurf/mcp-hub-mcp.json -->
 <!--
   注意:
-  - Claude Code の MCP 設定ファイルです
-  - [参照を許可するパス] などは実際の絶対パスに置き換えてください
-  - GitHub PATとNotion Tokenは実際の値に置き換えてください
-  - 各サーバーには "type": "stdio" が必要です
+  - このファイルは mcp-hub が管理する実際のMCPサーバー定義です
+  - Windsurf の 100 ツール制限を回避するため mcp-hub-mcp を使用しています
+  - [参照を許可するパス] などは実際の値に置き換えてください
+  - Apple Silicon (ARM64) 環境で serena を動作させるため arch -arm64 を使用
+  - 環境変数は各自で設定してください（GitHub PAT, Notion Token など）
 -->
 
 ```json
 {
   "mcpServers": {
     "context7": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "@upstash/context7-mcp@latest"
-      ],
-      "env": {}
+      ]
     },
     "serena": {
-      "type": "stdio",
-      "command": "uvx",
+      "command": "arch",
       "args": [
+        "-arm64",
+        "uvx",
         "--from",
         "git+https://github.com/oraios/serena",
         "serena",
         "start-mcp-server",
         "--context",
-        "ide-assistant",
-        "--enable-web-dashboard",
-        "false"
-      ],
-      "env": {}
+        "ide-assistant"
+      ]
     },
     "github": {
-      "type": "stdio",
       "command": "docker",
       "args": [
         "run",
@@ -50,24 +46,20 @@
       }
     },
     "playwright": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "@playwright/mcp@latest"
-      ],
-      "env": {}
+      ]
     },
     "chrome-devtools": {
-      "type": "stdio",
       "command": "npx",
       "args": [
-        "chrome-devtools-mcp@latest"
-      ],
-      "env": {}
+        "chrome-devtools-mcp@latest",
+        "--isolated=true"
+      ]
     },
     "notion": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
@@ -78,17 +70,14 @@
       }
     },
     "filesystem": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "[参照を許可するパス1]",
         "[参照を許可するパス2]"
-      ],
-      "env": {}
+      ]
     }
   }
 }
-
 ```

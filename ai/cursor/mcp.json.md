@@ -1,43 +1,19 @@
 <!-- ~/.cursor/mcp.json -->
+<!--
+  注意:
+  - Cursor IDE はツール数上限(80個)があるため、mcp-hub-mcp を使用します
+  - 実際のMCPサーバー定義は ~/.cursor/mcp-hub-mcp.json に記載してください
+  - 環境変数(GITHUB_PERSONAL_ACCESS_TOKEN, NOTION_TOKEN)はシステム環境変数に設定してください
+-->
 
 ```json
 {
   "mcpServers": {
-    "filesystem": {
+    "mcp-hub": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "--root", "$HOME/work"]
-    },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"]
-    },
-    "context7": {
-      "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"]
-    },
-    "serena": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "ide-assistant",
-        "--enable-web-dashboard",
-        "false"
-      ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["chrome-devtools-mcp@latest", "--isolated=true"]
+      "args": ["-y", "mcp-hub-mcp@latest", "~/.cursor/mcp-hub-mcp.json"]
     }
   }
 }
-
 
 ```

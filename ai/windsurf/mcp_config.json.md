@@ -1,53 +1,20 @@
 <!-- ~/.codeium/windsurf/mcp_config.json -->
+<!--
+  注意:
+  - Windsurf の 100 ツール制限を回避するため mcp-hub-mcp を使用しています
+  - 実際の MCP サーバー定義は ~/.codeium/windsurf/mcp-hub-mcp.json に記載
+  - mcp-hub-mcp が全ての MCP サーバーを統合管理します
+-->
 
 ```json
 {
   "mcpServers": {
-    "filesystem": {
+    "mcp-hub": {
       "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "--root",
-        "$HOME/work"
-      ]
-    },
-    "github": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
-      ]
-    },
-    "context7": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ]
-    },
-    "serena": {
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "windsurf"
-      ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest"
+        "mcp-hub-mcp@latest",
+        "~/.codeium/windsurf/mcp-hub-mcp.json"
       ]
     }
   }

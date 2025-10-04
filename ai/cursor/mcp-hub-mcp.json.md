@@ -1,26 +1,19 @@
-<!-- ~/.claude.json -->
+<!-- ~/.cursor/mcp-hub-mcp.json -->
 <!--
   注意:
-  - Claude Code の MCP 設定ファイルです
-  - [参照を許可するパス] などは実際の絶対パスに置き換えてください
-  - GitHub PATとNotion Tokenは実際の値に置き換えてください
-  - 各サーバーには "type": "stdio" が必要です
+  - このファイルは mcp-hub-mcp が管理する実際のMCPサーバー定義です
+  - [参照を許可するパス] などは実際の値に置き換えてください
+  - 環境変数は ${env:VARIABLE_NAME} 形式で参照可能です
 -->
 
 ```json
 {
   "mcpServers": {
     "context7": {
-      "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ],
-      "env": {}
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "serena": {
-      "type": "stdio",
       "command": "uvx",
       "args": [
         "--from",
@@ -31,11 +24,9 @@
         "ide-assistant",
         "--enable-web-dashboard",
         "false"
-      ],
-      "env": {}
+      ]
     },
     "github": {
-      "type": "stdio",
       "command": "docker",
       "args": [
         "run",
@@ -50,43 +41,28 @@
       }
     },
     "playwright": {
-      "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ],
-      "env": {}
+      "args": ["-y", "@playwright/mcp@latest"]
     },
     "chrome-devtools": {
-      "type": "stdio",
       "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest"
-      ],
-      "env": {}
+      "args": ["chrome-devtools-mcp@latest", "--isolated=true"]
     },
     "notion": {
-      "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@notionhq/notion-mcp-server"
-      ],
+      "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
-        "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
+        "NOTION_TOKEN": "$[ここに自身のNotion Integration Tokenを入れる]"
       }
     },
     "filesystem": {
-      "type": "stdio",
       "command": "npx",
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
         "[参照を許可するパス1]",
         "[参照を許可するパス2]"
-      ],
-      "env": {}
+      ]
     }
   }
 }
