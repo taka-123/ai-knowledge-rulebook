@@ -1,0 +1,54 @@
+{
+  "$schema": "https://docs.claude.com/schemas/settings.json",
+  "comment": "~/.claude/settings.json 推奨設定（技術文書作成精度向上版）",
+  
+  "permissions": {
+    "comment": "Web検索を常時許可して最新情報取得を促進",
+    "allow": [
+      "WebSearch",
+      "WebFetch",
+      "Read",
+      "Grep",
+      "Glob"
+    ],
+    "ask": [
+      "Bash",
+      "Write",
+      "Edit"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(**/secrets/**)"
+    ]
+  },
+
+  "hooks": {
+    "comment": "技術文書作成時の品質チェック",
+    
+    "PostToolUse": [{
+      "matcher": "Write|Edit",
+      "hooks": [{
+        "type": "command",
+        "command": "echo '✅ ファイル変更完了。出典・日付・不確実性の注記を確認してください。'",
+        "timeout": 5
+      }]
+    }],
+
+    "PreCompact": [{
+      "hooks": [{
+        "type": "command", 
+        "command": "echo '💾 コンテキスト圧縮前: 技術文書の場合、出典URLと日付が全て記載されているか確認'",
+        "timeout": 5
+      }]
+    }]
+  },
+
+  "agents": {
+    "comment": "技術文書レビュー専用サブエージェント（推奨）"
+  },
+
+  "mcpServers": {
+    "comment": "Web検索を強化するMCPサーバー設定（オプション）"
+  }
+}
