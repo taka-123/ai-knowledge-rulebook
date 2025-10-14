@@ -13,11 +13,9 @@
     "DISABLE_TELEMETRY": "1"
   },
   "includeCoAuthoredBy": false,
-
   "permissions": {
     "defaultMode": "default",
     "disableBypassPermissionsMode": "disable",
-
     "allow": [
       "WebSearch",
       "WebFetch(domain:anthropic.mintlify.app)",
@@ -28,7 +26,6 @@
       "WebFetch(domain:pypi.org)",
       "WebFetch(domain:laravel.com)",
       "WebFetch(domain:vuejs.org)",
-
       "Read(README*)",
       "Read(package.json)",
       "Read(pyproject.toml)",
@@ -40,10 +37,8 @@
       "Read(**/package-lock.json)",
       "Read(composer.json)",
       "Read(composer.lock)",
-
       "Grep(**)",
       "Glob(**)",
-
       "Bash(ls)",
       "Bash(pwd)",
       "Bash(whoami)",
@@ -62,12 +57,10 @@
       "Bash(which go)",
       "Bash(rustc --version)",
       "Bash(which cargo)",
-
       "Bash(cat package.json)",
       "Bash(cat pyproject.toml)",
       "Bash(cat Cargo.toml)",
       "Bash(cat go.mod)",
-
       "Bash(git status)",
       "Bash(git status:*)",
       "Bash(git branch)",
@@ -80,7 +73,6 @@
       "Bash(git rev-parse:*)",
       "Bash(git ls-files:*)",
       "Bash(git ls-remote:*)",
-
       "Bash(git -C :* status)",
       "Bash(git -C :* status:*)",
       "Bash(git -C :* branch)",
@@ -92,13 +84,27 @@
       "Bash(git -C :* describe:*)",
       "Bash(git -C :* rev-parse:*)",
       "Bash(git -C :* ls-files:*)",
-      "Bash(git -C :* ls-remote:*)"
+      "Bash(git -C :* ls-remote:*)",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__handle_dialog",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__select_page",
+      "mcp__chrome-devtools__hover",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__resize_page",
+      "mcp__chrome-devtools__navigate_page_history",
+      "mcp__chrome-devtools__wait_for"
     ],
-
     "ask": [
       "Write(**)",
       "Edit(**)",
-
       "Bash(npm install:*)",
       "Bash(npm update:*)",
       "Bash(yarn add:*)",
@@ -107,14 +113,11 @@
       "Bash(pnpm install:*)",
       "Bash(composer install:*)",
       "Bash(composer update:*)",
-
       "Bash(docker run:*)",
       "Bash(docker exec:*)",
-
       "Bash(git push:*)",
       "Bash(git -C :* push:*)"
     ],
-
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
@@ -134,7 +137,6 @@
       "Write(.pypirc)",
       "Read(**/*key*)",
       "Read(**/*token*)",
-
       "Bash(sudo:*)",
       "Bash(rm -rf:*)",
       "Bash(dd:*)",
@@ -155,12 +157,10 @@
       "Bash(env)",
       "Bash(printenv)",
       "Bash(set | grep :*)",
-
       "Bash(psql:*)",
       "Bash(mysql:*)",
       "Bash(mongod:*)",
       "mcp__supabase__execute_sql",
-
       "Bash(php artisan tinker:*)",
       "Bash(php artisan db:*)",
       "Bash(php artisan seed:*)",
@@ -175,11 +175,9 @@
       "Bash(php artisan migrate:fresh:*)",
       "Bash(php artisan migrate:reset:*)",
       "Bash(php artisan storage:link:*)",
-
       "Bash(npm uninstall:*)",
       "Bash(npm remove:*)",
       "Bash(yarn remove:*)",
-
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
       "Bash(git reset --hard:*)",
@@ -189,7 +187,6 @@
       "Bash(git tag -d:*)",
       "Bash(git branch -D:*)",
       "Bash(git config --global:*)",
-
       "Bash(git -C :* push --force:*)",
       "Bash(git -C :* push -f:*)",
       "Bash(git -C :* reset --hard:*)",
@@ -199,12 +196,10 @@
       "Bash(git -C :* tag -d:*)",
       "Bash(git -C :* branch -D:*)",
       "Bash(git -C :* config --global:*)",
-
       "Bash(docker system prune:*)",
       "Bash(docker volume rm:*)",
       "Bash(docker run --privileged:*)",
       "Bash(docker run -v /:/host:*)",
-
       "Bash(aws cloudformation delete-stack:*)",
       "Bash(aws s3 rm:*)",
       "Bash(aws s3api delete:*)",
@@ -220,20 +215,68 @@
       "Bash(aws elasticache delete:*)",
       "Bash(aws elbv2 delete:*)",
       "Bash(aws autoscaling delete:*)",
-
       "Bash(gcloud compute instances delete:*)",
       "Bash(gcloud sql instances delete:*)",
       "Bash(gcloud container clusters delete:*)",
       "Bash(gcloud projects delete:*)",
-
       "Bash(az vm delete:*)",
       "Bash(az group delete:*)",
       "Bash(az sql server delete:*)"
     ]
   },
-
   "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Sosumi.aiff"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Glass.aiff"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Ping.aiff"
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r 'if .tool_input.command | test(\"rm -rf|dd if=|:(){ :|:& };:\") then {\"decision\": \"block\", \"reason\": \"危険なコマンドは実行できません。別の方法を検討してください。\"} else empty end'"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
+          }
+        ]
+      },
       {
         "matcher": "Bash",
         "hooks": [
@@ -259,14 +302,21 @@
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "echo '✅ 変更完了：出典URLと絶対日付の記載を確認してください'", "timeout": 5 }
+          {
+            "type": "command",
+            "command": "echo '✅ 変更完了：出典URLと絶対日付の記載を確認してください'",
+            "timeout": 5
+          }
         ]
       }
     ],
     "PreCompact": [
       {
         "hooks": [
-          { "type": "command", "command": "echo 'checkpoint marker (PreCompact)'" }
+          {
+            "type": "command",
+            "command": "echo 'checkpoint marker (PreCompact)'"
+          }
         ]
       }
     ]
