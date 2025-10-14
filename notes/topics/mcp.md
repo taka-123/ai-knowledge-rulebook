@@ -1,9 +1,10 @@
 ---
-title: "テーマ別ノート集"
+title: "MCP セキュリティ評価レポート（改訂版）"
 created: 2025-10-14
 updated: 2025-10-14
-tags: ["mcp", "serena"]
+tags: ["mcp", "security", "risk-assessment", "filesystem", "github", "playwright", "chrome-devtools", "context7", "notion", "serena"]
 source: ""
+source_retrieved: 2025-10-14
 ---
 
 # MCP セキュリティ評価レポート（改訂版）
