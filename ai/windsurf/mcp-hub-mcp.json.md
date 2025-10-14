@@ -1,6 +1,7 @@
 <!-- ~/.codeium/windsurf/mcp-hub-mcp.json -->
 <!--
   注意:
+  - filesystemは脆弱性修正版(≥0.6.4)を必須、serenaは企業非推奨／個人は強ハードニング下のみ。
   - このファイルは mcp-hub が管理する実際のMCPサーバー定義です
   - Windsurf の 100 ツール制限を回避するため mcp-hub-mcp を使用しています
   - [参照を許可するパス] などは実際の値に置き換えてください

@@ -1,6 +1,7 @@
 <!-- ~/.codex/config.toml -->
 <!--
   注意:
+  - filesystemは脆弱性修正版(≥0.6.4)を必須、serenaは企業非推奨／個人は強ハードニング下のみ。
   - OpenAI Codex の設定ファイルです
   - [参照を許可するパス] などは実際の絶対パスに置き換えてください
   - GitHub PATとNotion Tokenは実際の値に置き換えてください
