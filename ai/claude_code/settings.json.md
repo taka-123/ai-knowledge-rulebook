@@ -1,4 +1,9 @@
-<!-- ~/.claude/settings.json -->
+<!-- 下記1-4（優先度順に記載）にて、汎用的に使用可能。 -->
+<!-- プロジェクト固有は、 `./claude/`にて追記推奨 -->
+<!-- 1. (`/Library/Application Support/ClaudeCode/managed-settings.json`) -->
+<!-- 2. `./claude/settings.json` -->
+<!-- 3. `./claude/settings.local.json` -->
+<!-- 4. `~/.claude/settings.json` -->
 
 ```json
 {
@@ -8,8 +13,22 @@
     "DISABLE_TELEMETRY": "1"
   },
   "includeCoAuthoredBy": false,
+
   "permissions": {
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable",
+
     "allow": [
+      "WebSearch",
+      "WebFetch(domain:anthropic.mintlify.app)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:developer.mozilla.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:npmjs.com)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:laravel.com)",
+      "WebFetch(domain:vuejs.org)",
+
       "Read(README*)",
       "Read(package.json)",
       "Read(pyproject.toml)",
@@ -18,200 +37,288 @@
       "Read(.gitignore)",
       "Read(LICENSE*)",
       "Read(CHANGELOG*)",
-      "Bash(git status)",
-      "Bash(git log --oneline -10)",
-      "Bash(git diff)",
-      "Bash(git branch)",
+      "Read(**/package-lock.json)",
+      "Read(composer.json)",
+      "Read(composer.lock)",
+
+      "Grep(**)",
+      "Glob(**)",
+
       "Bash(ls)",
       "Bash(pwd)",
       "Bash(whoami)",
       "Bash(which git)",
-      "Bash(which php)",
       "Bash(which node)",
       "Bash(which npm)",
+      "Bash(which php)",
+      "Bash(node -v)",
+      "Bash(npm -v)",
+      "Bash(yarn -v)",
+      "Bash(pnpm -v)",
+      "Bash(python --version)",
+      "Bash(which python)",
+      "Bash(which pip)",
+      "Bash(go version)",
+      "Bash(which go)",
+      "Bash(rustc --version)",
+      "Bash(which cargo)",
+
       "Bash(cat package.json)",
       "Bash(cat pyproject.toml)",
       "Bash(cat Cargo.toml)",
       "Bash(cat go.mod)",
-      "Bash(cat **/package-lock.json)",
-      "Bash(cat composer.json)",
-      "Bash(cat composer.lock)",
-      "WebFetch(domain:docs.anthropic.com)",
-      "WebFetch(domain:github.com/*/releases)",
-      "WebFetch(domain:pypi.org/project/*)",
-      "WebFetch(domain:npmjs.com/package/*)",
-      "WebFetch(domain:laravel.com/docs/*)",
-      "WebFetch(domain:vuejs.org/guide/*)",
-      "WebFetch(domain:developer.mozilla.org/*)"
+
+      "Bash(git status)",
+      "Bash(git status:*)",
+      "Bash(git branch)",
+      "Bash(git log)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git diff)",
+      "Bash(git diff:*)",
+      "Bash(git describe:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git ls-remote:*)",
+
+      "Bash(git -C :* status)",
+      "Bash(git -C :* status:*)",
+      "Bash(git -C :* branch)",
+      "Bash(git -C :* log)",
+      "Bash(git -C :* log:*)",
+      "Bash(git -C :* show:*)",
+      "Bash(git -C :* diff)",
+      "Bash(git -C :* diff:*)",
+      "Bash(git -C :* describe:*)",
+      "Bash(git -C :* rev-parse:*)",
+      "Bash(git -C :* ls-files:*)",
+      "Bash(git -C :* ls-remote:*)"
     ],
+
+    "ask": [
+      "Write(**)",
+      "Edit(**)",
+
+      "Bash(npm install:*)",
+      "Bash(npm update:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn remove:*)",
+      "Bash(yarn install:*)",
+      "Bash(pnpm install:*)",
+      "Bash(composer install:*)",
+      "Bash(composer update:*)",
+
+      "Bash(docker run:*)",
+      "Bash(docker exec:*)",
+
+      "Bash(git push:*)",
+      "Bash(git -C :* push:*)"
+    ],
+
     "deny": [
-      // === 秘密情報・認証関連 ===
-      "Read(**/.env*)",
-      "Write(**/.env*)",
-      "Edit(**/.env*)",
-      "Read(id_rsa)",
-      "Read(id_ed25519)",
-      "Read(**/*key*)",
-      "Read(**/*token*)",
-      "Read(~/.ssh/*)",
-      "Write(~/.ssh/*)",
-      "Read(~/.aws/*)",
-      "Write(~/.aws/*)",
-      "Read(~/.gcp/*)",
-      "Write(~/.gcp/*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./.env*)",
+      "Write(./.env*)",
+      "Read(~/.ssh/**)",
+      "Write(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Write(~/.aws/**)",
+      "Read(~/.gcp/**)",
+      "Write(~/.gcp/**)",
       "Read(**/config/database*)",
       "Write(**/config/database*)",
       "Read(.npmrc)",
       "Write(.npmrc)",
       "Read(.pypirc)",
       "Write(.pypirc)",
-      // === 危険なシステム操作 ===
-      "Bash(rm -rf*)",
+      "Read(**/*key*)",
+      "Read(**/*token*)",
+
       "Bash(sudo:*)",
-      "Bash(nc:*)",
-      "Bash(mkfs:*)",
+      "Bash(rm -rf:*)",
       "Bash(dd:*)",
-      "Bash(killall*)",
-      "Bash(pkill*)",
-      "Bash(systemctl*)",
-      "Bash(service*)",
-      "Bash(crontab*)",
-      "Bash(chmod 777*)",
-      "Bash(chown*)",
-      "Bash(find * -delete*)",
-      "Bash(find / *)",
-      "Bash(grep -r *password* *)",
-      "Bash(grep -r *secret* *)",
+      "Bash(mkfs:*)",
+      "Bash(killall:*)",
+      "Bash(pkill:*)",
+      "Bash(systemctl:*)",
+      "Bash(service:*)",
+      "Bash(crontab:*)",
+      "Bash(chmod 777:*)",
+      "Bash(chown:*)",
+      "Bash(find * -delete:*)",
+      "Bash(find / :*)",
+      "Bash(grep -r *password*:*)",
+      "Bash(grep -r *secret*:*)",
       "Bash(cat /etc/passwd)",
       "Bash(cat /etc/shadow)",
       "Bash(env)",
       "Bash(printenv)",
-      "Bash(set | grep *)",
-      // === データベース直接操作 ===
+      "Bash(set | grep :*)",
+
       "Bash(psql:*)",
       "Bash(mysql:*)",
       "Bash(mongod:*)",
-      "Bash(*DROP*)",
-      "Bash(*DELETE FROM*)",
-      "Bash(*TRUNCATE*)",
-      "Bash(*ALTER TABLE*DROP*)",
       "mcp__supabase__execute_sql",
-      // === Laravel/PHP 危険コマンド ===
-      "Bash(php artisan tinker*)",
-      "Bash(php artisan db*)",
-      "Bash(php artisan seed*)",
-      "Bash(php artisan key:generate*)",
-      "Bash(php artisan config:cache*)",
-      "Bash(php artisan config:clear*)",
-      "Bash(php artisan cache:clear*)",
-      "Bash(php artisan optimize*)",
-      "Bash(php artisan down*)",
-      "Bash(php artisan up*)",
-      "Bash(php artisan queue:work*)",
-      "Bash(php artisan queue:listen*)",
+
+      "Bash(php artisan tinker:*)",
+      "Bash(php artisan db:*)",
+      "Bash(php artisan seed:*)",
+      "Bash(php artisan key:generate:*)",
+      "Bash(php artisan config:cache:*)",
+      "Bash(php artisan config:clear:*)",
+      "Bash(php artisan cache:clear:*)",
+      "Bash(php artisan optimize:*)",
+      "Bash(php artisan down:*)",
+      "Bash(php artisan up:*)",
       "Bash(php artisan queue:*)",
-      "Bash(php artisan migrate:fresh*)",
-      "Bash(php artisan migrate:reset*)",
-      "Bash(php artisan storage:link*)",
-      // === パッケージ管理 ===
-      "Bash(composer remove*)",
-      "Bash(composer update*)",
-      "Bash(composer install --no-dev*)",
-      "Bash(npm uninstall*)",
-      "Bash(npm remove*)",
-      "Bash(npm update*)",
-      "Bash(npm run build*)",
-      "Bash(npm run production*)",
-      "Bash(yarn add*)",
-      "Bash(yarn remove*)",
-      "Bash(yarn install*)",
-      // === Git 危険操作 ===
-      "Bash(git push origin main*)",
-      "Bash(git push origin master*)",
-      "Bash(git push --force*)",
-      "Bash(git push -f*)",
-      "Bash(git reset --hard*)",
-      "Bash(git rebase*)",
-      // === GitHub CLI 危険操作 ===
-      "Bash(gh auth*)",
-      "Bash(gh release create*)",
-      "Bash(gh repo delete*)",
-      "Bash(gh secret set*)",
-      "Bash(gh variable set*)",
-      // === Docker 危険操作 ===
-      "Bash(docker system prune*)",
-      "Bash(docker volume rm*)",
-      "Bash(docker exec *)",
-      "Bash(docker run --privileged*)",
-      "Bash(docker run -v /:/host*)",
-      // === クラウド・インフラ ===
-      "Bash(aws cloudformation delete-stack)",
-      "Bash(aws s3 rm*)",
-      "Bash(aws s3api delete*)",
-      "Bash(aws ec2 terminate-instances*)",
-      "Bash(aws rds delete-db-instance*)",
-      "Bash(aws rds delete-db-cluster*)",
-      "Bash(aws iam delete*)",
-      "Bash(aws lambda delete-function*)",
-      "Bash(aws dynamodb delete-table*)",
-      "Bash(aws route53 delete*)",
-      "Bash(aws logs delete*)",
-      "Bash(aws secretsmanager delete-secret*)",
-      "Bash(aws elasticache delete*)",
-      "Bash(aws elbv2 delete*)",
-      "Bash(aws autoscaling delete*)",
-      "Bash(gcloud compute instances delete*)",
-      "Bash(gcloud sql instances delete*)",
-      "Bash(gcloud container clusters delete*)",
-      "Bash(gcloud projects delete*)",
-      "Bash(az vm delete*)",
-      "Bash(az group delete*)",
-      "Bash(az sql server delete*)",
-      "List(*)",
-      // === ネットワーク・外部通信 ===
-      "Bash(wget*)",
-      "Bash(curl -X POST*)",
-      "Bash(curl -X PUT*)",
-      "Bash(curl -X DELETE*)",
-      "Bash(ssh*)",
-      "Bash(scp*)",
-      "Bash(netstat *)",
-      "Bash(nmap *)",
-      "Bash(ifconfig)",
-      "Bash(ip a)",
-      "WebFetch(*auth*)",
-      "WebFetch(*login*)",
-      "WebFetch(*password*)",
-      "WebFetch(*secret*)",
-      "WebFetch(*token*)",
-      "WebFetch(*admin*)",
-      "WebFetch(*api/v*/auth*)",
-      // === パイプ・リダイレクトによるコマンド回避防止 ===
-      // コマンド実行ラッパーの制限
-      "Bash(eval*)",
-      "Bash(source*)",
-      "Bash(xargs*)",
-      "Bash(bash -c*)",
-      "Bash(sh -c*)",
-      // パイプを使った危険なコマンド回避の防止
-      "Bash(*| php artisan*)",
-      "Bash(*| mysql*)",
-      "Bash(*| psql*)",
-      "Bash(*| rm*)",
-      "Bash(*| sudo*)",
-      "Bash(*| chmod*)",
-      "Bash(*| chown*)",
-      "Bash(*| curl*)",
-      "Bash(*| wget*)",
-      // 危険なリダイレクト
-      "Bash(*> /etc/*)",
-      "Bash(*>> /etc/*)",
-      "Bash(*> ~/.ssh/*)",
-      "Bash(*>> ~/.ssh/*)",
-      "Bash(*> */.env*)",
-      "Bash(*>> */.env*)"
+      "Bash(php artisan migrate:fresh:*)",
+      "Bash(php artisan migrate:reset:*)",
+      "Bash(php artisan storage:link:*)",
+
+      "Bash(npm uninstall:*)",
+      "Bash(npm remove:*)",
+      "Bash(yarn remove:*)",
+
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git rebase:*)",
+      "Bash(git clean -fdx:*)",
+      "Bash(git checkout -f:*)",
+      "Bash(git tag -d:*)",
+      "Bash(git branch -D:*)",
+      "Bash(git config --global:*)",
+
+      "Bash(git -C :* push --force:*)",
+      "Bash(git -C :* push -f:*)",
+      "Bash(git -C :* reset --hard:*)",
+      "Bash(git -C :* rebase:*)",
+      "Bash(git -C :* clean -fdx:*)",
+      "Bash(git -C :* checkout -f:*)",
+      "Bash(git -C :* tag -d:*)",
+      "Bash(git -C :* branch -D:*)",
+      "Bash(git -C :* config --global:*)",
+
+      "Bash(docker system prune:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(docker run --privileged:*)",
+      "Bash(docker run -v /:/host:*)",
+
+      "Bash(aws cloudformation delete-stack:*)",
+      "Bash(aws s3 rm:*)",
+      "Bash(aws s3api delete:*)",
+      "Bash(aws ec2 terminate-instances:*)",
+      "Bash(aws rds delete-db-instance:*)",
+      "Bash(aws rds delete-db-cluster:*)",
+      "Bash(aws iam delete:*)",
+      "Bash(aws lambda delete-function:*)",
+      "Bash(aws dynamodb delete-table:*)",
+      "Bash(aws route53 delete:*)",
+      "Bash(aws logs delete:*)",
+      "Bash(aws secretsmanager delete-secret:*)",
+      "Bash(aws elasticache delete:*)",
+      "Bash(aws elbv2 delete:*)",
+      "Bash(aws autoscaling delete:*)",
+
+      "Bash(gcloud compute instances delete:*)",
+      "Bash(gcloud sql instances delete:*)",
+      "Bash(gcloud container clusters delete:*)",
+      "Bash(gcloud projects delete:*)",
+
+      "Bash(az vm delete:*)",
+      "Bash(az group delete:*)",
+      "Bash(az sql server delete:*)"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -x \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py\" ]; then python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-bash.py\"; elif [ -x \"$HOME/.claude/hooks/validate-bash.py\" ]; then python3 \"$HOME/.claude/hooks/validate-bash.py\"; else echo 'skip validate-bash (no script)'; fi",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ -x \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-webfetch.sh\" ]; then \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-webfetch.sh\"; elif [ -x \"$HOME/.claude/hooks/validate-webfetch.sh\" ]; then \"$HOME/.claude/hooks/validate-webfetch.sh\"; else echo 'skip validate-webfetch (no script)'; fi",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          { "type": "command", "command": "echo '✅ 変更完了：出典URLと絶対日付の記載を確認してください'", "timeout": 5 }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "hooks": [
+          { "type": "command", "command": "echo 'checkpoint marker (PreCompact)'" }
+        ]
+      }
     ]
   }
 }
 
 ```
+
+---
+
+## 上位キー
+
+* **cleanupPeriodDays**（会話保持日数）
+  ローカルのチャット記録を最終アクティビティ基準で何日保持するか（既定30日）。([anthropic.mintlify.app][1])
+
+* **env**（環境変数）
+  すべてのセッションに適用される環境変数。例として `CLAUDE_CODE_ENABLE_TELEMETRY` 等が公式例に掲載。([anthropic.mintlify.app][1])
+
+* **includeCoAuthoredBy**（共同署名挿入）
+  Gitコミット/PRに「co-authored-by Claude」を含めるか（既定true）。([anthropic.mintlify.app][1])
+
+* **permissions**（権限制御）
+  ツール使用の可否を**allow / ask / deny** で宣言するブロック。詳細は下記。([anthropic.mintlify.app][1])
+
+## permissions の内訳と優先
+
+* **allow**
+  許可する操作のルール配列。Bash だけは**正規表現ではなく接頭辞マッチ**（`Bash(git diff:*)` 等）。([anthropic.mintlify.app][1])
+* **ask**
+  実行前に確認するルール配列。**ask は allow より優先**。
+* **deny**
+  拒否（完全に不可視化も含む）。**deny は ask/allow より優先**。Bashは接頭辞マッチで**回避可能性**ありの注意書きが公式にある。([anthropic.mintlify.app][1])
+* **追加の書式要点**
+
+  * **Bash**: `Bash(cmd:*)` は前方一致。
+  * **Read/Edit/Write**: パスは `.gitignore` 互換パターン（`**`, `*` 等）。
+  * **WebFetch**: `WebFetch(domain:example.com)` の**ドメイン単位**指定が仕様。パスワイルドカードの記法はリファレンスに無い。
+  * **MCPツール**: `mcp__server` / `mcp__server__tool` で指名（ワイルドカード不可）。
+
+> 補足: 権限モードの関連オプションとして `defaultMode`（起動デフォルト）と `disableBypassPermissionsMode` もある（必要に応じて追加可能）。([anthropic.mintlify.app][1])
+
+## ツール名の正確性（一覧）
+
+Claude Codeの組み込みツールは **Bash / Edit / Glob / Grep / NotebookEdit / NotebookRead / Read / SlashCommand / Task / TodoWrite / WebFetch / WebSearch / Write**。
+提示JSON中の **`List(*)`** は**公式一覧に無い名称**なので、意図が `Glob`（ファイル探索）や `Bash(ls …)` なら書き換え推奨。([anthropic.mintlify.app][1])
+
+---
+
+**参照**
+
+* Claude Code settings（Available settings / Permission settings / Precedence）([anthropic.mintlify.app][1])
+* Identity and Access Management（precedence/優先・ルール記法・WebFetch/MCPの指定方法）
+* Tools available to Claude（公式ツール一覧）([anthropic.mintlify.app][1])
+
+[1]: https://anthropic.mintlify.app/en/docs/claude-code/settings "Claude Code settings - Claude Docs"
