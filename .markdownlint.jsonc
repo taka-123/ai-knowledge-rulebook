@@ -1,7 +1,12 @@
 {
   "default": true,
   // 業界標準で無効化される鬱陶しいルール
-  "MD013": false, // 行長制限（コードブロックで問題）
+  "MD013": {
+    // 行長チェックをLinterに任せる（PrettierはproseWrap: preserveで自動折り返ししない）
+    "line_length": 80,
+    "code_blocks": false,
+    "tables": false
+  },
   "MD022": false, // 見出し空行強制（自然な記述を阻害）
   "MD025": false, // 複数H1見出し（複数セクションで必要）
   "MD033": {
