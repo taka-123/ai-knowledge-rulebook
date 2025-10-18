@@ -22,7 +22,8 @@ AI運用5原則
 </project_overview>
 
 <development_commands>
-# フォーマット・検証
+
+## フォーマット・検証
 
 ```bash
 # 全ファイル整形（Prettier + Markdownlint + yamllint）
@@ -32,7 +33,7 @@ AI運用5原則
 ./format.sh check
 ```
 
-# npm scripts
+## npm scripts
 
 ```bash
 # Lint チェック（整形確認のみ）
@@ -64,21 +65,36 @@ npm run schema:check
 </technology_stack>
 
 <development_rules>
-# 基本ルール
 
-## ブランチ運用
+## 進捗管理
+
+### 視覚的進捗表示（長時間タスク時のみ使用）
+
+複数ステップのタスクで作業が長時間に及ぶ場合、以下の形式で進捗を共有：
+
+```
+**進行中**: [✅✅⏳⬜⬜] 2/5 完了 - 現在: [タスク名]
+```
+
+- ✅: 完了ステップ
+- ⏳: 進行中ステップ
+- ⬜: 未着手ステップ
+
+## 基本ルール
+
+### ブランチ運用
 
 - `main` への直 push は禁止。必ずトピックブランチで作業する。
 - PR には変更意図・検証内容・影響範囲を明記する。
 - レビュー 1 名以上の承認と CI 成功後にマージする。
 
-## ファイル形式と品質
+### ファイル形式と品質
 
 - Markdown/JSON/YAML はすべて Prettier + 各種 Lint でフォーマット統一する。
 - FrontMatter (`created` / `updated` / `tags`) は `notes/` 配下で必須。
 - 参照リンク・引用元・取得日を明記する（特に `clips/`）。
 
-## セキュリティ
+### セキュリティ
 
 - API キーや個人情報は絶対にコミットしない。
 - Secret scanning / Push Protection が検出した場合は即座に修正する。
@@ -89,4 +105,5 @@ npm run schema:check
 <security_note>
 
 - パイプ（|）、リダイレクト（>、>>、<）、コマンド置換（$()、``）を使って deny リストのコマンドを回避することを禁止します。
+
 </security_note>
