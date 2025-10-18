@@ -15,22 +15,19 @@ root/
 ├── .windsurfrules # Windsurf ルール（互換用）
 ├── ai/ # AI アシスタントプロファイル
 │ ├── chatgpt/ # ChatGPT 用設定
-│ ├── claude/ # Claude 用設定（Claude Code 含む）
+│ ├── claude/ # Claude 用設定
+│ ├── claude_code/ # Claude Code 用設定
 │ ├── common/ # 共通ルール（グローバル/プロジェクト）
 │ ├── cursor/ # Cursor 用設定
 │ ├── gemini/ # Gemini 用設定
 │ ├── openai_codex/ # OpenAI Codex 用設定
-│ ├── prompts/ # AI 共通プロンプト補助
 │ └── windsurf/ # Windsurf 用設定
 ├── clips/ # 記事要約・引用
 ├── CLAUDE.md # Claude Code 向け指示
 ├── notes/ # 日次ログ・テーマ別ノート
 ├── policy/ # リポジトリ運用指針
 ├── schemas/ # JSON Schema 雛形
-├── snippets/ # プロンプト・スクリプトメモ
-├── tools/ # 生成補助・整形・同期スクリプト
-│ ├── gen/ # 生成系スクリプト
-│ └── sync/ # 同期系スクリプト
+├── snippets/ # プロンプト・スクリプトメモ（editor/ 含む）
 ├── tmp/ # 一時ファイル置き場（Git 管理対象）
 ├── node_modules/ # npm 依存パッケージ
 ├── .editorconfig # エディタ設定
