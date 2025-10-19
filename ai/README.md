@@ -1,13 +1,80 @@
-# ローカル規約ファイルの階層適用・優先順位 早わかりガイド（Codex / Windsurf / Claude Code / Cursor）
+# AI ルールテンプレート・運用ガイド（Codex / Windsurf / Claude Code / Cursor）
 
-- **用途**: リポジトリ内でAIアシスタントの「ローカル規約ファイル」の置き場所・優先順位・再読み込み方法を共有するためのガイド
+- **用途**: AIアシスタント向けルールテンプレートの提供と、階層適用・優先順位の解説
+- **対象読者**: AI ツールを導入したい開発者、複数ツールを併用する開発者
 - **適用対象**: OpenAI Codex CLI / Windsurf / Claude Code / Cursor
-- **最終更新日**: 2025-09-28
+- **最終更新日**: 2025-10-19
 - **前提OS**: macOS 14.x（Apple Silicon）/ VS Code Stable 最新
 
 ---
 
-## 1) エグゼクティブサマリ（結論）
+## 1. テンプレートの使い方（導入手順）
+
+本リポジトリの `ai/` ディレクトリには、各ツール向けのルールテンプレートが用意されています。以下の手順で導入してください。
+
+### 1.1) Claude Code 用テンプレート
+
+**グローバルルール**:
+
+1. `ai/claude_code/global/CLAUDE.md` を `~/.claude/CLAUDE.md` にコピー
+2. 必要に応じて個人設定を調整
+
+**プロジェクトルール**:
+
+1. `ai/claude_code/project/CLAUDE.md` をプロジェクトルート `.claude/CLAUDE.md` にコピー
+2. `snippets/editor/adjustment_rule.md` のプロンプトを使用して、該当プロジェクト用に調整
+3. プロジェクト固有のコマンド・ディレクトリ構造・技術スタックを記載
+
+### 1.2) Cursor / OpenAI Codex / Windsurf 用テンプレート
+
+**グローバルルール**:
+
+1. `ai/common/global/AGENTS.md` を各ツールのグローバル設定場所にコピー
+   - **Codex**: `~/.codex/AGENTS.md`
+   - **Windsurf**: `global_rules.md`（または設定UIで指定）
+   - **Cursor**: 設定UIのグローバルルール欄に貼り付け
+
+**プロジェクトルール**:
+
+1. `ai/common/project/AGENTS.md` をプロジェクトルート `AGENTS.md` にコピー
+2. `snippets/editor/adjustment_rule.md` のプロンプトを使用して、該当プロジェクト用に調整
+3. プロジェクト固有の要件を記載
+
+**Windsurf 専用設定（保守性を高める運用）**:
+
+- `.windsurfrules` を作成し、以下を記載することで `AGENTS.md` を参照可能:
+
+  ```markdown
+  - @AGENTS.md に従う
+  ```
+
+- これにより、複数ツールで同じルール（`AGENTS.md`）を共有でき、保守性が向上します
+
+**Cursor 専用設定**:
+
+- `./cursor/rules/*.mdc` にルールを配置する場合は、上記の `AGENTS.md` 方式ではなく、Cursor独自の `.mdc` 形式で記載してください
+- 複数ツールで共通化したい場合は、プロジェクトルートの `AGENTS.md` を用意し、Cursorからは設定UIで読み込ませる運用も可能です
+
+### 1.3) テンプレート調整のヒント
+
+- **`snippets/editor/adjustment_rule.md`**: プロジェクト固有の要件に合わせてルールを調整するためのプロンプトテンプレートです。AI に渡すことで、効率的にカスタマイズできます
+- **参考ファイル**:
+  - `ai/openai_codex/project/AGENTS.md`
+  - `ai/cursor/project/AGENTS.md`
+  - `ai/windsurf/project/.windsurfrules.md`
+  - これらは `ai/common/project/AGENTS.md` への参照方法を示すサンプルです
+
+### 1.4) 保守性を高める運用方針
+
+- **複数ツール利用者**: `AGENTS.md` に共通ルールを集約し、各ツールから参照する方式を推奨（Windsurf は `@AGENTS.md`、Cursor は設定UIまたはglobで読み込み）
+- **単一ツール利用者**: Windsurf のみ使う場合は `.windsurfrules` に直接記載してもOK
+- **ルール変更時**: 1ファイル（`AGENTS.md`）を更新すれば全ツールに反映されるため、保守コストが低減します
+
+---
+
+## 2. プロジェクトルールの階層適用・優先順位（技術詳細）
+
+### 2.1) エグゼクティブサマリ（結論）
 
 - **Codex & Windsurf**: 「編集中ファイルに近い階層ほど優先」＝ **委譲不要（自動カスケード）**。
 - **Claude Code**: 親→子は **自動検出**だが **子は“必要時”に遅延読み込み**（挙動はほぼカスケード）。
@@ -16,7 +83,7 @@
 
 ---
 
-## 2) 用語と対応ファイル
+### 2.2) 用語と対応ファイル
 
 - **Codex**: `~/.codex/AGENTS.md`（グローバル）, `<repo>/AGENTS.md`（ルート）, `<subdir>/AGENTS.md`（下位）
 - **Windsurf**: `global_rules.md`（グローバル）, `.windsurfrules`（従来） or `.windsurf/rules/*.md`（推奨）
@@ -25,7 +92,7 @@
 
 ---
 
-## 3) 階層に同名/複数規約がある場合の **適用順**（上ほど先に読み、下ほど“近い・具体的”として実質優先）
+### 2.3) 階層に同名/複数規約がある場合の **適用順**（上ほど先に読み、下ほど"近い・具体的"として実質優先）
 
 | ツール | 読み込み順（上→下） | 親→子 自動委譲 | 備考 |
 |---|---|---|---|
@@ -36,7 +103,7 @@
 
 ---
 
-## 4) A/B/C モノレポ例での最終適用（Aを開き、B/C配下を編集）
+### 2.4) A/B/C モノレポ例での最終適用（Aを開き、B/C配下を編集）
 
 ```
 ~/.codex/AGENTS.md（グローバル）
@@ -52,7 +119,7 @@ project/backend/AGENTS.md（C）
 
 ---
 
-## 5) 再読み込み・キャッシュ
+### 2.5) 再読み込み・キャッシュ
 
 - **Codex**: セッション起動時に読込。**変更反映はセッション再起動が必要**。
 - **Windsurf**: **保存で即反映**（毎プロンプト時に最新収集）。
@@ -61,7 +128,7 @@ project/backend/AGENTS.md（C）
 
 ---
 
-## 6) 明示的な委譲・無効化・上書きの実務ヒント
+### 2.6) 明示的な委譲・無効化・上書きの実務ヒント
 
 - **Codex**: 自動結合。特定階層のみ無効化する公式フラグはなし。子`AGENTS.md`に「当フォルダではXを適用しない」等を明記して**実質上書き**。
 - **Windsurf**: ルールはUIで **Always/Manual** 切替可。不要ならルール単位でオフ／削除。**複数ファイル分割**推奨。
@@ -70,7 +137,7 @@ project/backend/AGENTS.md（C）
 
 ---
 
-## 7) スニペット（テンプレ）
+### 2.7) スニペット（テンプレ）
 
 **Cursor（B配下だけに効かせる）**
 
@@ -99,7 +166,7 @@ A/frontend/.windsurf/rules/testing.md
 
 ---
 
-## 8) 最小再現手順（各3–6行）
+### 2.8) 最小再現手順（各3–6行）
 
 - **Codex**: 3階層に`AGENTS.md`を置く → Codexを起動 → B内ファイルで生成 → Bの指示が反映 → `AGENTS.md`変更後は再起動。
 - **Windsurf**: ルートとBに`.windsurf/rules`を置く → 保存 → B内でAI実行 → Rulesパネルで適用確認（即時反映）。
@@ -108,7 +175,7 @@ A/frontend/.windsurf/rules/testing.md
 
 ---
 
-## 9) ベストプラクティス（要点）
+### 2.9) ベストプラクティス（要点）
 
 - **近い階層ほど具体**に：上位は方針、下位は実務ルール。
 - **Always適用は最小限**（Windsurf/Cursor）：不要な文脈を増やさない。
@@ -117,6 +184,6 @@ A/frontend/.windsurf/rules/testing.md
 
 ---
 
-## 10) 補足（Unknownの扱い）
+### 2.10) 補足（Unknownの扱い）
 
 - マルチWS時のCodex / Cursorの厳密な優先判定（内部実装）は **Unknown**。実務上は「編集中ファイルの属するプロジェクトの規約のみ」が使われる前提で運用。
