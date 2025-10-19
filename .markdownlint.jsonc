@@ -1,19 +1,14 @@
 {
   "default": true,
-  // 業界標準で無効化される鬱陶しいルール
-  "MD013": {
-    // 行長チェックをLinterに任せる（PrettierはproseWrap: preserveで自動折り返ししない）
-    "line_length": 80,
-    "code_blocks": false,
-    "tables": false
-  },
+  // スタイル系（無効化 - 実害なし、Prettierと併用）
+  "MD013": false, // 行長制限（日本語文書で非現実的）
   "MD022": false, // 見出し空行強制（自然な記述を阻害）
   "MD025": false, // 複数H1見出し（複数セクションで必要）
-  "MD033": {
-    // HTML要素を部分的に許可
-    "allowed_elements": ["br", "img", "details", "summary"]
-  },
   "MD036": false, // 強調を見出し代わりに使用（実用的なケース多い）
   "MD040": false, // フェンスコードブロックの言語指定強制（汎用ブロック用途）
-  "MD041": false // 最初の行が見出し強制（テンプレートで問題）
+  "MD041": false, // 最初の行が見出し強制（テンプレートで問題）
+  // 日本語対応（無効化 - 誤検出回避）
+  "MD024": false, // 重複見出し（異なるレベルで使用するため）
+  "MD033": false, // インラインHTML（カスタムXMLタグをAI指示用に許可）
+  "MD051": false  // アンカーリンク（日本語見出しの誤検出を回避）
 }

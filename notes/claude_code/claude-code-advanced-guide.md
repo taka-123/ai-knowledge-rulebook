@@ -171,3 +171,23 @@ Claude Code（Sonnet 4.5想定）の**高度機能**を、一次情報に基づ�
 * **Pluginsの詳細仕様ページ**はDocs内で随所に記載（Hooks/Slashとの統合言及）が見つかる一方、専用ページの索引性は限定的。運用は**Hooks/Slash/MCPとの接合点**を一次情報として参照。([anthropic.mintlify.app][5])
 
 ---
+
+## 参照リンク
+
+[1]: https://docs.anthropic.com/en/docs/claude-code/hooks
+[2]: https://docs.anthropic.com/en/docs/claude-code/cli-reference
+[3]: https://docs.anthropic.com/en/docs/claude-code/agent-sdk
+[4]: https://qiita.com/tak_dcxi/items/38c2b07dfdad26e7e6dc
+[5]: https://docs.anthropic.com/en/docs/claude-code/plugins
+[6]: https://docs.anthropic.com/en/docs/claude-code/hooks-guide
+[7]: https://docs.anthropic.com/en/docs/claude-code/mcp
+[8]: https://docs.anthropic.com/en/docs/claude-code/mcp-setup
+[9]: https://docs.anthropic.com/en/docs/claude-code/mcp-connector
+[10]: https://docs.anthropic.com/en/docs/claude-code/agent-sdk-migration
+[11]: https://docs.anthropic.com/en/docs/claude-code/agent-sdk-typescript
+[12]: https://docs.anthropic.com/en/docs/claude-code/agent-sdk-python
+[13]: https://docs.anthropic.com/en/docs/claude-code/github-actions
+[14]: https://github.com/anthropics/claude-code-action
+[15]: https://docs.anthropic.com/en/docs/claude-code/vscode
+[16]: https://docs.anthropic.com/en/docs/claude-code/output-styles
+[17]: https://docs.anthropic.com/en/docs/claude-code/interactive-mode
