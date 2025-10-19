@@ -23,9 +23,7 @@ jobs:
       - name: YAML Lint
         run: yamllint -c ./.config/.yamllint.yml .
       - name: JSON Schema check
-        run: |
-          check-jsonschema --schemafile schemas/ai_profile.schema.json "ai/**/*.json"
-          check-jsonschema --schemafile schemas/notes.schema.json "notes/**/*.json" || true
+        run: npm run schema:check
       - name: Gitleaks (secret scan)
         uses: zricethezav/gitleaks-action@v2
         with:
