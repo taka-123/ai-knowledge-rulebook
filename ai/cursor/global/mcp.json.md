@@ -1,4 +1,7 @@
-<!-- ~/.cursor/mcp.json -->
+<!--
+macOS/Linux: ~/.cursor/mcp.json
+Windows: %USERPROFILE%\.cursor\mcp.json
+-->
 <!--
   注意:
   - Cursor IDE はツール数上限(80個)があるため、mcp-hub-mcp を使用します

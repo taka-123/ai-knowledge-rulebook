@@ -16,7 +16,12 @@
 
 **グローバルルール**:
 
-1. `ai/claude_code/global/CLAUDE.md` を `~/.claude/CLAUDE.md` にコピー
+1. `ai/claude_code/global/CLAUDE.md` を以下にコピー
+   - **WSL2 利用（推奨）**: `~/.claude/CLAUDE.md`
+     - 理由: 安定性・パフォーマンス・Linuxツールへのアクセス
+   - **Windows ネイティブ（公式サポート）**: `%USERPROFILE%\.claude\CLAUDE.md`
+     - 前提: Git for Windows 推奨
+   - **Mac**: `~/.claude/CLAUDE.md`
 2. 必要に応じて個人設定を調整
 
 **プロジェクトルール**:
@@ -30,9 +35,16 @@
 **グローバルルール**:
 
 1. `ai/common/global/AGENTS.md` を各ツールのグローバル設定場所にコピー
-   - **Codex**: `~/.codex/AGENTS.md`
-   - **Windsurf**: `global_rules.md`（または設定UIで指定）
-   - **Cursor**: 設定UIのグローバルルール欄に貼り付け
+   - **Codex**:
+     - **WSL2 利用（公式推奨）**: `~/.codex/AGENTS.md`
+       - 理由: 安定性・全機能保証・Unix環境での最適化
+     - **Windows ネイティブ（実験的サポート）**: `C:\Users\<YourUsername>\.codex\AGENTS.md`
+       - 注意: WSL2推奨。ネイティブは実験的サポートで制限あり
+     - **Mac**: `~/.codex/AGENTS.md`
+   - **Windsurf**:
+     - Mac: 設定UIで指定 または `~/.codeium/windsurf/memories/global_rules.md`
+     - Windows: `%APPDATA%\Codeium\windsurf\memories\global_rules.md`
+   - **Cursor**: 設定UIのグローバルルール欄に貼り付け（OS共通）
 
 **プロジェクトルール**:
 
@@ -85,10 +97,28 @@
 
 ### 2.2) 用語と対応ファイル
 
-- **Codex**: `~/.codex/AGENTS.md`（グローバル）, `<repo>/AGENTS.md`（ルート）, `<subdir>/AGENTS.md`（下位）
-- **Windsurf**: `global_rules.md`（グローバル）, `.windsurfrules`（従来） or `.windsurf/rules/*.md`（推奨）
-- **Claude Code**: `~/.claude/CLAUDE.md`（ユーザー）, `<repo>/CLAUDE.md`（ルート）, `<subdir>/CLAUDE.md`（モジュール）
-- **Cursor**: 設定UIのグローバルルール + `<repo>/.cursor/rules/*.mdc`（プロジェクト）
+- **Codex**:
+  - グローバル:
+    - **WSL2（公式推奨）**: `~/.codex/AGENTS.md`
+    - **Windows ネイティブ（実験的サポート）**: `C:\Users\<YourUsername>\.codex\AGENTS.md`
+    - **Mac**: `~/.codex/AGENTS.md`
+  - ルート: `<repo>/AGENTS.md`
+  - 下位: `<subdir>/AGENTS.md`
+- **Windsurf**:
+  - グローバル:
+    - Mac: `~/.codeium/windsurf/memories/global_rules.md`
+    - Windows: `%APPDATA%\Codeium\windsurf\memories\global_rules.md`
+  - プロジェクト: `.windsurfrules`（従来） or `.windsurf/rules/*.md`（推奨）
+- **Claude Code**:
+  - ユーザー:
+    - **WSL2（推奨）**: `~/.claude/CLAUDE.md`
+    - **Windows ネイティブ（公式サポート）**: `%USERPROFILE%\.claude\CLAUDE.md`
+    - **Mac**: `~/.claude/CLAUDE.md`
+  - ルート: `<repo>/CLAUDE.md`
+  - モジュール: `<subdir>/CLAUDE.md`
+- **Cursor**:
+  - グローバル: 設定UIのグローバルルール（OS共通）
+  - プロジェクト: `<repo>/.cursor/rules/*.mdc`（OS共通）
 
 ---
 

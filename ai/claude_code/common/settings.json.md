@@ -1,9 +1,14 @@
 <!-- 下記1-4（優先度順に記載）にて、汎用的に使用可能。 -->
 <!-- プロジェクト固有は、 `./claude/`にて追記推奨 -->
-<!-- 1. (`/Library/Application Support/ClaudeCode/managed-settings.json`) -->
+<!-- 1. (managed-settings.json) -->
+<!--    macOS: /Library/Application Support/ClaudeCode/managed-settings.json -->
+<!--    Windows: %ProgramData%\ClaudeCode\managed-settings.json -->
+<!--    Linux: /etc/claude-code/managed-settings.json -->
 <!-- 2. `./claude/settings.json` -->
 <!-- 3. `./claude/settings.local.json` -->
-<!-- 4. `~/.claude/settings.json` -->
+<!-- 4. (settings.json) -->
+<!--    macOS/Linux: ~/.claude/settings.json -->
+<!--    Windows: %USERPROFILE%\.claude\settings.json -->
 
 ```json
 {

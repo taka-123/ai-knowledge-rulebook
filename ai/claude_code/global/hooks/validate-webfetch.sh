@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# ~/.claude/hooks/validate-webfetch.sh
 set -euo pipefail
 if ! command -v jq >/dev/null 2>&1; then echo "jq not found; skip"; exit 0; fi
 payload="$(cat)"

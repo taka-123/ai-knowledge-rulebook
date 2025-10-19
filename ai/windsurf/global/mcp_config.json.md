@@ -1,4 +1,7 @@
-<!-- ~/.codeium/windsurf/mcp_config.json -->
+<!--
+macOS/Linux: ~/.codeium/windsurf/mcp_config.json
+Windows: %APPDATA%\Codeium\windsurf\mcp_config.json
+-->
 <!--
   注意:
   - Windsurf の 100 ツール制限を回避するため mcp-hub-mcp を使用しています

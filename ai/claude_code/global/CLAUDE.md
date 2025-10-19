@@ -1,4 +1,4 @@
-<!-- # Claude Code グローバル設定（~/.claude/CLAUDE.md） -->
+# Claude Code グローバル設定
 
 ## 基本原則
 

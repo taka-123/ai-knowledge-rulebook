@@ -1,4 +1,7 @@
-<!-- ~/.claude.json -->
+<!--
+macOS/Linux: ~/.claude/claude.json
+Windows: %USERPROFILE%\.claude\claude.json
+-->
 <!--
   注意:
   - filesystemは脆弱性修正版(≥0.6.4)を必須、serenaは企業非推奨／個人は強ハードニング下のみ。

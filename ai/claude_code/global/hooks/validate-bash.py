@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# ~/.claude/hooks/validate-bash.py
 import json, re, sys, os, pathlib
 
 

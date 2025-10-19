@@ -1,6 +1,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Note: 本ファイルは `~/.claude/CLAUDE.md` の一般原則を継承し、競合する箇所のみを上書きします。
+Note: 本ファイルは CLAUDE.md の一般原則を継承し、競合する箇所のみを上書きします。
+(macOS/Linux: ~/.claude/CLAUDE.md, Windows: %USERPROFILE%\.claude\CLAUDE.md)
 
 <language>Japanese</language>
 
