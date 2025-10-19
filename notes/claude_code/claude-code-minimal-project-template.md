@@ -9,6 +9,10 @@
 │  ├─ agents/
 │  │  ├─ code-reviewer.md
 │  │  └─ test-planner.md
+│  ├─ skills/
+│  │  └─ pdf-analyzer/
+│  │     ├─ SKILL.md
+│  │     └─ extract.py
 │  ├─ commands/
 │  │  └─ security-review.md
 │  └─ hooks/
@@ -53,7 +57,88 @@ model: inherit
 
 ---
 
-### 2) Plugins（プラグイン最小骨格）
+### 2) Agent Skills（エージェントスキル最小構成）
+
+`.claude/skills/pdf-analyzer/SKILL.md`
+
+```markdown
+---
+name: PDF Analyzer
+description: PDFから構造化データを抽出し分析。PDFファイル処理時に使用。
+allowed-tools: Read, Bash
+---
+
+# PDF Analyzer
+
+## 概要
+
+PDFファイルからテキスト・テーブル・メタデータを抽出し、構造化データとして出力します。
+
+## クイックスタート
+
+対象PDFファイルを指定してください：
+
+\`\`\`bash
+python .claude/skills/pdf-analyzer/extract.py <input.pdf> <output.json>
+\`\`\`
+
+出力されたJSONを確認し、必要に応じて分析を進めます。
+
+## 利用可能なツール
+
+- **Read**: ファイル読込み
+- **Bash**: スクリプト実行
+
+## 注意点
+
+- プリインストールライブラリ（pypdf等）を使用。API環境では追加パッケージ不可。
+- Claude.ai環境では動的パッケージインストール可能。
+```
+
+`.claude/skills/pdf-analyzer/extract.py`
+
+```python
+#!/usr/bin/env python3
+"""
+Extract text and metadata from PDF files.
+Usage: python extract.py <input.pdf> <output.json>
+"""
+import sys, json
+from pypdf import PdfReader
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: python extract.py <input.pdf> <output.json>")
+        sys.exit(1)
+    
+    input_pdf, output_json = sys.argv[1], sys.argv[2]
+    reader = PdfReader(input_pdf)
+    
+    data = {
+        "pages": len(reader.pages),
+        "metadata": dict(reader.metadata) if reader.metadata else {},
+        "text": [page.extract_text() for page in reader.pages]
+    }
+    
+    with open(output_json, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    
+    print(f"Extracted {len(data['pages'])} pages to {output_json}")
+
+if __name__ == "__main__":
+    main()
+```
+
+**ポイント**
+
+* **段階的開示**：Claude は `name`/`description` でスキルを発見し、必要時に `SKILL.md` 本体を読込み。([Claude Docs][18])
+* **実行環境差異**：API（ネットワーク遮断、プリインストールライブラリのみ）/ Claude.ai（ネットワーク可、動的インストール可）/ Claude Code（ローカル実行、制限なし）。([Kyutaro note][19])
+* **ツール制限**：`allowed-tools` で権限を最小化。セキュリティ境界を明確に。
+* **共有**：`.claude/skills/` 配下をGit管理でチーム共有。API利用時は `/v1/skills` エンドポイントで管理。
+
+---
+
+### 3) Plugins（プラグイン最小骨格）
 
 `plugins/my-security-plugin/plugin.json`
 
@@ -82,7 +167,7 @@ description: 危険操作の人手承認ワークフローを開始
 
 ---
 
-### 3) Hooks（危険Bashブロックの最小例）
+### 4) Hooks（危険Bashブロックの最小例）
 
 `.claude/settings.json`（抜粋）
 
@@ -127,7 +212,7 @@ print("OK", file=sys.stdout); sys.exit(0)
 
 ---
 
-### 4) MCP（ツール接続の最小例：GitHub + 変数展開）
+### 5) MCP（ツール接続の最小例：GitHub + 変数展開）
 
 `.mcp.json`
 
@@ -147,7 +232,7 @@ print("OK", file=sys.stdout); sys.exit(0)
 
 ---
 
-### 5) SDK（最小ストリーミング骨格：TypeScript）
+### 6) SDK（最小ストリーミング骨格：TypeScript）
 
 > SDKは「設定ファイルを自動読込しない」ため、必要に応じて`settingSources`等を明示。
 > `tools/dev/query.ts`
@@ -173,7 +258,7 @@ for await (const ev of stream) {
 
 ---
 
-### 6) Slash commands（プロジェクトコマンド）
+### 7) Slash commands（プロジェクトコマンド）
 
 `.claude/commands/security-review.md`
 
@@ -190,7 +275,7 @@ description: セキュリティ観点のレビュー
 
 ---
 
-### 7) GitHub Actions（PRレビュー/失敗E2Eの原因分析/リリースノート草案）
+### 8) GitHub Actions（PRレビュー/失敗E2Eの原因分析/リリースノート草案）
 
 `.github/workflows/ai-ci.yml`
 
@@ -257,7 +342,7 @@ jobs:
 
 ---
 
-### 8) Checkpoint（簡易：Compact前の痕跡保存）
+### 9) Checkpoint（簡易：Compact前の痕跡保存）
 
 * すでに`PreCompact`で最小ログを出す設定を追加済み（上のHooks参照）。公式のチェックポイント/コンパクト機能の参照はこちら。([Claude Docs][8])
 
@@ -267,6 +352,7 @@ jobs:
 
 * **まず`settings.json`の`permissions`を厳しめに**→ 誤操作を抑制（`ask`活用）。([Claude Docs][3])
 * **Subagentsを役割で分割**→ メイン文脈の汚染を防ぎ、並列で思考させやすい。([Claude Docs][1])
+* **Skillsでノウハウをパッケージ化**→ `description`で発見可能性を上げ、段階的開示で効率化。([Claude Docs][18])
 * **危険BashはHookでブロック**（Exit code 2）。([Claude Docs][9])
 * **外部SaaSはMCPで接続し`.mcp.json`を共有**（projectスコープ）。([Claude Docs][4])
 * **CIは`claude-code-action`でPR/E2E/リリースの3点を自動化**。([Claude Docs][7])
@@ -284,3 +370,5 @@ jobs:
 [7]: https://docs.claude.com/en/docs/claude-code/github-actions "Claude Code GitHub Actions - Claude Docs"
 [8]: https://docs.claude.com/en/docs/claude-code/checkpointing "Checkpointing - Claude Docs"
 [9]: https://docs.claude.com/en/docs/claude-code/hooks "Hooks reference - Claude Docs"
+[18]: https://docs.claude.com/en/docs/claude-code/skills "Agent Skills - Claude Docs"
+[19]: https://note.com/kyutaro15/n/nfcc15522626f "Claudeを“育てる”新常識！ Agent Skills徹底解説"

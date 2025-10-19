@@ -30,6 +30,46 @@ Claude Code（Sonnet 4.5想定）の**高度機能**を、一次情報に基づ�
 
 ---
 
+## Agent Skills（エージェントスキル）
+
+**何ができる**
+
+* Claude が特定タスクを実行するための**指示・スクリプト・リソースをパッケージ化**。必要時に自動起動し、専門知識を提供。Excel操作やブランドガイドライン遵守などの特化タスクを効率化。([Anthropic News][18])
+
+**段階的開示（Progressive Disclosure）**
+
+* **Level 1（メタデータ）**：`name`/`description` を常時ロード。Claude は利用可能スキルをスキャンして関連性を判断。([Claude Docs][19])
+* **Level 2（指示）**：関連性が高いと判断時に `SKILL.md` 本体を読込み。
+* **Level 3（リソース）**：必要に応じて関連ファイル・スクリプトを読込み。
+
+**どこで設定**
+
+* **Claude Code**：`~/.claude/skills/`（個人用）/ `.claude/skills/`（プロジェクト用）に配置。Plugins 経由での配布も可能。([Claude Docs][20])
+* **API**：`/v1/skills` エンドポイントで管理。`container.skills` で指定（最大8スキル、合計8MB）。([Claude Docs][21])
+* **Claude.ai**：設定→機能→スキルでZIP アップロード。「コード実行とファイル作成」の有効化が必須。
+
+**実行環境の違い**
+
+* **API**：サンドボックス、**ネットワーク遮断**、プリインストールライブラリ（pandas/numpy/openpyxl/pypdf等）のみ。プロダクション向け。
+* **Claude.ai**：サンドボックス、**ネットワーク利用可**、動的パッケージインストール可（PyPI/npm/GitHub）。実験・プロトタイピング向け。
+* **Claude Code**：**ローカル実行**、制限なし。PC環境のすべてのツール・ライブラリを利用可能。開発ワークフロー向け。([Kyutaro note][22])
+
+**どう使う（実践）**
+
+* **ビルトインスキル活用**：PowerPoint/Excel/Word/PDF スキルが公式提供。APIで `skill_id` 指定のみで利用可能。([Claude Docs][23])
+* **カスタムスキル作成**：`SKILL.md` にYAMLフロントマター（name/description）＋指示＋実行コードを記述。Claude Cookbook にサンプル多数。([GitHub][24])
+* **セキュリティ境界**：`allowed-tools` で利用可能ツールを制限（例：Read/Grep/Globのみ）。API向けスキルは自己完結を意識（外部通信不可）。([Claude Docs][20])
+* **共有とバージョン管理**：`.claude/skills/` 配下をGit管理でチーム共有。API は `version: "1"` で特定バージョン固定が推奨。
+
+**特徴**
+
+* **構成可能（Composable）**：複数スキルを自動調整して組合せ。
+* **移植性（Portable）**：Claude.ai/Code/API で同一形式。
+* **効率性（Efficient）**：必要最小限のコンテキストのみロード。
+* **強力（Powerful）**：Pythonスクリプト等の実行可能コードを含められる。([Anthropic News][18])
+
+---
+
 ## Plugins（プラグイン）
 
 **何ができる**
@@ -143,6 +183,7 @@ Claude Code（Sonnet 4.5想定）の**高度機能**を、一次情報に基づ�
 ## 実践チェックリスト
 
 * [ ] Subagents：役割・許可を**最小権限**で分割し、親で**統合要約**
+* [ ] Skills：**段階的開示**を活用し、`description` に「何をするか・いつ使うか」を明記。API向けは自己完結設計
 * [ ] Plugins：導入前に**フック/権限差分**と実行ユーザーの境界を監査
 * [ ] Hooks：`PreToolUse` を**ブロックゲート**に、`PostToolUse` を**整形・通知**に
 * [ ] MCP：**スコープ階層**（ローカル/プロジェクト/ユーザー）を合意して接続
@@ -155,6 +196,7 @@ Claude Code（Sonnet 4.5想定）の**高度機能**を、一次情報に基づ�
 ## 主要出典（一次情報）
 
 * Subagents（構成と連携）: Subagents - Claude Docs（英語）. ([Qiita][4])
+* Skills（概要/段階的開示/実行環境）: Claude Skills: Customize AI for your workflows（公式発表）, Agent Skills - Claude Docs, Skill authoring best practices. ([Anthropic News][18]) ([Claude Docs][19][20][21][23])
 * Plugins（統合・フック自動マージ）: 公式発表（2025-10-09）, Hooks reference（Plugin hooks節）, Changelog（Plugin System Released）. ([Anthropic News](https://www.anthropic.com/news/claude-code-plugins)) ([anthropic.mintlify.app][5])
 * Hooks（イベント/設定/Exit挙動/ガイド）: Hooks reference / Hooks guide（英/日）. ([anthropic.mintlify.app][1])
 * MCP（接続/スコープ/実例）: Connect Claude Code to tools via MCP（英/日）, MCP overview, MCP connector(API). ([anthropic.mintlify.app][7])
@@ -191,3 +233,10 @@ Claude Code（Sonnet 4.5想定）の**高度機能**を、一次情報に基づ�
 [15]: https://docs.anthropic.com/en/docs/claude-code/vscode
 [16]: https://docs.anthropic.com/en/docs/claude-code/output-styles
 [17]: https://docs.anthropic.com/en/docs/claude-code/interactive-mode
+[18]: https://www.anthropic.com/news/skills
+[19]: https://docs.claude.com/en/docs/agents-and-tools/agent-skills/overview
+[20]: https://docs.claude.com/en/docs/claude-code/skills
+[21]: https://docs.claude.com/en/api/skills-guide
+[22]: https://note.com/kyutaro15/n/nfcc15522626f
+[23]: https://docs.claude.com/en/docs/agents-and-tools/agent-skills/quickstart
+[24]: https://github.com/anthropics/claude-cookbooks/tree/main/skills
