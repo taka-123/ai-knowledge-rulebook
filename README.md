@@ -35,3 +35,13 @@
 
 - GitHub 上で `main` ブランチ保護（直 push 禁止・レビュー 1 名以上・必須ステータスチェック）を設定する。
 - Secret scanning / Push Protection を有効化する。
+
+## 謝辞
+
+本プロジェクトのAIルールテンプレートは、以下の方々の公開情報を参考に作成しました。心より感謝申し上げます。
+
+- [kinopeee](https://github.com/kinopeee) さん - [cursorrules](https://github.com/kinopeee/cursorrules)
+- [sazan_dev](https://x.com/sazan_dev) さん - [X投稿](https://x.com/sazan_dev/status/1968222841981002203)
+- [sesere](https://zenn.dev/sesere) さん - [Zenn記事](https://zenn.dev/sesere/articles/0420ecec9526dc)
+
+その他、多くの方々のオープンな知見の共有に感謝いたします。
