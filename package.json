@@ -14,7 +14,7 @@
     "fix:md": "markdownlint-cli2-fix '**/*.md' '#node_modules' '#.git'",
     "fix:yaml": "prettier --write '**/*.{yml,yaml}' --ignore-path .prettierignore",
     "fix:json": "prettier --write '**/*.{json,jsonc}' --ignore-path .prettierignore",
-    "schema:check": "check-jsonschema --schemafile schemas/ai_profile.schema.json 'ai/**/*.json' && check-jsonschema --schemafile schemas/notes.schema.json 'notes/**/*.json' || true"
+    "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true"
   },
   "devDependencies": {
     "markdownlint-cli2": "^0.15.0",
