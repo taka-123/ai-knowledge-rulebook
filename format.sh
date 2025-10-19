@@ -66,10 +66,10 @@ check_tool "yamllint" "pip3 install yamllint" "yamllint" || exit 1
 # Markdownフォーマット
 print_status "📝 Markdownファイルの処理中..."
 if [[ "$MODE" == "fix" ]]; then
-    npx markdownlint-cli2 --fix "**/*.md" "#node_modules" "#.git"
+    npx markdownlint-cli2 --fix "**/*.md" "#node_modules" "#.git" "#clips" "#tmp"
     print_success "Markdownファイルを自動修正しました"
 else
-    if npx markdownlint-cli2 "**/*.md" "#node_modules" "#.git"; then
+    if npx markdownlint-cli2 "**/*.md" "#node_modules" "#.git" "#clips" "#tmp"; then
         print_success "Markdownファイルの構文チェック: OK"
     else
         print_warning "Markdownファイルに問題があります（自動修正: ./format.sh fix）"
