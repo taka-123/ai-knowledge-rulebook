@@ -6,4 +6,5 @@ OpenAI Codex CLI グローバル設定
   - 注意: WSL2推奨。ネイティブは実験的サポートで制限あり
 - Mac: ~/.codex/AGENTS.md
 -->
+
 [../common/global/AGENTS.md](../common/global/AGENTS.md)に記載のものを添付

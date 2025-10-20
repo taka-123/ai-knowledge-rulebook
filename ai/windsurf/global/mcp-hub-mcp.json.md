@@ -17,10 +17,7 @@ Windows: %APPDATA%\Codeium\windsurf\mcp-hub-mcp.json
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ]
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "serena": {
       "command": "arch",
@@ -51,24 +48,15 @@ Windows: %APPDATA%\Codeium\windsurf\mcp-hub-mcp.json
     },
     "playwright": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ]
+      "args": ["-y", "@playwright/mcp@latest"]
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest",
-        "--isolated=true"
-      ]
+      "args": ["chrome-devtools-mcp@latest", "--isolated=true"]
     },
     "notion": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@notionhq/notion-mcp-server"
-      ],
+      "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
         "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
       }

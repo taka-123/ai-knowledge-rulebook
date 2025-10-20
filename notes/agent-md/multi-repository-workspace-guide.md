@@ -41,10 +41,10 @@
 
 **A1: いいえ、以下のツールで自動適用はされません**
 
-| ツール | 挙動 | 根拠の強度 | 確認日 |
-|--------|------|-----------|--------|
-| OpenAI Codex | 作業ディレクトリが子内にある場合のみ適用 | **公式仕様準拠** | 2025-10-17 |
-| Cursor | プロジェクト（起動ディレクトリ）単位で解釈 | **公式仕様準拠** | 2025-10-17 |
+| ツール       | 挙動                                       | 根拠の強度       | 確認日     |
+| ------------ | ------------------------------------------ | ---------------- | ---------- |
+| OpenAI Codex | 作業ディレクトリが子内にある場合のみ適用   | **公式仕様準拠** | 2025-10-17 |
+| Cursor       | プロジェクト（起動ディレクトリ）単位で解釈 | **公式仕様準拠** | 2025-10-17 |
 
 #### 根拠
 
@@ -64,11 +64,11 @@
 
 #### OpenAI Codex（階層マージ型）
 
-| 優先度 | ファイル | パス | スコープ | マージ方式 |
-|--------|---------|------|----------|-----------|
-| 1（基底） | ユーザー全体 | `~/.codex/AGENTS.md` | 全プロジェクト | トップダウンマージ |
-| 2（上書き） | リポジトリルート | `<repo-root>/AGENTS.md` | 当該リポジトリ | 1に追加・上書き |
-| 3（最優先） | 作業ディレクトリ | `<cwd>/AGENTS.md` | 作業対象スコープ | 2に追加・上書き |
+| 優先度      | ファイル         | パス                    | スコープ         | マージ方式         |
+| ----------- | ---------------- | ----------------------- | ---------------- | ------------------ |
+| 1（基底）   | ユーザー全体     | `~/.codex/AGENTS.md`    | 全プロジェクト   | トップダウンマージ |
+| 2（上書き） | リポジトリルート | `<repo-root>/AGENTS.md` | 当該リポジトリ   | 1に追加・上書き    |
+| 3（最優先） | 作業ディレクトリ | `<cwd>/AGENTS.md`       | 作業対象スコープ | 2に追加・上書き    |
 
 **統合ルール**: より具体的（深い階層）な `AGENTS.md` が、より一般的な設定を上書き・補完します。
 
@@ -78,10 +78,10 @@
 
 #### Cursor（プロジェクト単位型）
 
-| 優先度 | ファイル | パス | スコープ |
-|--------|---------|------|----------|
-| 1 | プロジェクトルール | `<project-root>/AGENTS.md` または `.cursor/rules/*.md` | プロジェクト全体 |
-| 2（サブディレクトリ） | 子ディレクトリルール | `<sub-dir>/.cursor/rules/*.md` | サブディレクトリ以下 |
+| 優先度                | ファイル             | パス                                                   | スコープ             |
+| --------------------- | -------------------- | ------------------------------------------------------ | -------------------- |
+| 1                     | プロジェクトルール   | `<project-root>/AGENTS.md` または `.cursor/rules/*.md` | プロジェクト全体     |
+| 2（サブディレクトリ） | 子ディレクトリルール | `<sub-dir>/.cursor/rules/*.md`                         | サブディレクトリ以下 |
 
 **重要**: Cursorでは `AGENTS.md` は `.cursor/rules` の簡易代替として扱われ、プロジェクト（起動ディレクトリ）スコープで解釈されます。親で起動した場合、子の `AGENTS.md` は自動適用されません。
 
@@ -105,10 +105,10 @@ codex "まず ./sub-repos/facility-user-app/AGENTS.md を読んでルールを�
        施設利用者画面の〇〇を修正してください"
 ```
 
-| メリット | デメリット |
-|---------|-----------|
-| ✅ 明示的で確実 | ❌ 毎回手動指示が必要 |
-| ✅ シンプルで理解しやすい | ❌ 指示忘れのリスク |
+| メリット                  | デメリット            |
+| ------------------------- | --------------------- |
+| ✅ 明示的で確実           | ❌ 毎回手動指示が必要 |
+| ✅ シンプルで理解しやすい | ❌ 指示忘れのリスク   |
 
 **推奨ケース**: 単発の修正、細かく制御したい場合
 
@@ -118,19 +118,19 @@ codex "まず ./sub-repos/facility-user-app/AGENTS.md を読んでルールを�
 
 **やり方**: 親の `AGENTS.md` に各子リポジトリのルール読み込みを明記
 
-```markdown
+````markdown
 # 親リポジトリのAGENTS.md
 
 ## マルチリポジトリ運用ルール
 
 ### サブリポジトリ一覧
 
-| リポジトリ名 | パス | ルールファイル |
-|---|---|---|
-| 施設利用者画面 | `./sub-repos/facility-user-app/` | `./sub-repos/facility-user-app/AGENTS.md` |
-| 施設管理者画面 | `./sub-repos/facility-admin-app/` | `./sub-repos/facility-admin-app/AGENTS.md` |
+| リポジトリ名   | パス                                  | ルールファイル                                 |
+| -------------- | ------------------------------------- | ---------------------------------------------- |
+| 施設利用者画面 | `./sub-repos/facility-user-app/`      | `./sub-repos/facility-user-app/AGENTS.md`      |
+| 施設管理者画面 | `./sub-repos/facility-admin-app/`     | `./sub-repos/facility-admin-app/AGENTS.md`     |
 | 外部公開サイト | `./sub-repos/external-site-frontend/` | `./sub-repos/external-site-frontend/AGENTS.md` |
-| バッチ処理 | `./sub-repos/batch/` | `./sub-repos/batch/AGENTS.md` |
+| バッチ処理     | `./sub-repos/batch/`                  | `./sub-repos/batch/AGENTS.md`                  |
 
 ### 🚨 サブリポジトリ修正時の必須手順
 
@@ -150,13 +150,14 @@ codex "まず ./sub-repos/facility-user-app/AGENTS.md を読んでルールを�
    git add .
    git commit -m "..."
    ```
+````
 
 ### 禁止事項
 
 - 子リポジトリの `AGENTS.md` を読まずに修正を開始すること
 - 親リポジトリの `.git/` で子リポジトリのコミットを実行すること
 
-```
+````
 
 | メリット | デメリット |
 |---------|-----------|
@@ -175,13 +176,13 @@ codex "まず ./sub-repos/facility-user-app/AGENTS.md を読んでルールを�
 ```bash
 cd ./sub-repos/facility-user-app
 codex
-```
+````
 
-| メリット | デメリット |
-|---------|-----------|
-| ✅ 子のAGENTS.mdが確実に有効 | ❌ 複数リポジトリ横断時に面倒 |
+| メリット                           | デメリット                             |
+| ---------------------------------- | -------------------------------------- |
+| ✅ 子のAGENTS.mdが確実に有効       | ❌ 複数リポジトリ横断時に面倒          |
 | ✅ Git操作も正しいリポジトリで実行 | ❌ IDEワークスペースの利便性が失われる |
-| ✅ 最も公式仕様に沿った方法 | ❌ 起動切り替えが頻繁に必要 |
+| ✅ 最も公式仕様に沿った方法        | ❌ 起動切り替えが頻繁に必要            |
 
 **推奨ケース**: 単一リポジトリに集中、Git操作の正確性を最優先
 
@@ -216,19 +217,19 @@ codex
 
 ### (1) 親の`AGENTS.md`（完全版）
 
-```markdown
+````markdown
 # マルチリポジトリ開発 運用ルール
 
 このリポジトリは、複数のサブリポジトリを統合する親リポジトリです。各サブリポジトリには独自のコーディング規約・構造・命名規則があり、作業時には該当サブリポジトリの `AGENTS.md` に従う必要があります。
 
 ## サブリポジトリ一覧
 
-| リポジトリ名 | パス | ルールファイル | 技術スタック |
-|---|---|---|---|
-| 施設利用者画面 | `./sub-repos/facility-user-app/` | `./sub-repos/facility-user-app/AGENTS.md` | React, TypeScript |
-| 施設管理者画面 | `./sub-repos/facility-admin-app/` | `./sub-repos/facility-admin-app/AGENTS.md` | Next.js, TypeScript |
-| 外部公開サイト | `./sub-repos/external-site-frontend/` | `./sub-repos/external-site-frontend/AGENTS.md` | Vue.js, TypeScript |
-| バッチ処理 | `./sub-repos/batch/` | `./sub-repos/batch/AGENTS.md` | Python |
+| リポジトリ名   | パス                                  | ルールファイル                                 | 技術スタック        |
+| -------------- | ------------------------------------- | ---------------------------------------------- | ------------------- |
+| 施設利用者画面 | `./sub-repos/facility-user-app/`      | `./sub-repos/facility-user-app/AGENTS.md`      | React, TypeScript   |
+| 施設管理者画面 | `./sub-repos/facility-admin-app/`     | `./sub-repos/facility-admin-app/AGENTS.md`     | Next.js, TypeScript |
+| 外部公開サイト | `./sub-repos/external-site-frontend/` | `./sub-repos/external-site-frontend/AGENTS.md` | Vue.js, TypeScript  |
+| バッチ処理     | `./sub-repos/batch/`                  | `./sub-repos/batch/AGENTS.md`                  | Python              |
 
 ## 🚨 サブリポジトリ修正時の必須手順
 
@@ -241,10 +242,12 @@ codex
 3. コーディング規約・構造・命名規則・テスト方針を把握
 
 **例**: `./sub-repos/facility-user-app/src/components/LoginForm.tsx` を修正する場合
+
 ```bash
 # 最初にルールを読み込む
 cat ./sub-repos/facility-user-app/AGENTS.md
 ```
+````
 
 ### ステップ2: ルールの厳密遵守
 
@@ -302,7 +305,7 @@ git commit -m "feat: パスワード再設定リンク追加"
 find . -name "LoginForm.tsx" -type f
 ```
 
-```
+````
 
 ---
 
@@ -321,19 +324,19 @@ find . -name "LoginForm.tsx" -type f
 
 ## ディレクトリ構造
 
-```
+````
 
 facility-user-app/
 ├── src/
-│   ├── components/       # 再利用可能なコンポーネント
-│   ├── pages/            # ページコンポーネント
-│   ├── hooks/            # カスタムフック
-│   ├── services/         # API通信
-│   ├── types/            # TypeScript型定義
-│   └── utils/            # ユーティリティ関数
+│ ├── components/ # 再利用可能なコンポーネント
+│ ├── pages/ # ページコンポーネント
+│ ├── hooks/ # カスタムフック
+│ ├── services/ # API通信
+│ ├── types/ # TypeScript型定義
+│ └── utils/ # ユーティリティ関数
 └── tests/
 
-```
+````
 
 ## コーディング規約
 
@@ -387,7 +390,7 @@ const StyledForm = styled('form')(({ theme }) => ({
 export const LoginForm: React.FC = () => {
   // ...
 };
-```
+````
 
 ### 悪い例
 
@@ -401,7 +404,7 @@ const handleSubmit = (data: any) => { ... }
 // ❌ テストなし
 ```
 
-```
+````
 
 ---
 
@@ -517,7 +520,7 @@ Cursorでは、サブディレクトリごとに `.cursor/rules/*.md` を配置�
     ]
   }
 }
-```
+````
 
 **現在のステータス**: 提案段階、実装時期は未定
 
@@ -554,12 +557,12 @@ Cursorでは、サブディレクトリごとに `.cursor/rules/*.md` を配置�
 
 **A**: マルチリポジトリ環境では、ツールごとに大きく挙動が異なります。
 
-| ツール | 設定ファイル | スコープ解決方式 | 親から開いた時の子ルール適用 |
-|--------|-------------|----------------|------------------------|
-| **Windsurf** | `.windsurfrules` | **編集ファイルベース（最近傍優先）** | ✅ **自動適用** |
-| OpenAI Codex | `AGENTS.md` | 起動ディレクトリベース（階層マージ） | ❌ 明示的読み込み必要 |
-| Cursor | `AGENTS.md` / `.cursor/rules/*.md` | 起動ディレクトリベース | ❌ 明示的読み込み必要 |
-| Claude Code | `CLAUDE.md` / `.claude/agents/*.md` | 起動ディレクトリベース | ❌ 明示的読み込み必要 |
+| ツール       | 設定ファイル                        | スコープ解決方式                     | 親から開いた時の子ルール適用 |
+| ------------ | ----------------------------------- | ------------------------------------ | ---------------------------- |
+| **Windsurf** | `.windsurfrules`                    | **編集ファイルベース（最近傍優先）** | ✅ **自動適用**              |
+| OpenAI Codex | `AGENTS.md`                         | 起動ディレクトリベース（階層マージ） | ❌ 明示的読み込み必要        |
+| Cursor       | `AGENTS.md` / `.cursor/rules/*.md`  | 起動ディレクトリベース               | ❌ 明示的読み込み必要        |
+| Claude Code  | `CLAUDE.md` / `.claude/agents/*.md` | 起動ディレクトリベース               | ❌ 明示的読み込み必要        |
 
 #### Windsurfの優位性
 
@@ -592,17 +595,18 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 
 #### AGENTS.mdのネイティブサポート状況（2025-10-17時点）
 
-| ツール | AGENTS.md対応 | 必要な対応 |
-|--------|--------------|----------|
-| OpenAI Codex | ✅ **ネイティブサポート** | そのまま使用可能 |
-| Cursor | ✅ **ネイティブサポート** | そのまま使用可能 |
-| Claude Code | ❌ 非対応 | `CLAUDE.md`で明示的に参照 |
-| Windsurf | ❌ 非対応 | `.windsurfrules`で明示的に参照 |
+| ツール       | AGENTS.md対応             | 必要な対応                     |
+| ------------ | ------------------------- | ------------------------------ |
+| OpenAI Codex | ✅ **ネイティブサポート** | そのまま使用可能               |
+| Cursor       | ✅ **ネイティブサポート** | そのまま使用可能               |
+| Claude Code  | ❌ 非対応                 | `CLAUDE.md`で明示的に参照      |
+| Windsurf     | ❌ 非対応                 | `.windsurfrules`で明示的に参照 |
 
 #### Claude Codeでの使用方法
 
 ```markdown
 <!-- CLAUDE.md -->
+
 # プロジェクトルール
 
 ## AGENTS.md準拠
@@ -610,11 +614,14 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 このプロジェクトは AGENTS.md に記載されたコーディング規約に従います。
 
 **作業開始前の必須手順**:
+
 1. AGENTS.md を読み込む
 2. 記載されたルールを厳密に遵守
 
 <!-- 以下、Claude Code固有の設定 -->
+
 ## Subagent定義
+
 ...
 ```
 
@@ -622,6 +629,7 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 
 ```markdown
 <!-- .windsurfrules -->
+
 # プロジェクトルール
 
 ## AGENTS.md準拠
@@ -629,10 +637,12 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 このプロジェクトは AGENTS.md に記載されたコーディング規約に従います。
 
 **作業開始前の必須手順**:
+
 1. AGENTS.md を読み込む
 2. 記載されたルールを厳密に遵守
 
 <!-- 以下、Windsurf固有の設定 -->
+
 ...
 ```
 
@@ -654,16 +664,16 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 
 ### 公式ドキュメント
 
-| 項目 | URL | 確認日 |
-|---|---|---|
-| agentsmd.io公式 | [https://agentsmd.io/](https://agentsmd.io/) | 2025-10-17 |
-| Cursor Rules公式 | [https://docs.cursor.com/ja/context/rules](https://docs.cursor.com/ja/context/rules) | 2025-10-17 |
+| 項目                        | URL                                                                                                                                              | 確認日     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
+| agentsmd.io公式             | [https://agentsmd.io/](https://agentsmd.io/)                                                                                                     | 2025-10-17 |
+| Cursor Rules公式            | [https://docs.cursor.com/ja/context/rules](https://docs.cursor.com/ja/context/rules)                                                             | 2025-10-17 |
 | Microsoft Learn (Codex関連) | [https://learn.microsoft.com/ja-jp/azure/ai-foundry/openai/how-to/codex](https://learn.microsoft.com/ja-jp/azure/ai-foundry/openai/how-to/codex) | 2025-10-17 |
 
 ### コミュニティリソース
 
-| 項目 | URL | 確認日 |
-|---|---|---|
+| 項目             | URL                                                                                                    | 確認日     |
+| ---------------- | ------------------------------------------------------------------------------------------------------ | ---------- |
 | OpenAI Codex紹介 | [https://openai.com/ja-JP/index/introducing-codex/](https://openai.com/ja-JP/index/introducing-codex/) | 2025-10-17 |
 
 ---
@@ -675,4 +685,4 @@ Windsurfは**編集ファイルに最も近い`.windsurfrules`を自動的に適
 
 ---
 
-*このガイドは2025年10月17日時点の公式情報・コミュニティ情報に基づいています。OpenAI CodexやCursorは継続的に進化しているため、最新情報は必ず公式ドキュメントを参照してください。*
+_このガイドは2025年10月17日時点の公式情報・コミュニティ情報に基づいています。OpenAI CodexやCursorは継続的に進化しているため、最新情報は必ず公式ドキュメントを参照してください。_

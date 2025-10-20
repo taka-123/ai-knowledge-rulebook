@@ -1,9 +1,9 @@
 ---
-title: "テーマ別ノート集"
+title: 'テーマ別ノート集'
 created: 2025-09-27
 updated: 2025-09-27
-tags: ["index"]
-source: ""
+tags: ['index']
+source: ''
 ---
 
 ## 運用メモ

@@ -18,5 +18,4 @@ Windows: %USERPROFILE%\.cursor\mcp.json
     }
   }
 }
-
 ```

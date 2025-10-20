@@ -124,12 +124,12 @@
 
 ### 2.3) 階層に同名/複数規約がある場合の **適用順**（上ほど先に読み、下ほど"近い・具体的"として実質優先）
 
-| ツール | 読み込み順（上→下） | 親→子 自動委譲 | 備考 |
-|---|---|---|---|
-| **Codex** | グローバル → ルート → サブディレクトリ | **Yes** | すべて結合。近い階層が実質上書き。反映は再起動が必要。 |
-| **Windsurf** | グローバル → ルート（.windsurf/rules） → サブ（.windsurf/rules） | **Yes** | Cascadeで自動収集。保存即反映。複数WSでも深い階層を優先表示。 |
-| **Claude Code** | ユーザー → ルート → （**必要時**）サブ | **Yes（遅延）** | 子`CLAUDE.md`は該当サブツリー参照時に動的読込。編集後は再起動推奨。 |
-| **Cursor** | グローバル設定 → ルート`.cursor/rules/*.mdc` | **No** | 子は自動継承なし。親のglob定義 or 子を別WSで開く。保存即反映。 |
+| ツール          | 読み込み順（上→下）                                              | 親→子 自動委譲  | 備考                                                                |
+| --------------- | ---------------------------------------------------------------- | --------------- | ------------------------------------------------------------------- |
+| **Codex**       | グローバル → ルート → サブディレクトリ                           | **Yes**         | すべて結合。近い階層が実質上書き。反映は再起動が必要。              |
+| **Windsurf**    | グローバル → ルート（.windsurf/rules） → サブ（.windsurf/rules） | **Yes**         | Cascadeで自動収集。保存即反映。複数WSでも深い階層を優先表示。       |
+| **Claude Code** | ユーザー → ルート → （**必要時**）サブ                           | **Yes（遅延）** | 子`CLAUDE.md`は該当サブツリー参照時に動的読込。編集後は再起動推奨。 |
+| **Cursor**      | グローバル設定 → ルート`.cursor/rules/*.mdc`                     | **No**          | 子は自動継承なし。親のglob定義 or 子を別WSで開く。保存即反映。      |
 
 ---
 
@@ -173,10 +173,11 @@ project/backend/AGENTS.md（C）
 
 ```markdown
 ---
-description: "Frontend rules"
-globs: ["frontend/**"]
+description: 'Frontend rules'
+globs: ['frontend/**']
 alwaysApply: false
 ---
+
 - Reactは関数コンポーネントのみ
 ```
 
@@ -184,6 +185,7 @@ alwaysApply: false
 
 ```markdown
 # CLAUDE.md
+
 See @frontend/CLAUDE.md for React rules
 ```
 

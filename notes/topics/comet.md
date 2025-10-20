@@ -1,12 +1,11 @@
 ---
-title: "Comet 徹底解説"
+title: 'Comet 徹底解説'
 created: 2025-10-14
 updated: 2025-10-14
-tags: ["browser", "ai", "perplexity", "comet"]
-source: "https://lilys.ai/digest/6226037/6219318/"
+tags: ['browser', 'ai', 'perplexity', 'comet']
+source: 'https://lilys.ai/digest/6226037/6219318/'
 source_retrieved: 2025-10-14
 ---
-
 
 # Comet 徹底解説
 
@@ -14,12 +13,12 @@ source_retrieved: 2025-10-14
 
 補足・一次情報（公式）:
 
-* [https://www.perplexity.ai/hub/blog/comet-is-now-available-to-everyone-worldwide](https://www.perplexity.ai/hub/blog/comet-is-now-available-to-everyone-worldwide) （一般公開: 2025-10-02）
-* [https://www.perplexity.ai/comet/resources/articles/comet-quick-start-guide](https://www.perplexity.ai/comet/resources/articles/comet-quick-start-guide) （機能/ショートカット）
-* [https://www.perplexity.ai/ja/comet/gettingstarted](https://www.perplexity.ai/ja/comet/gettingstarted) （使い方/連携）
-* [https://www.perplexity.ai/comet/resources/articles/comet-data-privacy-security-faq-s](https://www.perplexity.ai/comet/resources/articles/comet-data-privacy-security-faq-s) （プライバシー）
-* [https://www.perplexity.ai/hub/blog/introducing-comet](https://www.perplexity.ai/hub/blog/introducing-comet) （初期ローンチ: 2025-07-09, Max先行）
-* [https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners](https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners) （Comet Plus）
+- [https://www.perplexity.ai/hub/blog/comet-is-now-available-to-everyone-worldwide](https://www.perplexity.ai/hub/blog/comet-is-now-available-to-everyone-worldwide) （一般公開: 2025-10-02）
+- [https://www.perplexity.ai/comet/resources/articles/comet-quick-start-guide](https://www.perplexity.ai/comet/resources/articles/comet-quick-start-guide) （機能/ショートカット）
+- [https://www.perplexity.ai/ja/comet/gettingstarted](https://www.perplexity.ai/ja/comet/gettingstarted) （使い方/連携）
+- [https://www.perplexity.ai/comet/resources/articles/comet-data-privacy-security-faq-s](https://www.perplexity.ai/comet/resources/articles/comet-data-privacy-security-faq-s) （プライバシー）
+- [https://www.perplexity.ai/hub/blog/introducing-comet](https://www.perplexity.ai/hub/blog/introducing-comet) （初期ローンチ: 2025-07-09, Max先行）
+- [https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners](https://www.perplexity.ai/hub/blog/announcing-comet-plus-launch-partners) （Comet Plus）
 
 最終更新: 2025-10-14
 
@@ -31,11 +30,11 @@ Cometは、AIを基軸とした次世代型のブラウザ。PerplexityのAI検�
 
 ## 💡 Cometの主な便利機能は何ですか？
 
-* AIアシスタント（Assistant/Agent）: チャット/音声で指示。ページ理解・要約・比較・翻訳・表作成のほか、フォーム入力/遷移などの自動操作（Agent）。
-* ボイスモード: 音声で会話しながら操作。ショートカット: `Alt + Shift + V`。
-* ワンクリック要約: 開いているページ/動画/PDF等を即時要約。ショートカット: `Alt + S`。
-* ショートカット（Shortcuts）: `/tldr` などのクイックアクション。新規タブに好みのクイックリンクを配置可能。
-* Chrome拡張機能対応: Chromiumベースのため、Chrome拡張のインポート/利用が可能。
+- AIアシスタント（Assistant/Agent）: チャット/音声で指示。ページ理解・要約・比較・翻訳・表作成のほか、フォーム入力/遷移などの自動操作（Agent）。
+- ボイスモード: 音声で会話しながら操作。ショートカット: `Alt + Shift + V`。
+- ワンクリック要約: 開いているページ/動画/PDF等を即時要約。ショートカット: `Alt + S`。
+- ショートカット（Shortcuts）: `/tldr` などのクイックアクション。新規タブに好みのクイックリンクを配置可能。
+- Chrome拡張機能対応: Chromiumベースのため、Chrome拡張のインポート/利用が可能。
 
 > 注: 「標準の広告ブロック」について公式明記はなし。必要なら拡張機能で補完。
 
@@ -46,19 +45,18 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 ## 1. Perplexityが開発した次世代AIブラウザ「Comet」の概要
 
 1. **Cometとは何か**
-
    1. Perplexityが開発したAIを基軸とした次世代型ブラウザである。
    2. **一般公開**: 2025-10-02 に無料公開。以前は段階的な招待制。
    3. **先行提供**: 2025-07-09 の初期ローンチ時は Max プラン向け。のちに Pro/Enterprise Pro 等へ拡大。
    4. **招待リンク**: 新規ユーザーに招待枠が付与される時期があったが、枠数は時期により変動（固定「2枠」ではない）。
    5. 近い将来、モバイル版の提供が予告されている（プレビュー案内あり）。
-2. **Perplexityの概要**
 
+2. **Perplexityの概要**
    1. 次世代のAI検索エンジンであり、従来の検索と異なる。
    2. GoogleやBingのような従来の検索がリンクを提示するのに対し、Perplexityは以下を行う。
-
       1. 調べたいキーワードに対し、関連する複数のウェブページを調査。
       2. 調査結果を要約した回答と参照元リンクを示す。
+
    3. ChatGPTに近い感覚で利用できる。
    4. 複数の情報を効率的に知ることができ、Googleに代わる新たな検索エンジンとして人気が上昇している。
    5. 一度使うと戻れないという声も多い。
@@ -66,17 +64,16 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 ## 2. Cometの基本画面と基本操作
 
 1. **基本画面構成**
-
    1. 新規タブはタブ/ブックマーク/メイン領域の構成で直感的。
    2. 検索はメインの検索バーまたはアドレスバーから行える。
-2. **Perplexity AI検索の利用**
 
+2. **Perplexity AI検索の利用**
    1. 知りたい情報を入力すると、複数情報を参考に関連情報を要約して提示。
    2. 追加の質問はチャット（または音声）で指示可能。
    3. 関連質問候補も提示。
    4. 参照リンクから原典へ遷移できる。
-3. **検索エンジン/検索設定**
 
+3. **検索エンジン/検索設定**
    1. 既定の検索エンジンは Perplexity。
    2. アドレスバー等の検索設定は随時更新されるため、最新版の「設定」メニューを参照。
 
@@ -85,15 +82,14 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 ### 3.1. AIアシスタント機能
 
 1. **Assistant / Agent**
+   - 右上のアシスタントボタンでサイドバーを開く。Assistant は要約/質問/比較等の理解支援。Agent はクリック/入力/遷移などの**能動操作**でタスク遂行（例: 予約、メール送信、購入）。
 
-   * 右上のアシスタントボタンでサイドバーを開く。Assistant は要約/質問/比較等の理解支援。Agent はクリック/入力/遷移などの**能動操作**でタスク遂行（例: 予約、メール送信、購入）。
 2. **コンテキスト認識**
+   - 開いているタブを横断参照。`@タブ名`で指定可能。
+   - 例: Amazonの商品ページから仕様の表作成やメリデメ比較。
 
-   * 開いているタブを横断参照。`@タブ名`で指定可能。
-   * 例: Amazonの商品ページから仕様の表作成やメリデメ比較。
 3. **外部サービス連携**
-
-   * Gmail/Calendar 等を接続し、予定確認・返信案作成・日程調整などを実行。
+   - Gmail/Calendar 等を接続し、予定確認・返信案作成・日程調整などを実行。
 
 ### 3.2. ボイスモード
 
@@ -118,7 +114,7 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 
 ### （削除/訂正）広告ブロック機能
 
-* 公式に「標準搭載」の明記はない。広告対策は拡張機能で補うのが現実的。
+- 公式に「標準搭載」の明記はない。広告対策は拡張機能で補うのが現実的。
 
 ### 3.7. Chromeに標準搭載されている機能
 
@@ -130,23 +126,23 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 
 ### 4.1. 誤字脱字のチェックと自動修正
 
-* スプレッドシート等を開いた状態で、Assistant/Agent に校正と自動修正を依頼。
+- スプレッドシート等を開いた状態で、Assistant/Agent に校正と自動修正を依頼。
 
 ### 4.2. 複数のソースを指定して情報整理
 
-* 複数タブを情報源に限定し、横断要約/比較を生成。
+- 複数タブを情報源に限定し、横断要約/比較を生成。
 
 ### 4.3. 難しい話を音声で解説
 
-* 法律/経済のページを開き、ボイスモードで平易化説明→不明点を追質問。
+- 法律/経済のページを開き、ボイスモードで平易化説明→不明点を追質問。
 
 ### 4.4. ECサイトで条件検索と購入まで
 
-* 条件を指示 → Agent が検索/比較/レビュー確認/カート投入/決済まで支援（要確認操作）。
+- 条件を指示 → Agent が検索/比較/レビュー確認/カート投入/決済まで支援（要確認操作）。
 
 ### 4.5. その他の活用アイデア
 
-* プログラミング、リサーチ、分析、日程調整、メール返信案作成などビジネス用途と相性が良い。
+- プログラミング、リサーチ、分析、日程調整、メール返信案作成などビジネス用途と相性が良い。
 
 ## 5. まとめと今後の期待
 
@@ -160,23 +156,23 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 
 ### 変更要約（本ドキュメントの差分）
 
-* 一般公開日（2025-10-02）と先行提供の時系列を追記
-* 「招待2枠」を「時期により変動」に修正
-* 広告ブロックの標準搭載表現を削除
-* ウィジェット節を「ショートカット/クイックリンク」に改訂
-* ボイス/要約の正式ショートカットを追記
-* プラットフォーム/プライバシー/Comet Plus を追記
+- 一般公開日（2025-10-02）と先行提供の時系列を追記
+- 「招待2枠」を「時期により変動」に修正
+- 広告ブロックの標準搭載表現を削除
+- ウィジェット節を「ショートカット/クイックリンク」に改訂
+- ボイス/要約の正式ショートカットを追記
+- プラットフォーム/プライバシー/Comet Plus を追記
 
 ## 6. 機能×用途マトリクス（速参照）
 
-| 機能                      | 代表用途            | 推奨UI/トリガー         | 典型プロンプト（最小）                  | 成果物/KPI          |
-| ----------------------- | --------------- | ----------------- | ---------------------------- | ---------------- |
-| 要約（One‑click/Shortcuts） | Web/動画/PDFの要点抽出 | `Alt+S` / `/tldr` | 「このページを3点で要約。表で」             | 要約精度、3行要点、リンク保持  |
-| 調査（Assistant）           | 複数ソース横断の概要把握    | サイドバーで質問          | 「◯◯の最新動向を3ソースで。日付・根拠付」       | 出典数、日付明記、相違併記    |
-| 比較作成（Assistant）         | スペック/価格/利点の表化   | 開いているタブを参照        | 「開いている3商品を比較表。重要指標=価格/重量/電池」 | 3–5軸の構造化、欠損率低    |
-| 自動化（Agent）              | クリック/入力/遷移の代行   | 「実行」指示→確認         | 「会議室Aで金曜15時を予約。承認前に要確認」      | 完了率、誤操作0、承認フロー維持 |
-| 音声（Voice）               | ハンズフリー検索/要約     | `Alt+Shift+V`     | 「1万円の無線マウスを5件。在庫/配送含む」       | 応答時間、追質問の適合度     |
-| 拡張連携（Extensions）        | 機能補完（広告/垂直タブ等）  | Chrome拡張の導入       | 「拡張Xで◯◯を自動実行」                | 再現性、衝突なし         |
+| 機能                        | 代表用途                    | 推奨UI/トリガー      | 典型プロンプト（最小）                               | 成果物/KPI                      |
+| --------------------------- | --------------------------- | -------------------- | ---------------------------------------------------- | ------------------------------- |
+| 要約（One‑click/Shortcuts） | Web/動画/PDFの要点抽出      | `Alt+S` / `/tldr`    | 「このページを3点で要約。表で」                      | 要約精度、3行要点、リンク保持   |
+| 調査（Assistant）           | 複数ソース横断の概要把握    | サイドバーで質問     | 「◯◯の最新動向を3ソースで。日付・根拠付」            | 出典数、日付明記、相違併記      |
+| 比較作成（Assistant）       | スペック/価格/利点の表化    | 開いているタブを参照 | 「開いている3商品を比較表。重要指標=価格/重量/電池」 | 3–5軸の構造化、欠損率低         |
+| 自動化（Agent）             | クリック/入力/遷移の代行    | 「実行」指示→確認    | 「会議室Aで金曜15時を予約。承認前に要確認」          | 完了率、誤操作0、承認フロー維持 |
+| 音声（Voice）               | ハンズフリー検索/要約       | `Alt+Shift+V`        | 「1万円の無線マウスを5件。在庫/配送含む」            | 応答時間、追質問の適合度        |
+| 拡張連携（Extensions）      | 機能補完（広告/垂直タブ等） | Chrome拡張の導入     | 「拡張Xで◯◯を自動実行」                              | 再現性、衝突なし                |
 
 ## 7. 運用チェックリスト（SE向け）
 
@@ -191,6 +187,6 @@ Perplexityが開発した**次世代AIブラウザ「Comet」**の驚異的な�
 
 ### 最小テンプレ（コピペ用）
 
-* Assistant: 「要件: ◯◯。出力: 表（列=◯◯）。制約: 根拠URL/日付。相違は併記」
-* Agent: 「このページのリストから条件A,Bに合う3件を抽出→比較表→下書きメール作成。送信前に確認」
-* Voice: 「“◯◯を3分で要約。疑問点を列挙して”」
+- Assistant: 「要件: ◯◯。出力: 表（列=◯◯）。制約: 根拠URL/日付。相違は併記」
+- Agent: 「このページのリストから条件A,Bに合う3件を抽出→比較表→下書きメール作成。送信前に確認」
+- Voice: 「“◯◯を3分で要約。疑問点を列挙して”」

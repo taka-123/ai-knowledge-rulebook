@@ -32,13 +32,14 @@ Note: 本ファイルは CLAUDE.md の一般原則を継承し、競合する箇
 </development_rules>
 
 <error_classification>
+
 ## エラー対応の優先度
 
 - 🟢 **軽度**: 記録しつつ継続（例: 警告ログ、非推奨API）
 - 🟡 **アプリケーション**: 自動リトライ後に報告（例: 解析失敗、フォーマット不一致）
 - 🔴 **システム**: 即停止・承認待ち（例: タイムアウト、通信断）
 - ⛔ **セキュリティ**: 全作業停止・緊急報告（例: 認証情報漏洩）
-</error_classification>
+  </error_classification>
 
 <security_note>
 

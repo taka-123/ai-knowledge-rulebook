@@ -22,5 +22,4 @@ Windows: %APPDATA%\Codeium\windsurf\mcp_config.json
     }
   }
 }
-
 ```

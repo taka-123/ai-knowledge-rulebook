@@ -70,5 +70,4 @@ Windows: %USERPROFILE%\.cursor\mcp-hub-mcp.json
     }
   }
 }
-
 ```

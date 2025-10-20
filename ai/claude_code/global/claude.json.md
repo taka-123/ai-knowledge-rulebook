@@ -17,10 +17,7 @@ Windows: %USERPROFILE%\.claude\claude.json
     "context7": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ],
+      "args": ["-y", "@upstash/context7-mcp@latest"],
       "env": {}
     },
     "serena": {
@@ -56,27 +53,19 @@ Windows: %USERPROFILE%\.claude\claude.json
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@playwright/mcp@latest"
-      ],
+      "args": ["-y", "@playwright/mcp@latest"],
       "env": {}
     },
     "chrome-devtools": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "chrome-devtools-mcp@latest"
-      ],
+      "args": ["chrome-devtools-mcp@latest"],
       "env": {}
     },
     "notion": {
       "type": "stdio",
       "command": "npx",
-      "args": [
-        "-y",
-        "@notionhq/notion-mcp-server"
-      ],
+      "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
         "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
       }
@@ -94,5 +83,4 @@ Windows: %USERPROFILE%\.claude\claude.json
     }
   }
 }
-
 ```

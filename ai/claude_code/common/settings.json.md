@@ -327,39 +327,37 @@
     ]
   }
 }
-
 ```
 
 ---
 
 ## 上位キー
 
-* **cleanupPeriodDays**（会話保持日数）
+- **cleanupPeriodDays**（会話保持日数）
   ローカルのチャット記録を最終アクティビティ基準で何日保持するか（既定30日）。([anthropic.mintlify.app][1])
 
-* **env**（環境変数）
+- **env**（環境変数）
   すべてのセッションに適用される環境変数。例として `CLAUDE_CODE_ENABLE_TELEMETRY` 等が公式例に掲載。([anthropic.mintlify.app][1])
 
-* **includeCoAuthoredBy**（共同署名挿入）
+- **includeCoAuthoredBy**（共同署名挿入）
   Gitコミット/PRに「co-authored-by Claude」を含めるか（既定true）。([anthropic.mintlify.app][1])
 
-* **permissions**（権限制御）
+- **permissions**（権限制御）
   ツール使用の可否を**allow / ask / deny** で宣言するブロック。詳細は下記。([anthropic.mintlify.app][1])
 
 ## permissions の内訳と優先
 
-* **allow**
+- **allow**
   許可する操作のルール配列。Bash だけは**正規表現ではなく接頭辞マッチ**（`Bash(git diff:*)` 等）。([anthropic.mintlify.app][1])
-* **ask**
+- **ask**
   実行前に確認するルール配列。**ask は allow より優先**。
-* **deny**
+- **deny**
   拒否（完全に不可視化も含む）。**deny は ask/allow より優先**。Bashは接頭辞マッチで**回避可能性**ありの注意書きが公式にある。([anthropic.mintlify.app][1])
-* **追加の書式要点**
-
-  * **Bash**: `Bash(cmd:*)` は前方一致。
-  * **Read/Edit/Write**: パスは `.gitignore` 互換パターン（`**`, `*` 等）。
-  * **WebFetch**: `WebFetch(domain:example.com)` の**ドメイン単位**指定が仕様。パスワイルドカードの記法はリファレンスに無い。
-  * **MCPツール**: `mcp__server` / `mcp__server__tool` で指名（ワイルドカード不可）。
+- **追加の書式要点**
+  - **Bash**: `Bash(cmd:*)` は前方一致。
+  - **Read/Edit/Write**: パスは `.gitignore` 互換パターン（`**`, `*` 等）。
+  - **WebFetch**: `WebFetch(domain:example.com)` の**ドメイン単位**指定が仕様。パスワイルドカードの記法はリファレンスに無い。
+  - **MCPツール**: `mcp__server` / `mcp__server__tool` で指名（ワイルドカード不可）。
 
 > 補足: 権限モードの関連オプションとして `defaultMode`（起動デフォルト）と `disableBypassPermissionsMode` もある（必要に応じて追加可能）。([anthropic.mintlify.app][1])
 
@@ -372,8 +370,8 @@ Claude Codeの組み込みツールは **Bash / Edit / Glob / Grep / NotebookEdi
 
 **参照**
 
-* Claude Code settings（Available settings / Permission settings / Precedence）([anthropic.mintlify.app][1])
-* Identity and Access Management（precedence/優先・ルール記法・WebFetch/MCPの指定方法）
-* Tools available to Claude（公式ツール一覧）([anthropic.mintlify.app][1])
+- Claude Code settings（Available settings / Permission settings / Precedence）([anthropic.mintlify.app][1])
+- Identity and Access Management（precedence/優先・ルール記法・WebFetch/MCPの指定方法）
+- Tools available to Claude（公式ツール一覧）([anthropic.mintlify.app][1])
 
-[1]: https://anthropic.mintlify.app/en/docs/claude-code/settings "Claude Code settings - Claude Docs"
+[1]: https://anthropic.mintlify.app/en/docs/claude-code/settings 'Claude Code settings - Claude Docs'

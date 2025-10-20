@@ -15,10 +15,7 @@ Linux: ~/.config/Claude/claude_desktop_config.json
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@upstash/context7-mcp@latest"
-      ]
+      "args": ["-y", "@upstash/context7-mcp@latest"]
     },
     "github": {
       "command": "docker",
@@ -36,10 +33,7 @@ Linux: ~/.config/Claude/claude_desktop_config.json
     },
     "notion": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@notionhq/notion-mcp-server"
-      ],
+      "args": ["-y", "@notionhq/notion-mcp-server"],
       "env": {
         "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
       }
@@ -55,5 +49,4 @@ Linux: ~/.config/Claude/claude_desktop_config.json
     }
   }
 }
-
 ```
