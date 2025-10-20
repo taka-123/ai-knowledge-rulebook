@@ -66,14 +66,24 @@ check_tool "yamllint" "pip3 install yamllint" "yamllint" || exit 1
 # Markdownフォーマット
 print_status "📝 Markdownファイルの処理中..."
 if [[ "$MODE" == "fix" ]]; then
-    npx markdownlint-cli2 --fix "**/*.md" "#node_modules" "#.git" "#clips" "#tmp"
-    print_success "Markdownファイルを自動修正しました"
+    # Prettierで整形
+    npx prettier --write "**/*.md" --ignore-path .prettierignore
+    print_success "Markdownファイルを自動整形しました"
 else
-    if npx markdownlint-cli2 "**/*.md" "#node_modules" "#.git" "#clips" "#tmp"; then
-        print_success "Markdownファイルの構文チェック: OK"
+    # Prettierでチェック
+    if npx prettier --check "**/*.md" --ignore-path .prettierignore; then
+        print_success "Markdownファイルのフォーマットチェック: OK"
     else
         print_warning "Markdownファイルに問題があります（自動修正: ./format.sh fix）"
     fi
+fi
+
+# Markdownlint（品質チェック）
+print_status "🔍 Markdownファイルの品質チェック中..."
+if npx markdownlint-cli2 "**/*.md" "#node_modules" "#.git" "#clips" "#tmp"; then
+    print_success "Markdown品質チェック: OK"
+else
+    print_warning "Markdown品質に問題があります（自動修正: npx markdownlint-cli2-fix）"
 fi
 
 # YAMLフォーマット

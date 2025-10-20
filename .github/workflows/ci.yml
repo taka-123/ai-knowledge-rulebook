@@ -11,15 +11,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "18"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-      - name: Install linters
+      - name: Install dependencies
         run: |
+          npm install
           pip install check-jsonschema==0.* yamllint
-          npm install --global markdownlint-cli2
+      - name: Prettier format check
+        run: npx prettier --check .
       - name: Markdown Lint
-        run: markdownlint-cli2 "**/*.md" "#!{.git,node_modules,clips,tmp}"
+        run: npx markdownlint-cli2 "**/*.md" "#!{.git,node_modules,clips,tmp}"
       - name: YAML Lint
         run: yamllint -c ./.config/.yamllint.yml .
       - name: JSON Schema check

@@ -1,9 +1,9 @@
 ---
-title: "スニペット集"
+title: 'スニペット集'
 created: 2025-09-27
 updated: 2025-10-19
-tags: ["snippets"]
-source: ""
+tags: ['snippets']
+source: ''
 ---
 
 ## 利用ルール

@@ -1,4 +1,5 @@
 {
+  "extends": "markdownlint/style/prettier",
   "default": true,
   // スタイル系（無効化 - 実害なし、Prettierと併用）
   "MD013": false, // 行長制限（日本語文書で非現実的）

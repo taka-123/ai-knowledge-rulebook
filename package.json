@@ -17,6 +17,7 @@
     "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true"
   },
   "devDependencies": {
+    "markdownlint": "^0.36.0",
     "markdownlint-cli2": "^0.15.0",
     "prettier": "^3.4.2",
     "ajv-cli": "^5.0.0"

@@ -11,35 +11,36 @@
   // 🎨 Prettier設定（既存Linterと競合回避）
   "prettier.requireConfig": true,
   "prettier.useEditorConfig": true,
-  // 📄 Markdown設定（markdownlintを優先）
+  // 📄 Markdown設定（Prettierでフォーマット、markdownlintで品質チェック）
   "[markdown]": {
-    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.wordWrap": "on",
+    "editor.wordWrapColumn": 80,
     "editor.quickSuggestions": {
       "comments": "off",
       "strings": "off",
       "other": "off"
     }
   },
-  // 🗂️ YAML設定（yamllintを優先、Prettierは補助）
+  // 🗂️ YAML設定（Prettierでフォーマット、yamllintで品質チェック）
   "[yaml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.autoIndent": "advanced"
   },
   "[yml]": {
-    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.autoIndent": "advanced"
   },
-  // 📋 JSON設定（VSCode内蔵+schema検証）
+  // 📋 JSON設定（Prettierでフォーマット）
   "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  // 🔧 Markdownlint設定
+  // 🔧 Markdownlint設定（品質チェック専用）
   "markdownlint.config": {
-    "extends": "./.config/.markdownlint.jsonc"
+    "extends": "./.markdownlint.jsonc"
   },
   // 🔍 YAML拡張設定
   "yaml.validate": true,

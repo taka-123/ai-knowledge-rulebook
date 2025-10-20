@@ -5,9 +5,12 @@
 # Git関連
 .git/
 .gitignore
+.github/ISSUE_TEMPLATE/
+.github/PULL_REQUEST_TEMPLATE.md
 
-# CI/CD
-.github/
+# 一時ファイル・参考資料（フォーマット対象外）
+clips/
+tmp/
 
 # 自動生成ファイル
 node_modules/
