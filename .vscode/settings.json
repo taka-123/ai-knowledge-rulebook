@@ -20,7 +20,8 @@
       "comments": "off",
       "strings": "off",
       "other": "off"
-    }
+    },
+    "files.trimTrailingWhitespace": false
   },
   // 🗂️ YAML設定（Prettierでフォーマット、yamllintで品質チェック）
   "[yaml]": {
@@ -45,6 +46,7 @@
   // 🔍 YAML拡張設定
   "yaml.validate": true,
   "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": "/.github/workflows/*",
     "./schemas/ai_profile.schema.json": "ai/**/*.json",
     "./schemas/notes.schema.json": "notes/**/*.json"
   },
