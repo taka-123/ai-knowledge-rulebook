@@ -3,7 +3,7 @@
 - **用途**: AIアシスタント向けルールテンプレートの提供と、階層適用・優先順位の解説
 - **対象読者**: AI ツールを導入したい開発者、複数ツールを併用する開発者
 - **適用対象**: OpenAI Codex CLI / Windsurf / Claude Code / Cursor
-- **最終更新日**: 2025-10-19
+- **最終更新日**: 2025-10-21
 - **前提OS**: macOS 14.x（Apple Silicon）/ VS Code Stable 最新
 
 ---
@@ -26,9 +26,22 @@
 
 **プロジェクトルール**:
 
-1. `ai/claude_code/project/CLAUDE.md` をプロジェクトルート `.claude/CLAUDE.md` にコピー
+**単一サービス／各サービス用**:
+
+1. `ai/claude_code/project/CLAUDE.md` をプロジェクトルート（または各サービスディレクトリ）の `.claude/CLAUDE.md` にコピー
 2. `snippets/editor/adjustment_rule.md` のプロンプトを使用して、該当プロジェクト用に調整
 3. プロジェクト固有のコマンド・ディレクトリ構造・技術スタックを記載
+
+**マルチサービス構成の親ディレクトリ用**:
+
+1. `ai/claude_code/multi_service_parent/CLAUDE.md` を親ディレクトリの `.claude/CLAUDE.md` にコピー
+2. サービス一覧表を実際のサービス構成に合わせて更新
+3. 各サービスディレクトリには上記の `ai/claude_code/project/CLAUDE.md` を配置
+
+**使い分け**:
+
+- **単一サービスプロジェクト**: `ai/claude_code/project/CLAUDE.md` を使用
+- **マルチサービス構成**: 親ディレクトリに `ai/claude_code/multi_service_parent/CLAUDE.md`、各サービスに `ai/claude_code/project/CLAUDE.md` を配置
 
 ### 1.2) Cursor / OpenAI Codex / Windsurf 用テンプレート
 
@@ -48,9 +61,22 @@
 
 **プロジェクトルール**:
 
-1. `ai/common/project/AGENTS.md` をプロジェクトルート `AGENTS.md` にコピー
+**単一サービス／各サービス用**:
+
+1. `ai/common/project/AGENTS.md` をプロジェクトルート（または各サービスディレクトリ）の `AGENTS.md` にコピー
 2. `snippets/editor/adjustment_rule.md` のプロンプトを使用して、該当プロジェクト用に調整
 3. プロジェクト固有の要件を記載
+
+**マルチサービス構成の親ディレクトリ用**:
+
+1. `ai/common/multi_service_parent/AGENTS.md` を親ディレクトリの `AGENTS.md` にコピー
+2. サービス一覧表を実際のサービス構成に合わせて更新
+3. 各サービスディレクトリには上記の `ai/common/project/AGENTS.md` を配置
+
+**使い分け**:
+
+- **単一サービスプロジェクト**: `ai/common/project/AGENTS.md` を使用
+- **マルチサービス構成**: 親ディレクトリに `ai/common/multi_service_parent/AGENTS.md`、各サービスに `ai/common/project/AGENTS.md` を配置
 
 **Windsurf 専用設定（保守性を高める運用）**:
 
