@@ -1,16 +1,18 @@
-## プロジェクト構造規約
+# ディレクトリ構成
 
-root/
-├── .codeiuminogre # Codeium 用除外パターン
-├── .cursorinogre # Cursor 用除外パターン
+以下のディレクトリ構造に従って実装を行ってください：
+
+./
+├── .codeiumignore # Codeium 用除外パターン
+├── .cursorignore # Cursor 用除外パターン
 ├── .claude/ # Claude AI 設定
 ├── .config/ # Lint・検証設定
 │ ├── jsonschema.conf.yaml # JSON Schema 検証設定
 │ └── .yamllint.yml # YAML Lint 設定
 ├── .github/ # GitHub 関連設定
 │ ├── workflows/ # CI/CD ワークフロー
-│ ├── ISSUE_TEMPLATE/ # Issue テンプレート
-│ └── PULL_REQUEST_TEMPLATE/ # PR テンプレート
+│ ├── PULL_REQUEST_TEMPLATE.md # PR テンプレート
+│ └── ISSUE_TEMPLATE/ # Issue テンプレート
 ├── .vscode/ # VS Code 設定
 ├── .windsurfrules # Windsurf ルール（互換用）
 ├── ai/ # AI アシスタントプロファイル
