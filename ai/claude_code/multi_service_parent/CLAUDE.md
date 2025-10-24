@@ -11,7 +11,7 @@ Note: 本ファイルは CLAUDE.md の一般原則を継承し、競合する箇
 
 ## サービス名言及時の即座解決:
 
-- ユーザーが `service-x`, `frontend`, `backend`, `app`, `api` 等を単独で言及した場合
+- ユーザーが `admin-dashboard`, `customer-app`, `backend-api`, `service-x`, ... 等を単独で言及した場合
 - 即座に `{サービス名}/CLAUDE.md` を Read（Glob・find による探索は禁止）
 
 ---
