@@ -222,13 +222,13 @@ sequenceDiagram
 
 #### 配置ファイルとテンプレート
 
-| ファイル名                 | テンプレートリンク                                                                                                   | 備考                         |
-| -------------------------- | -------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| **AGENTS.md**              | [project/AGENTS.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/project/AGENTS.md)         | 必須                         |
-| **CLAUDE.md**              | [project/CLAUDE.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/claude_code/project/CLAUDE.md)    | Claude Code使用時は推奨      |
-| **.windsurfrules**         | `@AGENTS.md に従う` と記載                                                                                           | Windsurf使用時は念のため配置 |
-| **technologystack.md**     | [technologystack.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/technologystack.md)       | オプション（準備中）         |
-| **directory_structure.md** | [directorystructure.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/directorystructure.md) | オプション（準備中）         |
+| ファイル名                 | テンプレートリンク                                                                                                           | 備考                         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **AGENTS.md**              | [project/AGENTS.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/project/AGENTS.md)                 | 必須                         |
+| **CLAUDE.md**              | [project/CLAUDE.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/claude_code/project/CLAUDE.md)            | Claude Code使用時は推奨      |
+| **.windsurfrules**         | `@AGENTS.md に従う` と記載                                                                                                   | Windsurf使用時は念のため配置 |
+| **technologystack.md**     | [technologystack.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/project/technologystack.md)       | オプション                   |
+| **directory_structure.md** | [directorystructure.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/project/directorystructure.md) | オプション                   |
 
 #### カスタマイズ
 
@@ -257,8 +257,8 @@ sequenceDiagram
 | **AGENTS.md**              | [multi_service_parent/AGENTS.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/multi_service_parent/AGENTS.md)      | 必須                         |
 | **CLAUDE.md**              | [multi_service_parent/CLAUDE.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/claude_code/multi_service_parent/CLAUDE.md) | Claude Code使用時は推奨      |
 | **.windsurfrules**         | `@AGENTS.md に従う` と記載                                                                                                                  | Windsurf使用時は念のため配置 |
-| **technologystack.md**     | [technologystack.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/technologystack.md)                              | オプション（準備中）         |
-| **directory_structure.md** | [directorystructure.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/directorystructure.md)                        | オプション（準備中）         |
+| **technologystack.md**     | [technologystack.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/multi_service_parent/technologystack.md)         | オプション                   |
+| **directory_structure.md** | [directorystructure.md](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/common/multi_service_parent/directorystructure.md)   | オプション                   |
 
 #### カスタマイズ
 
