@@ -1,12 +1,12 @@
 ---
-title: 'マルチレポ対応AGENTS.md/CLAUDE.md設計パターン【3段階テンプレート】'
+title: 'AGENTS.md/CLAUDE.md設計パターン【4ツール統一・マルチレポ精度向上】'
 emoji: '🧑‍💻'
 type: 'tech'
 topics: ['claude', 'codex', 'cursor', 'windsurf', 'マルチリポジトリ']
 published: false
 ---
 
-# マルチレポ対応AGENTS.md/CLAUDE.md設計パターン【3段階テンプレート】
+# AGENTS.md/CLAUDE.md設計パターン【4ツール統一・マルチレポ精度向上】
 
 ## TL;DR
 
@@ -211,7 +211,7 @@ sequenceDiagram
 - **CLAUDE.md（global層、Claude Code専用）**: <https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/claude_code/global/CLAUDE.md>
 
 :::message
-最新版のテンプレートは [GitHubリポジトリ](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/) を参照してください。
+最新版のテンプレートは [GitHubリポジトリ](https://github.com/taka-123/ai-knowledge-rulebook/blob/main/ai/README.md) を参照してください。
 :::
 
 ---
