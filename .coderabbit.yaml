@@ -1,0 +1,112 @@
+# CodeRabbit Configuration
+# See: https://docs.coderabbit.ai/guides/configure-coderabbit/
+
+# Language Settings - レビューを日本語で受け取る
+language: ja-JP
+
+# Review Settings
+reviews:
+  # プロファイル設定
+  profile: chill # assertive, chill, or assertive
+
+  # リクエストの変更
+  request_changes_workflow: false
+
+  # 高レベルサマリー
+  high_level_summary: true
+
+  # 詩的なレビュー（無効化を推奨）
+  poem: false
+
+  # レビューステータス
+  review_status: true
+
+  # 折りたたみ可能なウォークスルー
+  collapse_walkthrough: false
+
+  # 自動レビュー設定
+  auto_review:
+    enabled: true
+    # ドラフトPRの自動レビュー
+    drafts: false
+    # ベースブランチの変更
+    base_branches:
+      - main
+      - master
+
+# チャットモード設定
+chat:
+  # 自動返信を有効化
+  auto_reply: true
+
+# 除外パターン
+exclude:
+  # 自動生成ファイル
+  - "**/*.min.js"
+  - "**/*.min.css"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/node_modules/**"
+  - "**/.next/**"
+  - "**/out/**"
+
+  # ロックファイル
+  - "**/package-lock.json"
+  - "**/yarn.lock"
+  - "**/pnpm-lock.yaml"
+  - "**/Gemfile.lock"
+  - "**/Cargo.lock"
+
+  # ドキュメント（必要に応じて調整）
+  # - "**/*.md"
+
+  # テストデータ・フィクスチャ
+  - "**/test-fixtures/**"
+  - "**/test-data/**"
+  - "**/__snapshots__/**"
+
+# パスごとの指示（プロジェクトに応じてカスタマイズ）
+path_instructions:
+  - path: "**/*.md"
+    instructions: |
+      Markdown ファイルのレビューでは、以下の点に注意してください：
+      - 文法と表現の正確性
+      - リンク切れの確認
+      - コードブロックの正確性
+      - FrontMatter の形式（このプロジェクトでは created/updated/tags が必須）
+
+  - path: "**/*.json"
+    instructions: |
+      JSON ファイルのレビューでは、以下の点に注意してください：
+      - JSON スキーマへの準拠
+      - 構文の正確性
+      - セキュリティ上の問題（機密情報の混入など）
+
+  - path: "**/*.yaml"
+    instructions: |
+      YAML ファイルのレビューでは、以下の点に注意してください：
+      - YAML 構文の正確性
+      - インデントの一貫性
+      - GitHub Actions ワークフローの場合、セキュリティベストプラクティスへの準拠
+
+# 知識ベース設定（早期アクセス機能）
+knowledge_base:
+  # プロジェクト固有のドキュメントを学習
+  learnings:
+    scope: auto # auto, always, or never
+
+  # オプトアウト（プライバシー重視の場合）
+  opt_out: false
+
+# セキュリティ重視の設定
+# CodeRabbit はデフォルトでセキュリティ問題を検出しますが、
+# 追加のセキュリティチェックを有効化できます
+early_access: false
+
+# トーン設定
+tone_instructions: |
+  レビューコメントは以下のトーンで記述してください：
+  - 建設的で協力的
+  - 具体的で実用的
+  - 丁寧で尊重的
+  - 学習を促進する内容
