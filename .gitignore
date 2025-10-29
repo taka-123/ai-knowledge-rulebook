@@ -8,6 +8,7 @@ __pycache__/
 *.pyc
 .idea/
 tmp/
+.kamui/
 
 # IDE Settings
 .claude/settings.local.json
