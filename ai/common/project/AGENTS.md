@@ -149,3 +149,42 @@
 
 - 変更履歴を明確にし、承認プロセスを整備する
 - ランタイムや外部システムの仕様変更時は、必要な承認とドキュメント更新を行う
+
+## Codex コードレビュー（汎用・日本語）
+
+**目的**: このリポジトリのPRで `@codex review` を使う際の、最小かつ再利用可能なレビュー基準を定める。
+
+### 出力要件
+
+- **言語**: 日本語（です/ます）
+- **構成**: 概要 → **優先度(P0–P3)** → 根拠 → **具体的修正例**（可能なら最小差分）→ 影響/リスク
+- **総合判定**: 「**可/不可**」を明記（Merge 可否の参考）
+
+### 優先度（P0–P3）
+
+- **<sub><sub>![P0 Badge](https://img.shields.io/badge/P0-red?style=flat)</sub></sub>**: ブロッカー（誤動作/セキュリティ/破壊的影響）＝ **マージ不可**
+- **<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub>**: 早急対応（次サイクルまで）＝ 原則 **マージ不可**
+- **<sub><sub>![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat)</sub></sub>**: 通常。フォローアップIssue/PRで可
+- **<sub><sub>![P3 Badge](https://img.shields.io/badge/P3-green?style=flat)</sub></sub>**: 軽微。機会対応
+
+### レビュー方針（汎用）
+
+- **可読性 vs 性能**: 非ホットパスや差が軽微なら **可読性優先**。ホットパスで有意差が見込める場合は **性能優先**し、根拠（計測/計算量/メモリアクセス等）を併記
+- **スコープ最小**: 変更範囲外の大規模リファクタは **提案のみ**（自動書換しない）
+- **一貫性**: 既存の命名/依存/フォーマットを尊重。**追加依存は最後の手段**
+- **テスト**: 存在するテストは実行を前提にし、失敗時は **再現手順と原因推定** を記載
+- **機密**: 資格情報や機密データは生成/出力しない
+
+### 出力例（簡略）
+
+- **総合判定**: 不可
+- **指摘**:
+  - **<sub><sub>![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)</sub></sub> 入力境界未チェック（負数許容）。例: `parse()` 前に `x < 0` を弾くべき**
+  - **<sub><sub>![P3 Badge](https://img.shields.io/badge/P3-yellow?style=flat)</sub></sub> 命名の一貫性（`foo_id`→`fooId`）の提案**
+- **パッチ（抜粋）**:
+
+  ```diff
+    - const id = parse(x)
+    + if (x < 0) return err
+    + const id = parse(x)
+  ```
