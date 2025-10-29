@@ -1,6 +1,6 @@
 <!--
-macOS/Linux: ~/.claude/claude.json
-Windows: %USERPROFILE%\.claude\claude.json
+macOS/Linux: ~/claude.json
+Windows: %USERPROFILE%\claude.json
 -->
 <!--
   注意:
@@ -14,52 +14,23 @@ Windows: %USERPROFILE%\.claude\claude.json
 ```json
 {
   "mcpServers": {
+    // serena, filesystem, github はセキュリティや必要性の観点から除外
     "context7": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp@latest"],
       "env": {}
     },
-    "serena": {
+    "chrome-devtools": {
       "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "--from",
-        "git+https://github.com/oraios/serena",
-        "serena",
-        "start-mcp-server",
-        "--context",
-        "ide-assistant",
-        "--enable-web-dashboard",
-        "false"
-      ],
+      "command": "npx",
+      "args": ["chrome-devtools-mcp@latest"],
       "env": {}
-    },
-    "github": {
-      "type": "stdio",
-      "command": "docker",
-      "args": [
-        "run",
-        "-i",
-        "--rm",
-        "-e",
-        "GITHUB_PERSONAL_ACCESS_TOKEN",
-        "ghcr.io/github/github-mcp-server"
-      ],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "[ここに自身のGitHub PATを入れる]"
-      }
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"],
-      "env": {}
-    },
-    "chrome-devtools": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["chrome-devtools-mcp@latest"],
       "env": {}
     },
     "notion": {
@@ -70,15 +41,10 @@ Windows: %USERPROFILE%\.claude\claude.json
         "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
       }
     },
-    "filesystem": {
+    "codex": {
       "type": "stdio",
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "[参照を許可するパス1]",
-        "[参照を許可するパス2]"
-      ],
+      "command": "[which codex の結果]",
+      "args": ["mcp-server"],
       "env": {}
     }
   }
