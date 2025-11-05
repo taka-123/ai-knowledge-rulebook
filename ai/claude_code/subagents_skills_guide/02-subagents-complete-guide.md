@@ -38,14 +38,61 @@ tags:
 - 並列実行可能
 - メインのコンテキストを汚染しない
 
+### ⚠️ 最重要: Subagentsに適したタスク
+
+📊 **実践者の知見(Gotaさん)**:
+
+```
+✅ READ系タスク → Subagentsと相性抜群
+  - エラーログ解析
+  - コードベース検索
+  - ドキュメント調査
+  - レビュー・検証
+  - Web検索
+  - 品質チェック（lint, test, build）
+
+⚠️ WRITE系タスク → 慎重に扱う
+  - 初めから委任すると事故る可能性が高い
+```
+
+**なぜWRITE系で事故るのか**:
+
+1. **コンテキスト不足による実装ミス**
+   - メインの会話履歴が引き継がれない
+   - 「なぜこの実装？」という意図が伝わらない
+   - 既存コードのパターンを無視した実装になりがち
+
+2. **トークンの無駄な消費**
+
+   ```
+   メインエージェント: ファイルAを読む (1000トークン)
+     ↓
+   Subagentに委任
+     ↓
+   Subagent: 同じファイルAを再度読む (1000トークン)
+
+   結果: 2000トークン消費（無駄が発生）
+   ```
+
+3. **実践者の教訓**
+   > 「初めから書き込み系タスクをサブエージェントに委任すると事故る」
+   >
+   > - Gotaさん (Meetup Tokyo 2025)
+
+**重要な考え方**:
+
+- メインエージェントは優秀 → **基本的にはメインで処理**
+- コンテキスト汚染を避けたい時のみSubagentsを活用
+- READ系から始めて、効果を確認してから拡張
+
 ### 配置場所と優先度
 
-| 種類 | パス | スコープ | 優先度 | 用途 |
-|------|------|----------|--------|------|
-| **Project** | `.claude/agents/` | プロジェクト内 | 最高 | チーム共有 |
-| **User** | `~/.claude/agents/` | 全プロジェクト | 中 | 個人用 |
-| **Plugin** | Plugin内 | インストール時 | 低 | 配布用 |
-| **CLI** | `--agents` フラグ | セッション限定 | 高 | 一時的 |
+| 種類        | パス                | スコープ       | 優先度 | 用途       |
+| ----------- | ------------------- | -------------- | ------ | ---------- |
+| **Project** | `.claude/agents/`   | プロジェクト内 | 最高   | チーム共有 |
+| **User**    | `~/.claude/agents/` | 全プロジェクト | 中     | 個人用     |
+| **Plugin**  | Plugin内            | インストール時 | 低     | 配布用     |
+| **CLI**     | `--agents` フラグ   | セッション限定 | 高     | 一時的     |
 
 🔍 **検証済み**: 同名の場合、Project > CLI > User > Plugin の順
 
@@ -83,6 +130,7 @@ Subagent (Context Window B) ← 完全に独立
 ### この特性の影響
 
 ✅ **メリット**:
+
 1. **コンテキスト汚染を完全回避**
    - 大量ログ解析でもメインに影響なし
    - Web検索結果がメインを圧迫しない
@@ -96,6 +144,7 @@ Subagent (Context Window B) ← 完全に独立
    - メインのコンテキストを長く維持
 
 ❌ **デメリット**:
+
 1. **コンテキスト不足のリスク**
    - メインの実装意図が伝わらない
    - 「なぜこの実装？」が分からない
@@ -107,24 +156,6 @@ Subagent (Context Window B) ← 完全に独立
 3. **重複読み込み**
    - メインで読んだファイルをSubagentも読む
    - トークン重複消費
-
-### 設計への影響（超重要）
-
-📊 **実践者の知見（gotaさん）**:
-
-```
-推奨: READ系タスク
-  - エラーログ解析
-  - コードベース検索
-  - Web検索・ドキュメント調査
-  - 並列レビュー
-  - 品質チェック（lint, test, build）
-
-非推奨: WRITE系タスク
-  - 実装タスク（コンテキスト不足でミス）
-  - 設計の詳細を詰める作業
-  - 重複コンテキスト読み込みでトークン浪費
-```
 
 ---
 
@@ -149,24 +180,28 @@ Agent's system prompt goes here...
 
 ```yaml
 ---
-name: your-agent-name
+name:
+  your-agent-name
   # 必須
   # 形式: 小文字英数字とハイフンのみ
   # 例: code-reviewer, debugger, spec-researcher
 
-description: Description of when this agent should be invoked
+description:
+  Description of when this agent should be invoked
   # 必須
   # Claude がこのSubagentを使うかの判断基準
   # 形式: 役割説明 + 呼び出し条件 + トリガーワード
   # キーワード: PROACTIVELY, MUST BE USED
 
-tools: Read, Grep, Glob, Bash
+tools:
+  Read, Grep, Glob, Bash
   # オプション
   # カンマ区切り
   # 省略時: メインの全ツールを継承（MCPツール含む）
   # 指定時: 指定ツールのみ使用可能
 
-model: sonnet
+model:
+  sonnet
   # オプション
   # 値: sonnet / opus / haiku / inherit
   # sonnet: Claude Sonnet 使用（デフォルト）
@@ -175,7 +210,6 @@ model: sonnet
   # inherit: メインと同じモデル
   # 省略時: sonnet
 ---
-
 # Agent System Prompt
 
 Clear, step-by-step instructions for this agent.
@@ -183,6 +217,7 @@ Define role, approach, and constraints.
 ```
 
 🔍 **検証済み**:
+
 - `name` の大文字・スペース・アンダースコアは **エラー**
 - `tools` のワイルドカード（`*`）は **不可**
 - `model: inherit` は メインのモデル選択を継承
@@ -190,6 +225,7 @@ Define role, approach, and constraints.
 ### ファイル名の自由度
 
 ✅ **公式確認済み**:
+
 - ファイル名は **任意**（`code-reviewer.md`, `my-agent.md` など）
 - `name` フィールドが識別子として使われる
 - 推奨: `<name>.md` で統一
@@ -212,6 +248,7 @@ Define role, approach, and constraints.
 ### description の役割
 
 🔍 **検証結果**:
+
 - `description` は **メインのコンテキストに常時含まれる**
 - Subagent選択の **主要判断材料**
 - `name` も影響するが、`description` が決定的
@@ -260,6 +297,7 @@ description: Review code for quality and security. Use when code changes are mad
 #### 3. 自律起動キーワード
 
 ✅ **公式推奨キーワード**:
+
 - `PROACTIVELY` - 積極的に使う
 - `MUST BE USED` - 必ず使う
 - `immediately after` - タイミング指定
@@ -281,6 +319,7 @@ description: [Expert in X] reviewing [Y]. Use PROACTIVELY after [trigger]. Check
 ```
 
 **例**:
+
 ```yaml
 description: Expert code reviewer focusing on quality, security, and performance. Use PROACTIVELY after code changes. Check readability, security vulnerabilities, error handling, and test coverage.
 ```
@@ -292,6 +331,7 @@ description: Research [topic] using [tools]. Use PROACTIVELY when [condition]. M
 ```
 
 **例**:
+
 ```yaml
 description: Research latest library versions and best practices using Context7 and web search. Use PROACTIVELY when adding dependencies or investigating technical issues. Must check official documentation and current versions.
 ```
@@ -303,6 +343,7 @@ description: Execute [task] following [methodology]. Use when [specific conditio
 ```
 
 **例**:
+
 ```yaml
 description: Execute one task from docs/plans/tasks/ and update progress. Use when explicitly asked to run a specific task file.
 ```
@@ -314,6 +355,7 @@ description: Validate [aspect]. Use PROACTIVELY after [completion]. Ensure [crit
 ```
 
 **例**:
+
 ```yaml
 description: Comprehensive quality check including lint, tests, and build. Use PROACTIVELY after implementation completes. Ensure all checks pass before committing.
 ```
@@ -334,7 +376,6 @@ description: ...
 # tools フィールドなし
 ---
 → メインの全ツールを継承（MCPツール含む）
-
 # パターン2: tools 明示指定
 ---
 name: my-agent
@@ -403,11 +444,13 @@ tools: Read, Grep, Glob
 ```
 
 **用途**:
+
 - コードレビュー
 - アーキテクチャ分析
 - ドキュメント確認
 
 **メリット**:
+
 - ファイル変更を完全に防ぐ
 - 並列実行しても安全
 - 予期しない編集がない
@@ -423,6 +466,7 @@ tools: Read, WebFetch, Bash
 ```
 
 **用途**:
+
 - 技術調査
 - ドキュメント収集
 - バージョン確認スクリプト実行
@@ -438,6 +482,7 @@ description: Execute implementation tasks from task files.
 ```
 
 **用途**:
+
 - 実装タスク実行
 - ファイル編集が必要な場合
 
@@ -454,6 +499,7 @@ tools: Read, mcp__context7__resolve-library-id, mcp__context7__get-library-docs,
 ```
 
 **用途**:
+
 - 最新技術仕様調査
 - 公式ドキュメント取得
 - コミュニティ情報収集
@@ -479,6 +525,7 @@ brave-search:
 ### 方法1: 自動委任（推奨）
 
 **仕組み**:
+
 - Claude がタスク内容と description をマッチング
 - 適切なSubagentを自律的に選択・起動
 
@@ -488,19 +535,24 @@ brave-search:
 ## Subagents Usage
 
 ### code-reviewer
+
 コード変更後は必ず `code-reviewer` で品質確認すること。
 
 ### spec-researcher
+
 新しいパッケージ追加時は `spec-researcher` で最新仕様を調査すること。
 
 ### quality-checker
+
 実装完了後、コミット前に `quality-checker` で総合チェックを実行すること。
 ```
 
 **効果**:
+
 - description の自律起動キーワードと組み合わせて効果的
 
 📊 **実践者の知見（asueneさん）**:
+
 ```
 初回は明示的に呼び出し、以降は自動で使ってくれる傾向
 ```
@@ -519,6 +571,7 @@ brave-search:
 ```
 
 🔍 **検証済み**:
+
 - `use the <agent-name> agent` が確実
 - `use <agent-name>` でも動作
 - `agent` を省略すると認識率が下がる
@@ -528,6 +581,7 @@ brave-search:
 📊 **実践者パターン（oikonさん）**:
 
 `.claude/commands/bugfix.md`:
+
 ```markdown
 ---
 description: Debug and fix issues using multiple specialized subagents
@@ -538,6 +592,7 @@ Use multiple subagents to debug and fix the following issue:
 **Issue**: $ARGUMENTS
 
 **Steps**:
+
 1. Use `debugger` subagent to identify root cause
    - Check error logs
    - Use Context7 for library-specific issues
@@ -556,11 +611,13 @@ Coordinate the subagents effectively and provide a final summary.
 ```
 
 **使い方**:
+
 ```bash
 /project:bugfix Next.js Hydration error in ProductList component
 ```
 
 **効果**:
+
 - 定型ワークフローの再利用
 - 複数Subagentsの効果的な組み合わせ
 - チーム内で統一された手順
@@ -578,6 +635,7 @@ Coordinate the subagents effectively and provide a final summary.
 ```
 
 **効果**:
+
 - 一度使うと次から自動で使ってくれる
 - `sub agents` のキーワードがトリガーになる
 
@@ -762,6 +820,7 @@ spec-researcher:
 📊 **実践者パターン（tacomsさん）**:
 
 **task-decomposer.md**:
+
 ```yaml
 ---
 name: task-decomposer
@@ -859,6 +918,7 @@ Brief description of this task
 ```
 
 **task-executor.md**:
+
 ```yaml
 ---
 name: task-executor
@@ -932,6 +992,7 @@ Update source work plan:
 ```
 
 **quality-checker.md**:
+
 ```yaml
 ---
 name: quality-checker
@@ -1030,6 +1091,7 @@ npx ts-prune
 ```
 
 **ワークフロー**:
+
 ```bash
 # 1. タスク分解
 > use task-decomposer to break down the plan in docs/plans/feature-x.md
@@ -1045,83 +1107,121 @@ npx ts-prune
 ```
 
 **効果**:
+
 - **auto-compact 回避**: 1タスクがコンテキスト内に収まる
 - **品質担保**: 各タスク後に自動チェック
 - **進捗可視化**: タスクファイルで進捗確認
 
-### パターン4: 並列レビュー
+### パターン4: ビルド・テストのフィードバックループ
 
-📊 **実践者パターン（oikonさん）**:
+📊 **実践者パターン（Oikonさん）**:
+
+**目的**: UIではなくスクリプトでビルド・テストを実行し、ログを自動フィードバック
+
+**フロー**:
+
+```
+実装 → quality-checker実行 → エラーあり? → 修正 → 再チェック → 全てパス
+```
+
+**エージェント定義** (`quality-checker.md`):
+
+```yaml
+---
+name: quality-checker
+description: Comprehensive quality check including lint, format, tests, and build. Use PROACTIVELY after implementation completes.
+tools: Read, Bash
+model: sonnet
+---
+Execute: lint, format check, type check, tests, build
+Report: ✅/⚠️/🔴 for each + error logs + required actions
+```
+
+**Oikonさんの知見**:
+
+> 「スクリプトでログをフィードバックサイクルしてあげると、割と手を離れて実装まで全部やってくれる」
+
+**メリット**: UI操作不要、ログ直接フィードバック、高速ループ
+
+### パターン5: 並列レビュー
+
+📊 **実践者パターン（Oikonさん）**:
+
+**目的**: 複数のvalidator subagentsを並列実行して高速レビュー
+
+**エージェント定義** (`validator.md`):
 
 ```yaml
 ---
 name: validator
-description: Validate implementation quality including code quality, test coverage, and design adherence. Use PROACTIVELY after implementation completes. Can run in parallel.
+description: Validate code quality, test coverage, and design adherence. Use PROACTIVELY after implementation. Can run in parallel.
 tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
-You are a validation specialist (read-only).
-
-## Focus Areas
-
-### 1. Code Quality
-- Readability
-- Naming conventions
-- DRY principle
-- SOLID principles
-
-### 2. Test Coverage
-- Unit tests exist
-- Coverage > 70%
-- Edge cases covered
-
-### 3. Design Adherence
-- Follows architecture patterns
-- Matches design documents
-- API contracts respected
-
-## Process
-1. Read modified files
-2. Read related tests
-3. Run coverage report
-4. Check against design docs
-5. Provide validation report
-
-## Output
-\`\`\`markdown
-# Validation Report - Instance {N}
-
-## Files Reviewed
-- src/feature/file1.ts
-- src/feature/file2.test.ts
-
-## Code Quality: ✅/⚠️/🔴
-...
-
-## Test Coverage: ✅/⚠️/🔴
-Current: XX%
-Target: 70%
-
-## Design Adherence: ✅/⚠️/🔴
-...
-
-## Recommendations
-1. ...
-2. ...
-\`\`\`
+Read-only validation specialist.
+Check: code quality, test coverage (>70%), design adherence
+Output: Validation report with ✅/⚠️/🔴 + recommendations
 ```
 
 **使い方**:
+
 ```bash
-# 並列4インスタンス起動
-> use 4 validator subagents to review all modified files in parallel
+> use multiple validator subagents to review all modified files in parallel
 ```
 
-**効果**:
-- Read-only なので安全に並列実行
-- 複数視点でのレビュー
-- 高速化
+**効果**: Read-onlyで安全な並列実行、複数視点、高速化
+
+### パターン6: 複数AIツールでのレビュー
+
+📊 **実践者パターン（Oikonさん）**:
+
+**目的**: 別の視点を得るため、複数AIツールで並列レビュー
+
+**Oikonさんの知見**:
+
+> 「Claude Code実装 → Claude Codeレビュー = 自己レビューと同じ。別の視点が重要」
+
+**フロー**:
+
+```
+実装 → 並列レビュー(Claude/Cursor/CodeRabbit) → 統合 → 反映
+```
+
+**実装例**:
+
+```yaml
+# .claude/agents/code-reviewer.md
+---
+name: code-reviewer
+description: Expert code reviewer. Use PROACTIVELY after code changes.
+tools: Read, Grep, Glob, Bash
+---
+Review: quality, security, error handling, test coverage
+Output: docs/reviews/claude-review.md
+```
+
+```json
+// package.json
+"scripts": {
+  "review:cursor": "cursor-cli review --output docs/reviews/cursor-review.md",
+  "review:coderabbit": "coderabbit review --output docs/reviews/coderabbit-review.md",
+  "review:all": "npm run review:cursor && npm run review:coderabbit"
+}
+```
+
+**使い方**:
+
+```bash
+# 並列実行
+> use code-reviewer subagent
+npm run review:all
+
+# 統合
+> Consolidate reviews from docs/reviews/*.md
+```
+
+**メリット**: 複数AI視点で網羅性向上、見逃しリスク削減
 
 ---
 
@@ -1129,7 +1229,7 @@ Target: 70%
 
 ### 1. Subagents数を最小限に（超重要）
 
-📊 **実測（gotaさん）**:
+📊 **実測（Gotaさん）**:
 
 ```bash
 # ❌ 126個のSubagents
@@ -1140,13 +1240,21 @@ Target: 70%
 ```
 
 **理由**:
+
 - 全Subagentsの `description` がメインのコンテキストに含まれる
-- 20万トークン中の1000トークンは大きい
+- Claude Codeのコンテキスト: 200,000トークン
+- 1000トークン消費 = **全体の0.5%を圧迫**
+- MCP サーバーと同じ問題: 多すぎるとトークンを圧迫
 
 **推奨数**:
+
 - 小規模プロジェクト: 3-5個
 - 中規模プロジェクト: 5-10個
 - 大規模プロジェクト: 10-15個（最大）
+
+**Gotaさんの教訓**:
+
+> 「無駄なトークンを防ぐために、サブエージェントを少なく設定する」
 
 ### 2. description を唯一・明確にする
 
@@ -1168,19 +1276,24 @@ description: Execute database migrations and schema updates. Use when database c
 
 ```markdown
 # ❌ 大量の情報をプロンプトに
+
 > use implementer agent to implement the feature.
 > Here are the requirements: [1万行のテキスト]
 
 # ✅ ファイルに保存してパス指定
+
 > use implementer agent to implement the feature.
 > Refer to the design document at: docs/design/feature-x.md
 ```
 
 **効果**:
+
 - Subagentが必要に応じてファイルを読む
 - プロンプト自体は簡潔に
 
-### 4. タスクログの活用
+### 4. タスクログの活用（重要）
+
+📊 **実践者の知見（Gotaさん）**:
 
 ```bash
 # プロジェクト配下に残るログ
@@ -1191,12 +1304,24 @@ ls .claude/
 # - 何が委任されたか
 # - 実行時間
 # - エラー
-
-# 分析
-# - よく使われるAgentを特定
-# - 不要なAgentを削除
-# - descriptionを改善
 ```
+
+**Gotaさんの推奨手順**:
+
+> 「わからない時は、まずログを見に行く → 『ちょっと違うな』という点を確認 → ログを見た上で判断する」
+
+**効果**:
+
+- Subagentが自律的に動かない時の原因特定
+- description の改善ポイント発見
+- 不要なAgentの特定
+
+**分析項目**:
+
+- よく使われるAgent → 維持・改善
+- 全く使われないAgent → 削除候補
+- エラーが多いAgent → description見直し
+- 想定外のAgent起動 → description が曖昧
 
 ### 5. model 選択の最適化
 
@@ -1219,19 +1344,18 @@ model: inherit
 ```
 
 **コスト最適化例**:
+
 ```yaml
 # 単純チェック → haiku
 ---
 name: format-checker
 model: haiku
 ---
-
 # レビュー → sonnet
 ---
 name: code-reviewer
 model: sonnet
 ---
-
 # アーキテクチャ判断 → opus
 ---
 name: architect
@@ -1389,6 +1513,7 @@ Combine findings into a comprehensive report.
 ```
 
 **実行イメージ**:
+
 ```
 ● doc-researcher-1 (Next.js 15 from Context7)
   ⎿ mcp__context7__resolve-library-id(library: "nextjs")
@@ -1409,6 +1534,7 @@ Combine findings into a comprehensive report.
 ```
 
 **効果**:
+
 - 並列実行で高速化
 - 複数ソースで情報の信頼性向上
 - メインのコンテキストを圧迫しない
@@ -1463,6 +1589,7 @@ description: Backend development with Nest.js...
 ### 問題2: Subagent がコンテキスト不足でミスる
 
 #### 原因
+
 - メインの会話履歴が引き継がれない
 - 実装意図が伝わっていない
 
@@ -1489,6 +1616,7 @@ Design document: docs/design/auth-flow.md
 Use implementer agent to implement the feature.
 
 **Required reading**:
+
 - Design: docs/design/feature-x.md
 - Architecture: docs/architecture/patterns.md
 - Existing implementation: src/similar-feature/
@@ -1550,6 +1678,7 @@ description: ...
 ### 問題4: Subagent が遅い
 
 #### 原因分析
+
 - 大量のファイル読み込み
 - Web検索の多用
 - 複雑な処理
@@ -1597,18 +1726,21 @@ tools: Read, Grep
 ### 効果的な使い方
 
 #### 設計
+
 1. **最小限の数** (5-10個)
 2. **name と description を一致**
 3. **READ系タスク優先**
 4. **大きなコンテキストはファイル経由**
 
 #### 運用
+
 1. **明示的呼び出し**から始める
 2. **効果確認**後に自動起動を設定
 3. **ログで分析**してチューニング
 4. **チームで共有** (Project Agents + Git)
 
 #### 最適化
+
 1. **model 選択** (haiku/sonnet/opus)
 2. **tools 制限** (必要最小限)
 3. **並列実行** (Read-only Agents)
@@ -1623,6 +1755,7 @@ tools: Read, Grep
 ---
 
 **参考文献**:
+
 - [Subagents 公式ドキュメント](https://docs.claude.com/en/docs/claude-code/sub-agents)
 - [Claude Code Best Practices](https://www.anthropic.com/engineering/claude-code-best-practices)
 - [Built multi-agent research system](https://www.anthropic.com/engineering/built-multi-agent-research-system)
