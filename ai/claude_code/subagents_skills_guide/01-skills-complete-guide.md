@@ -39,11 +39,11 @@ tags:
 
 ### 配置場所と優先度
 
-| 種類 | パス | スコープ | 優先度 | 用途 |
-|------|------|----------|--------|------|
-| **Personal** | `~/.claude/skills/` | 全プロジェクト | 中 | 個人の作業スタイル |
-| **Project** | `.claude/skills/` | プロジェクト内 | 高 | チーム共有、git管理 |
-| **Plugin** | Plugin内 | インストール時 | 低 | 配布・共有 |
+| 種類         | パス                | スコープ       | 優先度 | 用途                |
+| ------------ | ------------------- | -------------- | ------ | ------------------- |
+| **Personal** | `~/.claude/skills/` | 全プロジェクト | 中     | 個人の作業スタイル  |
+| **Project**  | `.claude/skills/`   | プロジェクト内 | 高     | チーム共有、git管理 |
+| **Plugin**   | Plugin内            | インストール時 | 低     | 配布・共有          |
 
 🔍 **検証済み**: 同名Skillがある場合、Project > Personal > Plugin の順で優先される
 
@@ -78,6 +78,7 @@ SKILL.md本文を読み込み（この時点でトークン消費）
 ```
 
 📊 **実測**:
+
 - Skill 10個: description合計で約200-500トークン
 - SKILL.md本文: 読み込み時のみ消費（1000-5000トークン/Skill）
 
@@ -104,19 +105,22 @@ Instructions, examples, templates...
 
 ```yaml
 ---
-name: your-skill-name
+name:
+  your-skill-name
   # 必須
   # 形式: 小文字英数字とハイフンのみ
   # 最大64文字
   # 例: pdf-processing, git-workflow
 
-description: Brief description of what this skill does and when to use it
+description:
+  Brief description of what this skill does and when to use it
   # 必須
   # 最大1024文字
   # Claude がこのSkillを使うかの判断基準
   # 形式: 何ができるか + いつ使うか + トリガーワード
 
-allowed-tools: Read, Bash, Grep
+allowed-tools:
+  Read, Bash, Grep
   # オプション
   # カンマ区切りでツール名を指定
   # 省略時: すべてのツールが使用可能
@@ -125,6 +129,7 @@ allowed-tools: Read, Bash, Grep
 ```
 
 🔍 **検証済み**:
+
 - `name` の大文字・スペース・アンダースコアは **エラー**
 - `description` 1024文字超は **切り捨て**（エラーではない）
 - `allowed-tools` は **完全一致**のみ（ワイルドカード不可）
@@ -144,6 +149,7 @@ allowed-tools: Read, Bash, Grep
 ```
 
 ✅ **公式確認済み**:
+
 - `SKILL.md` は **大文字必須**（`skill.md` は認識されない）
 - ディレクトリ名と `name` フィールドは **一致推奨**（必須ではない）
 
@@ -154,6 +160,7 @@ allowed-tools: Read, Bash, Grep
 ### description の役割
 
 🔍 **検証結果**:
+
 - `description` は **常時コンテキストに含まれる**
 - Claude がSkillを使うかの **唯一の判断材料**（発動前）
 - `name` も影響するが、`description` が主要因
@@ -203,6 +210,7 @@ description: [Action] using [Tool/Library]. Use when working with [Context] or w
 ```
 
 **例**:
+
 ```yaml
 description: Process PDF files using pypdf and pdfplumber. Use when working with PDF documents or when user mentions PDFs, forms, or document extraction. Requires pypdf and pdfplumber packages.
 ```
@@ -214,6 +222,7 @@ description: Apply [Standard/Convention] for [Scope]. Use when [Action] in this 
 ```
 
 **例**:
+
 ```yaml
 description: Apply TypeScript coding standards and ESLint rules. Use when writing or reviewing TypeScript code in this project.
 ```
@@ -225,6 +234,7 @@ description: Guide [Process/Workflow] following [Methodology]. Use when [Trigger
 ```
 
 **例**:
+
 ```yaml
 description: Guide Git commit workflow following Conventional Commits. Use when creating commits or reviewing git history.
 ```
@@ -232,10 +242,12 @@ description: Guide Git commit workflow following Conventional Commits. Use when 
 ### 📊 実践者の検証結果（Zenn記事より）
 
 **asueneさんの検証**:
+
 - `name` フィールドが予想以上に重要
 - `description` に `MUST BE USED` を含めても、`name` が矛盾していると使われない
 
 **推奨**:
+
 ```yaml
 # ✅ name と description を一致させる
 name: pdf-processor
@@ -262,11 +274,33 @@ reference.md (詳細仕様)
 examples.md (実例集)
 ```
 
+### なぜ重要か（コンテキスト節約）
+
+📊 **実践者の知見（Oikonさん）**:
+
+**従来の方法**: ツール情報を最初から全部渡す → コンテキスト圧迫
+
+**Claude Skills**:
+
+```
+1. 最初は名前と簡単な使い方のみ (description)
+2. 使う時になったら詳細を読む (SKILL.md全体)
+3. さらに必要なら飛ぶ (reference.md等)
+```
+
+**効果**:
+
+> 「コンテキストをギュッと消費しない」- Oikonさん
+
+- 常時ロード: `description` のみ（数十トークン）
+- 本文: 使用時のみ読み込み
+
 ### 実装パターン
 
 #### パターン1: クイックスタート + 詳細分離
 
 **SKILL.md** (エントリポイント):
+
 ```markdown
 ---
 name: git-workflow
@@ -287,26 +321,32 @@ For examples, see [EXAMPLES.md](EXAMPLES.md).
 ```
 
 **ADVANCED.md** (詳細):
+
 ```markdown
 # Advanced Git Workflows
 
 ## Interactive Rebase
+
 ...
 
 ## Cherry-picking
+
 ...
 
 ## Submodule Management
+
 ...
 ```
 
 🔍 **検証済み**:
+
 - Claude は `ADVANCED.md` を **必要なときのみ読む**
 - 常時ロードされるのは `SKILL.md` のみ
 
 #### パターン2: API Reference 分離
 
 **SKILL.md**:
+
 ```markdown
 ---
 name: api-client
@@ -327,26 +367,31 @@ For full API reference, see [API_REFERENCE.md](API_REFERENCE.md).
 ```
 
 **API_REFERENCE.md**:
+
 ```markdown
 # API Reference
 
 ## Methods
 
 ### get(url, options)
+
 ...
 
 ### post(url, data, options)
+
 ...
 ```
 
 ### ベストプラクティス
 
 ✅ **推奨**:
+
 - SKILL.md: 300-500行以内
 - 詳細は別ファイル: リンクで参照
 - よく使う情報を SKILL.md に集約
 
 ❌ **非推奨**:
+
 - SKILL.md に全情報を詰め込む（2000行超など）
 - すべてを別ファイル化（参照の手間）
 
@@ -357,6 +402,7 @@ For full API reference, see [API_REFERENCE.md](API_REFERENCE.md).
 ### 機能
 
 ✅ **公式仕様**:
+
 - Skill使用時に利用可能なツールを制限
 - 指定したツールは **ユーザー承認なし** で使用可能
 - 省略時: すべてのツール利用可能（通常の承認フロー）
@@ -374,6 +420,7 @@ allowed-tools: Read, Grep, Glob
 ```
 
 **効果**:
+
 - ファイル変更を防ぐ（`Edit`, `Write` 不可）
 - 安全な分析のみ実行
 
@@ -388,6 +435,7 @@ allowed-tools: Read, Bash
 ```
 
 **効果**:
+
 - ファイル読み込みとスクリプト実行のみ
 - データ変更を防ぐ
 
@@ -426,6 +474,7 @@ mcp__<server>__<tool>
 ```
 
 ⚠️ **注意**:
+
 - ツール名は **完全一致** 必須
 - **ワイルドカード不可**: `mcp__*` は無効
 - 具体的に指定: `mcp__context7__get-library-docs`
@@ -537,10 +586,12 @@ See [API_ENDPOINTS.md](API_ENDPOINTS.md) for full list.
 ```
 
 **API_ENDPOINTS.md**:
+
 ```markdown
 # API Endpoints
 
 ## Users
+
 - GET /users - List all users
 - GET /users/:id - Get user by ID
 - POST /users - Create user
@@ -548,6 +599,7 @@ See [API_ENDPOINTS.md](API_ENDPOINTS.md) for full list.
 - DELETE /users/:id - Delete user
 
 ## Posts
+
 ...
 ```
 
@@ -774,11 +826,13 @@ claude --debug
 
 ```markdown
 # ✅ 正しい
+
 For details, see [REFERENCE.md](REFERENCE.md).
 
 # ❌ 間違い
+
 For details, see REFERENCE.md
-For details, see [REFERENCE.md](./REFERENCE.md)  # 相対パス不可
+For details, see [REFERENCE.md](./REFERENCE.md) # 相対パス不可
 ```
 
 #### 確認: ファイル存在
@@ -807,6 +861,7 @@ git pull  # Skills が自動的に利用可能
 ```
 
 **メリット**:
+
 - バージョン管理可能
 - レビュープロセスが適用される
 - 履歴が残る
@@ -825,6 +880,7 @@ my-team-plugin/
 ```
 
 **manifest.json**:
+
 ```json
 {
   "name": "my-team-standards",
@@ -835,6 +891,7 @@ my-team-plugin/
 ```
 
 **配布**:
+
 ```bash
 # チームメンバー
 /plugin install my-team-standards
@@ -843,12 +900,14 @@ my-team-plugin/
 ### ベストプラクティス
 
 ✅ **推奨**:
+
 1. **まず Project Skills で試す**（.claude/skills/）
 2. **効果を確認**してから広める
 3. **定期レビュー**（月1回程度）
 4. **不要なSkillは削除**（5-10個に維持）
 
 ❌ **非推奨**:
+
 - 全員が Personal Skills で管理（統一性なし）
 - 無秩序に追加（数十個のSkills）
 - レビューなしで追加
@@ -856,22 +915,26 @@ my-team-plugin/
 ### ドキュメント化テンプレート
 
 **README.md** (.claude/skills/ 直下):
+
 ```markdown
 # Project Skills
 
 ## 利用可能な Skills
 
 ### coding-standards
+
 - **用途**: TypeScript/React コーディング規約
 - **対象**: すべてのコード作成・レビュー時
 - **メンテナ**: @team-lead
 
 ### api-client-guide
+
 - **用途**: プロジェクトAPIクライアント使用方法
 - **対象**: API呼び出し実装時
 - **メンテナ**: @backend-team
 
 ### testing-strategy
+
 - **用途**: テスト戦略・規約
 - **対象**: テスト作成時
 - **メンテナ**: @qa-team
@@ -910,6 +973,7 @@ my-team-plugin/
 ---
 
 **参考文献**:
+
 - [Agent Skills 公式ドキュメント](https://docs.claude.com/en/docs/claude-code/skills)
 - [Agent Skills Best Practices](https://docs.claude.com/en/docs/agents-and-tools/agent-skills/best-practices)
 - [Equipping agents for the real world with Agent Skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
