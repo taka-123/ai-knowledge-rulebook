@@ -29,6 +29,7 @@ npm run lint:json
 ### 2. FrontMatter Validation (notes/ only)
 
 Required fields:
+
 - `created: YYYY-MM-DD`
 - `updated: YYYY-MM-DD`
 - `tags: [array]`
@@ -54,22 +55,27 @@ npm run schema:check
 **Files Checked**: [count]
 
 ## Format
+
 - Markdown: ✅/⚠️/🔴
 - YAML: ✅/⚠️/🔴
 - JSON: ✅/⚠️/🔴
 
 ## FrontMatter
+
 - Missing fields: [list or none]
 
 ## Content Quality
+
 - External links without sources: [count]
 - Technical specs without references: [count]
 
 ## Schema Validation
+
 - AI Profiles: ✅/🔴
 - Notes: ✅/🔴
 
 ## Recommendations
+
 1. [priority items]
 2. [suggestions]
 ```
