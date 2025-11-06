@@ -25,6 +25,7 @@ ai-knowledge-rulebook/
 ### FrontMatter (notes/ 配下)
 
 **必須フィールド**:
+
 ```yaml
 ---
 created: YYYY-MM-DD
@@ -86,6 +87,7 @@ npm run fix:md      # Markdown 自動修正
 ## 参照
 
 詳細は以下を参照:
+
 - [CLAUDE.md](../../CLAUDE.md) - プロジェクト固有ルール
 - [directorystructure.md](../../directorystructure.md) - ディレクトリ構造
 - [technologystack.md](../../technologystack.md) - 技術スタック

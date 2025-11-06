@@ -70,9 +70,11 @@ allowed-tools: Read, WebSearch, WebFetch
 
 ```markdown
 # ❌ 誤り（推測で記載）
+
 環境変数 `HOOK_INPUT` から取得可能
 
 # ✅ 正しい（公式確認後）
+
 stdinからJSON取得（公式Hooks Referenceより）
 ```
 
@@ -106,9 +108,11 @@ stdinからJSON取得（公式Hooks Referenceより）
 
 ```markdown
 # 悪い例
+
 Claude Code では環境変数でフック入力を取得できます。
 
 # 良い例
+
 Claude Code では stdin から JSON 形式でフック入力を取得します。
 （出典: Claude Code Hooks Reference, 2025-01-05）
 ```
@@ -117,9 +121,11 @@ Claude Code では stdin から JSON 形式でフック入力を取得します�
 
 ```markdown
 # 悪い例
+
 Tailwind CSS はpostcss.config.jsが必要です。
 
 # 良い例
+
 ⚠️ バージョン注意: Tailwind CSS v4 では postcss.config.js は不要です。
 （v3 以前は必要でした）
 （出典: Tailwind CSS v4 Migration Guide, 2025-01-05）
@@ -129,9 +135,11 @@ Tailwind CSS はpostcss.config.jsが必要です。
 
 ```markdown
 # 悪い例
+
 このフックは実行時に自動的に発火します。
 
 # 良い例
+
 ⚠️ 未確認: フックの自動発火タイミングは公式ドキュメントに明記なし。
 検証が必要です。
 ```

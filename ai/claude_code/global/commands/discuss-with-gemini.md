@@ -1,129 +1,123 @@
+---
+description: Run a structured multi-round review with Gemini CLI using current repository context
+allowed-tools: Bash(git status:*), Bash(git diff:*), Bash(git log:*), Bash(mkdir -p:*), Bash(rm /tmp/gemini_discussion_*), Bash(bash -lc*), Bash(gemini*), Bash(tee*), Bash(cat:*), Bash(ls /tmp*)
+---
+
 # discuss-with-gemini
 
-Use Gemini CLI to conduct in-depth discussions about current work, enhancing Claude Code's accuracy through multi-perspective analysis and iterative refinement.
+Use Gemini CLI to gather an external perspective on the current work. This command assembles live repository context, crafts a discussion brief, runs one or more Gemini rounds, and captures the resulting action plan.
 
 ## Prerequisites
 
-Before using this command, ensure:
-
-- Gemini CLI is installed (`gemini` command available)
-- Authenticated via `gcloud auth application-default login`
+- `gemini` CLI is installed and available on PATH
+- `gcloud auth application-default login` などで Gemini CLI 認証を完了している
+- 外部 AI へ共有して問題のない情報のみを扱う（機密情報が含まれる場合は事前に除外する）
 
 ## Execution Steps
 
-1. **Gather Current Context**
-   First, I'll collect information about your current work:
+1. **Reset Temporary Files（任意）**
 
    ```bash
-   # Check Git status and recent changes
-   !git status --porcelain
-   !git diff --cached
-   !git diff
-   !git log --oneline -10
+   !rm -f /tmp/gemini_discussion_*.md /tmp/gemini_context.md /tmp/gemini_discussion_brief.md
    ```
 
-2. **Prepare Discussion Topics**
-   Based on the context, I'll prepare discussion points covering:
-
-   - Architecture and design patterns
-   - Performance and scalability
-   - Maintainability and code quality
-   - Security considerations
-   - Best practices alignment
-
-3. **Initiate Gemini Discussion**
-   I'll create a comprehensive prompt and start the discussion:
+2. **Collect Repository Context**
 
    ```bash
-   # Create temporary file with context and questions
-   !echo "[Discussion prompt will be here]" > /tmp/gemini_discussion.md
-
-   # Start interactive discussion with Gemini
-   !gemini -p < /tmp/gemini_discussion.md
+   !bash -lc '{
+     echo "# Working Tree Status";
+     git status --short || true;
+     echo;
+     echo "# Diffstat (staged)";
+     git diff --stat --cached || true;
+     echo;
+     echo "# Diffstat (unstaged)";
+     git diff --stat || true;
+     echo;
+     echo "# Recent Commits";
+     git log --oneline -10 || true;
+   } > /tmp/gemini_context.md'
    ```
 
-4. **Iterative Refinement**
-   Based on Gemini's initial response, I'll:
-
-   - Identify areas needing deeper analysis
-   - Formulate follow-up questions
-   - Continue the discussion for 3-5 rounds
-
-   Each round will explore:
-
-   - Alternative approaches and trade-offs
-   - Implementation specifics with code examples
-   - Potential risks and edge cases
-   - Priority recommendations
-
-5. **Generate Action Plan**
-   After the discussion rounds, I'll synthesize an actionable plan:
-
-   - Immediate implementation items (High priority)
-   - Short-term improvements (Medium priority)
-   - Long-term considerations (Low priority)
-   - Implementation guidelines and anti-patterns to avoid
-
-6. **Save Discussion Log**
-   The complete discussion will be saved for future reference:
+3. **Build Discussion Brief**
 
    ```bash
-   # Create discussion log directory if needed
+   !cat <<'EOF' >/tmp/gemini_discussion_brief.md
+   # Repository Context (auto-collected)
+   EOF
+   !cat /tmp/gemini_context.md >> /tmp/gemini_discussion_brief.md
+   !cat <<'EOF' >>/tmp/gemini_discussion_brief.md
+
+   # Discussion Goals
+   - Architecture / design implications
+   - Performance and scalability considerations
+   - Maintainability / code quality
+   - Security / privacy / compliance risks
+   - Testing and validation gaps
+
+   # Specific Questions
+   $ARGUMENTS
+   EOF
+   ```
+
+4. **Run Gemini Analysis**
+
+   ```bash
+   !gemini -p < /tmp/gemini_discussion_brief.md | tee /tmp/gemini_discussion_round1.md
+   ```
+
+5. **Iterative Follow-ups（必要に応じて）**
+   - 追加で深掘りしたい論点があれば、`/tmp/gemini_discussion_brief.md` の末尾に追記して再度 `gemini -p` を実行
+   - 各ラウンドの出力を `/tmp/gemini_discussion_roundN.md` として保存し、検討過程を残す
+   - 例:
+
+     ```bash
+     !cat <<'EOF' >>/tmp/gemini_discussion_brief.md
+
+     ## Follow-up Focus
+     深掘りしたい論点: パフォーマンス回帰
+     EOF
+     !gemini -p < /tmp/gemini_discussion_brief.md | tee /tmp/gemini_discussion_round2.md
+     ```
+
+6. **Synthesize Action Plan**
+
+   ```bash
    !mkdir -p .claude/discussion_logs
+   !cat <<'EOF' > .claude/discussion_logs/gemini_discussion_$(date +%Y%m%d_%H%M%S).md
+   # Gemini Discussion Summary
 
-   # Save timestamped log
-   !echo "[Discussion content]" > .claude/discussion_logs/gemini_discussion_$(date +%Y%m%d_%H%M%S).md
+   ## Inputs
+   - Brief: /tmp/gemini_discussion_brief.md
+   - Rounds: /tmp/gemini_discussion_round*.md
+
+   ## Key Findings
+   - ...
+
+   ## Action Items
+   - High: ...
+   - Medium: ...
+   - Low: ...
+
+   ## Follow-up Checks
+   - Tests to run: ...
+   - Additional stakeholders to consult: ...
+   EOF
    ```
+
+7. **Review & Cleanup（任意）**
+   - `/tmp/gemini_discussion_*` に残る機密情報を必要に応じて削除
+   - `.claude/discussion_logs/` のサマリをチーム内で共有、またはチケットに添付
 
 ## Usage Examples
 
-### Basic Discussion
-
-```
-/p-discuss-with-gemini
-```
-
-Analyzes current Git changes and work context
-
-### Specific Topic Discussion
-
-```
-/p-discuss-with-gemini GraphQL schema optimization
-```
-
-Focuses discussion on a particular area
-
-### File-Specific Analysis
-
-```
-/p-discuss-with-gemini Review the implementation in backend/apps/cotomu/domain/usecases/file_operations.go
-```
-
-Analyzes a specific file with Gemini's insights
-
-### Deep Analysis Mode
-
-```
-/p-discuss-with-gemini --deep Performance optimization for large file uploads
-```
-
-Conducts 5 rounds of discussion instead of the default 3
-
-## Additional Instructions
-
-$ARGUMENTS
-
-## Expected Outcomes
-
-- Deeper understanding of code quality issues
-- Concrete improvement suggestions with examples
-- Prioritized action items for implementation
-- Documentation of architectural decisions
-- Early detection of potential problems
+- `/p-discuss-with-gemini` – 現在の変更全体を俯瞰
+- `/p-discuss-with-gemini API rate limiting redesign` – 特定トピックを “Specific Questions” に追加
+- `/p-discuss-with-gemini Focus on post-merge testing gaps` – テスト観点に絞ったレビュー
+- `/p-discuss-with-gemini --deep Performance bottlenecks in batch jobs` – 複数ラウンドで継続的に検討
 
 ## Notes
 
-- The discussion will be conducted entirely in English for optimal AI interaction
-- Each discussion round builds upon previous insights
-- The final action plan will include specific code examples where applicable
-- All discussions are logged for future reference and decision tracking
+- Gemini 出力に含まれる提案・URL は一次情報で再確認してから採用してください
+- 大規模リポジトリの場合は対象ディレクトリを絞るなど、プロンプトの粒度を調整すると効率的です
+- CLI 実行が失敗する場合は、認証状態・プロキシ設定・ネットワークポリシーを確認してください

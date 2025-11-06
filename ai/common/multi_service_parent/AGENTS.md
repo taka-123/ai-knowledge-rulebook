@@ -2,7 +2,7 @@
 
 ---
 
-## サービス名言及時の即座解決:
+## サービス名言及時の即座解決
 
 - ユーザーが `admin-dashboard`, `customer-app`, `backend-api`, `service-x`, ... 等を単独で言及した場合
 - 即座に `{サービス名}/CLAUDE.md` を Read（Glob・find による探索は禁止）
