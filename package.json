@@ -14,15 +14,26 @@
     "fix:md": "markdownlint-cli2-fix '**/*.md' '#node_modules' '#.git'",
     "fix:yaml": "prettier --write '**/*.{yml,yaml}' --ignore-path .prettierignore",
     "fix:json": "prettier --write '**/*.{json,jsonc}' --ignore-path .prettierignore",
-    "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true"
+    "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true",
+    "lint:staged": "lint-staged",
+    "prepare": "husky install"
   },
   "devDependencies": {
+    "ajv-cli": "^5.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
     "markdownlint": "^0.36.0",
     "markdownlint-cli2": "^0.15.0",
-    "prettier": "^3.4.2",
-    "ajv-cli": "^5.0.0"
+    "prettier": "^3.4.2"
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "lint-staged": {
+    "**/*.{md,mdx}": [
+      "prettier --write --ignore-path .prettierignore",
+      "markdownlint-cli2"
+    ],
+    "**/*.{json,jsonc,yml,yaml}": "prettier --write --ignore-path .prettierignore"
   }
 }
