@@ -302,12 +302,30 @@
         ]
       }
     ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/suggest-claude-md-hook.sh"
+          }
+        ]
+      }
+    ],
     "PreCompact": [
       {
         "hooks": [
           {
             "type": "command",
             "command": "echo 'checkpoint marker (PreCompact)'"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/suggest-claude-md-hook.sh"
           }
         ]
       }
