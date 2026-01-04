@@ -14,6 +14,9 @@
 - **データ重視**: 数字やデータがある場合は、それを強調して大きく配置してください。
 - **脱・丸暗記**: 「用語の定義」よりも、「なぜそれが重要か？」「どう役に立つか？」という**意味合い（Implication）**を可視化してください。
 
-**3. 言語**
+**3. Style & Typography Instructions (Critical)**
 
-- **言語**: 日本語（ひらがな・カタカナを適切に混在させ、中国語フォント（Han Unification）を回避すること）
+- **Font:** Use "Noto Sans JP Bold" or "Yu Gothic".
+- **Language Context:** Render strictly in **Standard Japanese Orthography** (Japan-standard Kanji strokes).
+- **Negative Constraint:** Absolutely NO "Simplified Chinese" variants (Avoid Han Unification errors). NO garbled text, NO pseudo-text.
+- **Quality:** Text must be "highly legible," "crisp," and "high-resolution vector style."

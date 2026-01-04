@@ -17,3 +17,10 @@
 
 **4. 視認性の確保**
 画面上の元図版は小さく表示されるため、**右側のスライド（要約テキスト）だけで内容が完結するよう**、図表内の重要な数値や名称を省略せずテキスト化してください。
+
+**5. Style & Typography Instructions (Critical)**
+
+- **Font:** Use "Noto Sans JP Bold" or "Yu Gothic".
+- **Language Context:** Render strictly in **Standard Japanese Orthography** (Japan-standard Kanji strokes).
+- **Negative Constraint:** Absolutely NO "Simplified Chinese" variants (Avoid Han Unification errors). NO garbled text, NO pseudo-text.
+- **Quality:** Text must be "highly legible," "crisp," and "high-resolution vector style."
