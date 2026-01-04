@@ -186,6 +186,5 @@ GoodNotesで参考書を読み進めながら、AIを活用して理解を深め
 | II       | [理解度チェック.md](prompt/理解度チェック.md)                             | 自己説明の検証                     |
 | II       | [GemNLM質問（ガイド付き学習）.md](prompt/GemNLM質問（ガイド付き学習）.md) | **ガイド付き深掘り（チャット用）** |
 | III      | [対話履歴から要点抽出.md](prompt/対話履歴から要点抽出.md)                 | 対話ログの構造化                   |
-
-| III | [テキストをHTML資料化.md](prompt/テキストをHTML資料化.md) | テキストの美しい整形 |
-| III | [Web記事クリッピング.md](prompt/Web記事クリッピング.md) | Web記事の要約 |
+| III      | [テキストをHTML資料化.md](prompt/テキストをHTML資料化.md)                 | テキストの美しい整形               |
+| III      | [Web記事クリッピング.md](prompt/Web記事クリッピング.md)                   | Web記事の要約                      |
