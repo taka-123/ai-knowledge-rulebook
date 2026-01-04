@@ -36,7 +36,8 @@ image_generation_prompt:
       colors: ["ピュアホワイト", "ジェットブラック", "スレートグレー", "シルバー"]
       note: "学習のノイズにならないよう、色は『強調（Emphasis）』のためだけに使用する"
     typography:
-      style: "Helvetica, Inter, Roboto等のネオグロテスク系サンセリフ体"
+      style: "Use 'Noto Sans JP Bold' or 'Yu Gothic'. Strict Standard Japanese Orthography."
+      guideline: "No Simplified Chinese variants. No Gibberish. High-resolution vector style."
 
   screen_details:
     header_area:
@@ -99,3 +100,4 @@ image_generation_prompt:
     - "影（ドロップシャドウ）、立体感、スキューモーフィズム"
     - "乱雑、非対称（意図しないもの）、整列されていない要素"
     - "読めない文字、潰れたテキスト"
+    - "Chinese fonts, Han unification variants, garbled text, distorted characters, low-res text"

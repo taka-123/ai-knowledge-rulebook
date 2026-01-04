@@ -22,3 +22,10 @@
 
 **4. トーン**
 知的で落ち着いたトーン。専門用語は正確に使いつつ、その言葉が指し示す本質的な概念を「一言で言うと何か」を明示してください。
+
+**5. Style & Typography Instructions (Critical)**
+
+- **Font:** Use "Noto Sans JP Bold" or "Yu Gothic".
+- **Language Context:** Render strictly in **Standard Japanese Orthography** (Japan-standard Kanji strokes).
+- **Negative Constraint:** Absolutely NO "Simplified Chinese" variants (Avoid Han Unification errors). NO garbled text, NO pseudo-text.
+- **Quality:** Text must be "highly legible," "crisp," and "high-resolution vector style."
