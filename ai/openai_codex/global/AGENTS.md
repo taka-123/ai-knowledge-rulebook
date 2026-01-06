@@ -7,4 +7,4 @@ OpenAI Codex CLI グローバル設定
 - Mac: ~/.codex/AGENTS.md
 -->
 
-[../common/global/AGENTS.md](../common/global/AGENTS.md)に記載のものを添付
+[../../common/global/AGENTS.md](../../common/global/AGENTS.md)に記載のものを添付
