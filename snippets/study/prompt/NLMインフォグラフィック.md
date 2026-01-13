@@ -22,3 +22,12 @@
 - **Language Context:** Render strictly in **Standard Japanese Orthography** (Japan-standard Kanji strokes).
 - **Negative Constraint:** Absolutely NO "Simplified Chinese" variants (Avoid Han Unification errors). NO garbled text, NO pseudo-text.
 - **Quality:** Text must be "highly legible," "crisp," and "high-resolution vector style."
+
+**4. Text Rendering Guardrails（文字化け回避）**
+
+- **文字を入れる場合（最小構成）**:
+  - **短く・大きく**: 10文字以内、最大2行。
+  - **配置を明示**: 例）中央/上部/左右など。
+  - **ダブルクォートで固定**: 例）"売上成長" のように文字列を囲む。
+  - **フォント固定**: Gothic/Sans-Serif（Noto Sans JP Bold / Yu Gothic）。
+  - **指示文を描画しない**: フォント名やルール文は出力しない（内容テキストのみを描画）。

@@ -39,6 +39,16 @@ image_generation_prompt:
     typography:
       style: "Use 'Noto Sans JP Bold' or 'Yu Gothic'. Strict Standard Japanese Orthography."
       guideline: "No Simplified Chinese variants. No Gibberish. High-resolution vector style."
+    text_rendering_policy:
+      mode: "with_text"
+      with_text_rules:
+        - "Wrap any required Japanese text in double quotes for exact rendering."
+        - "Keep each text element within 10 characters and max 2 lines."
+        - "Use Gothic Sans-Serif (Noto Sans JP Bold / Yu Gothic)."
+        - "Large size, high-resolution; avoid thin strokes."
+        - "Explicitly specify placement (center/top/bottom/left/right)."
+        - "Render ONLY the provided content text. Do NOT render instruction words."
+        - "Do NOT render font names (e.g., 'Noto Sans JP Bold', 'Yu Gothic')."
 
   screen_details:
     header_area:
@@ -101,4 +111,5 @@ image_generation_prompt:
     - "影（ドロップシャドウ）、立体感、スキューモーフィズム"
     - "乱雑、非対称（意図しないもの）、整列されていない要素"
     - "読めない文字、潰れたテキスト"
+    - "tiny text, thin strokes"
     - "Chinese fonts, Han unification variants, garbled text, distorted characters, low-res text"
