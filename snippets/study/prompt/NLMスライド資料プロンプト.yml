@@ -3,6 +3,7 @@ image_generation_prompt:
     purpose: "テキスト情報を、学習効果を最大化する『記憶に残る論理構造』でスライド化する"
     theme: "ミニマリズムと機能美による情報の構造化（マッキンゼー流資料作成術）"
     format: "インフォグラフィック / エディトリアルデザイン / 講義資料"
+    language: "Japanese (ja-JP). Avoid Simplified Chinese variants."
 
   # 【学習ロジックの核】
   # 以下のルールをすべてのレイアウト生成において強制する

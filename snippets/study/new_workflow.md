@@ -18,6 +18,11 @@
 
 ---
 
+## 大原則：生成物の“用途”でレーンを分ける
+
+- **理解の初速（自分用）**: NotebookLM Studio（Video/Audio/Slide Deck/Infographic）でOK（崩れ・誤り・編集性の低さは許容）
+- **共有・資産化（編集前提）**: NotebookLMは「表（Data Table）/設計図（Spec）」まで。最終成果物は Canvas / Claude Artifacts で作る
+
 ## ステップ0: 環境準備（学習開始前）
 
 ### 0-1. 資料の電子化
@@ -56,6 +61,7 @@
 - **ツール**: NotebookLM Slide Deck
 - **プロンプト**: [NLMスライド資料プロンプト.yml](prompt/NLMスライド資料プロンプト.yml)
 - **目的**: 動画を見る時間がない時に、自分のペースで高速に要点を把握する（タイパ重視）。
+- **注意**: 社内共有や再利用前提なら「設計図（SlideSpec）→ Canvas/Artifacts」を推奨（`prompt/NLM用_スライド設計図出力.md` → `prompt/Gem用_スライド描画実行.md`）
 
 #### 音声解説（ながらオプション：サブ）
 
@@ -120,6 +126,7 @@ GoodNotesで参考書を読み進めながら、AIを活用して理解を深め
 - **プロンプト**: [NLMインフォグラフィック.md](prompt/NLMインフォグラフィック.md)
 - **設定**: レイアウト「横向き」、詳細レベル「詳細（ベータ版）」
 - **目的**: GoodNotesに直接貼り付けて保存する用
+- **注意**: 社内共有や再利用前提なら「設計図（InfographicSpec）→ HTML（編集可能）」を推奨（`prompt/NLM用_インフォグラフィック設計図出力.md` → `prompt/Gem用_インフォグラフィック描画実行.md`）
 
 ---
 
