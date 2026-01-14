@@ -9,6 +9,8 @@
 - 1スライドの要点は最大3つ（bullets_1〜3）。短く。
 - “機能しないUI（Prev/Next等のボタン風装飾）”は禁止（diagram_specにも書かない）。
 - 図はSVG前提にしない。Googleスライドの「図形・線・矢印・テキストボックス」で再現できる粒度で diagram_spec を書く。
+- diagram_spec の label は10文字以内。長文は bullets / speaker_notes に回す
+- 図形内ラベルは短語に限定（必要ならA/B/Cなどで簡略化し、意味は本文側に書く）
 - スライド枚数は上限を決めない（情報量を落とさない）。ただし詰め込み禁止。
   - bulletsが3つに収まらない → スライドを分割
   - diagram_specのblocksが8個を超える → 図を単純化より“分割”を優先

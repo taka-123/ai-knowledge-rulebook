@@ -439,7 +439,7 @@ Geminiで質問する際に「教材の記述」と「一般知識/最新情報�
 
 ## 3-A. 社内用スライド（Canvas推奨 / Artifactsも可）
 
-### 3-A-1. NLMでSlideSpecを作る（Data Table推奨）
+### 3-A-1. NLMでSlideSpecを作る（Data Table推奨／通常チャットでも可）
 
 #### チェックON（原則）
 
@@ -503,6 +503,7 @@ Geminiで質問する際に「教材の記述」と「一般知識/最新情報�
 - diagram_spec の blocks が 8 を超えていないか（超えるなら分割したか）
 ```
 
+→ Data Table機能が使えない場合は、通常チャットで同形式の表を出力して次工程へ貼る  
 → 出来たら、必要ならSheets化
 
 ---
@@ -513,7 +514,7 @@ Canvasに、SlideSpec（表の内容）を貼って指示します。
 
 ```markdown
 あなたはスイススタイル基調のスライドデザイナーです。
-添付の SlideSpec（Googleスプレッドシート）から、「Googleスライドへ書き出して編集可能」なプレゼンを作ります。
+入力された SlideSpec（入力内容 or 添付ファイル）から、「Googleスライドへ書き出して編集可能」なプレゼンを作ります。
 
 # ゴール（デザイン・品質）
 
@@ -551,7 +552,7 @@ Canvasに、SlideSpec（表の内容）を貼って指示します。
 
 # 入力（SlideSpec）
 
-- 添付のGoogleスプレッドシート
+- 入力内容 or 添付ファイル
 ```
 
 → 最後にGoogle Slidesに書き出して微修正
