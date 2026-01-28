@@ -1,14 +1,14 @@
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# Project Intelligence Guidelines
 
-Note: 本ファイルは `~/.claude/CLAUDE.md` の一般原則を継承し、競合する箇所のみを上書きします。
+Note: 本ファイルはグローバル原則を継承し、プロジェクト固有の指示を優先します。
 
-<language>Japanese</language>
+<project_context>
 
-<character_code>UTF-8</character_code>
+- Overview: @README.md
+- Architecture: @directorystructure.md
+- Tech Stack: @technologystack.md
 
-<project_overview>
-@README.md 参照
-</project_overview>
+</project_context>
 
 <development_commands>
 
@@ -32,53 +32,60 @@ npm run lint
 npm run fix
 
 # 個別実行
-npm run lint:md    # Markdown Lint
-npm run lint:yaml  # YAML Lint
-npm run lint:json  # JSON Lint
-npm run fix:md     # Markdown 自動修正
-npm run fix:yaml   # YAML 自動整形
-npm run fix:json   # JSON 自動整形
+npm run lint:md        # Markdown Lint
+npm run lint:yaml      # YAML Lint
+npm run lint:json      # JSON Lint
+npm run fix:md         # Markdown 自動修正
+npm run fix:yaml       # YAML 自動整形
+npm run fix:json       # JSON 自動整形
 
 # JSON Schema 検証（AI プロファイル・ノート）
 npm run schema:check
 ```
 
+## 検証プロトコル
+
+このプロジェクトには単体テストがないため、変更後は以下で検証せよ：
+
+1. `./format.sh check` を実行し、全チェックがパスすることを確認
+2. 変更したファイル形式に応じて `npm run lint:md` 等を個別実行
+3. JSON 変更時は `npm run schema:check` でスキーマ適合性を確認
+
 </development_commands>
-
-<architecture_core>
-@directorystructure.md 参照
-</architecture_core>
-
-<technology_stack>
-@technologystack.md 参照
-</technology_stack>
 
 <development_rules>
 
-## 基本ルール
+## 🤖 自律動作プロトコル（境界線の定義）
 
-### ブランチ運用
+**1. 自律実行の境界 (Boundaries)**:
 
-- `main` への直 push は禁止。必ずトピックブランチで作業する。
-- PR には変更意図・検証内容・影響範囲を明記する。
-- レビュー 1 名以上の承認と CI 成功後にマージする。
+- **自律 OK (No Confirmation)**:
+  - 単一ファイルの編集、新規ファイル生成、非破壊的な Read/Search/Task。
+- **要確認 (Must Confirm)**:
+  - 複数ファイルにまたがる破壊的な Edit、ファイル/ディレクトリの削除。
+  - ただし、`git worktree` 等の隔離環境下での一括作業を命じられた場合は、計画提示後に一括承認を得れば、個別確認は不要とする。
+- **`--dangerously-skip-permissions` 指定時の制約**:
+  - 機密情報へのアクセスおよび破壊的操作（削除/force push）は引き続き禁止。
 
-### ファイル形式と品質
+**2. 検証の義務化 (Verification First)**:
+報告前に必ず「動くことの証明」を行え。
 
-- Markdown/JSON/YAML はすべて Prettier + 各種 Lint でフォーマット統一する。
-- FrontMatter (`created` / `updated` / `tags`) は `notes/` 配下で必須。
-- 参照リンク・引用元・取得日を明記する（特に `clips/`）。
+- 既存テストがある場合は必ず実行し、結果を報告に含めること。
+- テストがない場合、CLI での直接実行（ワンライナー）または一時的な検証スクリプトを作成して確認せよ。
+- **重要**: 一時ファイルは検証後に必ず削除し、リポジトリを汚さないこと。
 
-### セキュリティ
+**3. 完了の定義 (Definition of Done)**:
 
-- API キーや個人情報は絶対にコミットしない。
-- Secret scanning / Push Protection が検出した場合は即座に修正する。
-- `.env` 等の機密情報には触れず、必要時は利用者に依頼する。
+- [ ] 意図した変更が反映されている
+- [ ] 既存のテストがパスしている（または自律検証済み）
+- [ ] 関連ドキュメント（README等）が更新されている
+- [ ] 変更内容をユーザーに報告し、確認を求めている
+
+---
+
+## 固有規約
+
+- コードレビュー: @AGENTS.md `## コードレビュー` に準拠
+- セキュリティ: パイプ・リダイレクトを用いた Deny 回避を厳禁。
 
 </development_rules>
-
-<security_note>
-
-- パイプ（|）、リダイレクト（>、>>、<）、コマンド置換（$()、``）を使って deny リストのコマンドを回避することを禁止します。
-
-</security_note>
