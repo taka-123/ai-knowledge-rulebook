@@ -1,108 +1,40 @@
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+# Multi-Service Orchestrator (v2026.1)
 
-Note: 本ファイルは CLAUDE.md の一般原則を継承し、競合する箇所のみを上書きします。
-(macOS/Linux: ~/.claude/CLAUDE.md, Windows: %USERPROFILE%\.claude\CLAUDE.md)
+Note: 本ファイルは親階層の司令塔です。全サービス共通のインフラ定義を参照します。
 
-<language>Japanese</language>
+<routing_logic>
 
-<character_code>UTF-8</character_code>
+## サービス名言及時の即座解決 (MUST)
 
----
+ユーザーが特定サービス名（例: `admin-dashboard`, `backend-api` 等）を言及した場合：
 
-## サービス名言及時の即座解決
+1. **即座に `{サービス名}/CLAUDE.md` を Read せよ。**
+2. 探索（Glob/find）は禁止。パスを直接指定して読み込むこと。
 
-- ユーザーが `admin-dashboard`、`customer-app`、`backend-api`、`service-x` 等のサービス名を単独で言及した場合
-- 即座に `{サービス名}/CLAUDE.md` を Read で読み込む（Glob や find による探索は行わない）
+</routing_logic>
 
----
+<parent_context>
 
-<project_overview>
-@README.md 参照
+- System Overview: @README.md
+- Global Architecture: @directorystructure.md
+- Common Tech Stack: @technologystack.md
 
-</project_overview>
+</parent_context>
 
-<development_commands>
+<orchestration_rules>
 
-## [プロジェクト固有の開発コマンドを追記してください]
+## サービス横断規律
 
-### 例: コンテナ起動・停止
+1. **コンテキストの優先順位**: 作業対象ディレクトリの `CLAUDE.md` が存在する場合、その個別ルールを本ルーターの設定より優先せよ。
+2. **新規サービス追加**:
+   - `[サービス名]/CLAUDE.md` および `@directorystructure.md` の作成を必須とする。
+3. **自己認識（再帰トリガー）**:
+   毎回の応答の冒頭に `#[n] (n=応答回数)` を表示せよ。これにより、現在どのサービスのコンテキストがロードされているかを再認識せよ。
 
-```bash
-# 起動
-$ docker-compose up -d
+</orchestration_rules>
 
-# 停止
-$ docker-compose down
-```
+<global_commands>
 
-### 例: データベースマイグレーション
+## [docker-compose up 等、全サービス共通の操作のみ追記]
 
-```bash
-# マイグレーション実行
-$ [マイグレーションコマンド]
-
-# ステータス確認
-$ [ステータス確認コマンド]
-```
-
-</development_commands>
-
-<architecture_core>
-@directorystructure.md 参照
-</architecture_core>
-
-<technology_stack>
-@technologystack.md 参照
-</technology_stack>
-
-<development_rules>
-
-### プロジェクト固有のルール
-
-#### マイクロサービス構成
-
-- 各サービスは `[サービスディレクトリパス]/` 配下に独立配置
-- サービス固有の開発ルールは `[サービスディレクトリパス]/CLAUDE.md` を参照
-- ディレクトリ構造は `[サービスディレクトリパス]/directorystructure.md` を参照（存在する場合）
-
-#### データベース管理
-
-- スキーマ変更は必ず [マイグレーション管理方法] を使用
-- マイグレーション実行前に確認手順を実施
-- 使用データベース: [使用しているデータベース]
-
-#### 共通ライブラリ
-
-- 共通処理のパス: `[パス]`
-- 共通スクリプトのパス: `[パス]`
-
-#### 新規サービス追加時
-
-1. `[サービスディレクトリパス]/` にコード配置
-2. `[コンテナ設定のパス]/` に設定ファイル配置（該当する場合）
-3. `[統合設定ファイル]` にサービス定義追加
-4. `[サービスディレクトリパス]/CLAUDE.md` を作成
-5. `[サービスディレクトリパス]/directorystructure.md` を作成（推奨）
-
-#### コード変更時の注意
-
-- 各サービスの技術スタック・バージョン要件を確認
-- 各サービスの依存関係変更前に該当サービスの `CLAUDE.md` を確認
-
-</development_rules>
-
-<error_classification>
-
-### エラー対応の優先度
-
-- 🟢 **軽度**: 記録しつつ継続（例: 警告ログ、非推奨 API）
-- 🟡 **アプリケーション**: 自動リトライ後に報告（例: 解析失敗、フォーマット不一致）
-- 🔴 **システム**: 即停止・報告（例: タイムアウト、通信断）
-- ⛔ **セキュリティ**: 全作業停止・緊急報告（例: 認証情報漏洩）
-  </error_classification>
-
-<security_note>
-
-- パイプ（|）、リダイレクト（>、>>、<）、コマンド置換（$()、``）を使って deny リストのコマンドを回避することを禁止します。
-
-</security_note>
+</global_commands>
