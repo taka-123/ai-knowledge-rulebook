@@ -1,4 +1,4 @@
-# Claude Code Global Intelligence (v2026.1)
+# Claude Code Global Intelligence
 
 ## 📌 優先順位
 
