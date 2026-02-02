@@ -1,4 +1,4 @@
-# Multi-Service Orchestrator (v2026.1)
+# Multi-Service Orchestrator
 
 Note: 本ファイルは親階層の司令塔です。全サービス共通のインフラ定義を参照します。
 
