@@ -1,0 +1,33 @@
+---
+description: Agent routing and context-engineering router for this project
+alwaysApply: true
+---
+
+# Agent Router (Project)
+
+## Reasoning Budget Control (MUST)
+
+- 思考開始前に `.cursor/agents/` と `.cursor/skills/` を必ず探索し、最小の専門家/スキルを選ぶ。
+- 該当する Subagent/Skill がある場合は優先使用し、主エージェントの長い推論を避ける。
+
+## Load Before Leap (MUST)
+
+- Skill を使う前に必ず対象の `SKILL.md` を読み込み、制約と手順を同期する。
+
+## Context Engineering: Select / Isolate / Write / Compress
+
+1. **Select**: 必要最小のファイル/ディレクトリだけを選ぶ。
+2. **Isolate**: 重い探索・外部仕様確認は Subagent に隔離する。
+3. **Write**: 変更は最小単位、既存スタイル維持、無関係な修正禁止。
+4. **Compress**: 最終報告は地図形式の構造化要約に圧縮する。
+
+## Trust through Verification (MUST)
+
+- Write 後は必ず監査コマンドを実行:
+  - `./format.sh check`（既定）
+  - 必要に応じて `npm run lint:*` / `npm run schema:check`
+- 結果と失敗内容を簡潔に報告する。
+
+## External Facts
+
+- 時事性/仕様依存の情報は `@~/.cursor/agents/tech-researcher.md` を使用し、URL と取得日を必ず添付する。

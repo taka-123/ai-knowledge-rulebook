@@ -1,28 +1,27 @@
 ---
 name: documentation-standards
-description: Apply documentation standards for this AI knowledge rulebook project. Use when writing or reviewing Markdown documents, YAML files, or JSON files.
-allowed-tools: Read, Grep
+description: このリポジトリのドキュメント記述規約を強制チェックするスキル。ドキュメント作成・編集・レビュー時に適用されるべき規約の审査を行う。キーワード「ドキュメント作成」「notes」「clips」「ai/ プロファイル」「レビュー」で自動検出。
+user-invocable: true
+allowed-tools: Read, Grep, Glob
 ---
 
-# Documentation Standards
+# Documentation Standards Skill
 
-このプロジェクトのドキュメント作成・編集時の規約です。
+このスキルは ai-knowledge-rulebook プロジェクトの記述規約を強制する。
 
-## ファイル構造
+## 適用範囲
 
-```
-ai-knowledge-rulebook/
-├── ai/          # AI関連の技術ドキュメント
-├── notes/       # 個人ノート・メモ
-├── clips/       # クリップ・引用
-├── snippets/    # コードスニペット
-├── policy/      # ポリシー・規約
-└── schemas/     # JSONスキーマ定義
-```
+| ディレクトリ | 適用される規約                                   |
+| ------------ | ------------------------------------------------ |
+| `notes/`     | FrontMatter必須、H1は1つのみ、見出し階層         |
+| `clips/`     | 引用元URL・取得日必須、要約であることの明示      |
+| `ai/`        | スキーマ適合、既存プロファイルとのスタイル一貫性 |
+| `policy/`    | 既存スタイル維持、変更の最小化                   |
+| `snippets/`  | コードブロックに言語指定、見出し構造             |
 
-## Markdown 規約
+## 規約詳細
 
-### FrontMatter (notes/ 配下)
+### FrontMatter（`notes/` 配下のみ）
 
 **必須フィールド**:
 
@@ -36,58 +35,47 @@ tags:
 ---
 ```
 
+- `created`: 初規作成日。一度設定したら変更しない。
+- `updated`: 最後に変更した日付。編集のたびに更新する。
+- `tags`: 1つ以上の配列。検索・分類の根拠となる。
+
 ### 見出し構造
 
-- H1 (`#`) はファイルに1つのみ
-- H2以降は階層的に使用
-- 見出しの前後に空行を入れる
+- H1 (`#`) はファイルに **1つのみ**。
+- H2以降は階層的に使用する。
+- 見出しの前後には空行を入れる。
 
-### リンク
+### リンク規約
 
-- 内部リンク: 相対パスで記載
-- 外部リンク: 必ず出典・取得日を明記
-  ```markdown
-  [公式ドキュメント](https://example.com)
-  (出典: 2025-01-05 取得)
-  ```
+- **内部リンク**: 相対パスで記載する。
+- **外部リンク**: 必ず出典・取得日を明記する。
 
-## フォーマット自動化
-
-### 使用可能なコマンド
-
-```bash
-# 全ファイル整形
-./format.sh fix
-
-# チェックのみ（CI同様）
-./format.sh check
-
-# 個別実行
-npm run lint:md     # Markdown Lint
-npm run lint:yaml   # YAML Lint
-npm run lint:json   # JSON Lint
-npm run fix:md      # Markdown 自動修正
+```markdown
+[公式ドキュメント](https://example.com/docs)（出典: 2025-01-05 取得）
 ```
-
-## 品質基準
-
-### 必須チェック項目
-
-- ✅ Prettier でフォーマット統一
-- ✅ Markdownlint でルール準拠
-- ✅ JSONスキーマで構造検証 (AI プロファイル、ノート)
-- ✅ 外部リンクに出典・日付
 
 ### 禁止事項
 
-- ❌ 個人情報・機密情報の記載
-- ❌ 未検証の技術情報を「確定」として記載
-- ❌ 推測と事実の混同
+- 個人情報・機密情報（APIキーなど）の記載
+- 未検証の技術情報を「確定事項」として記載すること
+- 推測と事実の混同（区別が明確でない記述）
 
-## 参照
+## 審査フロー
 
-詳細は以下を参照:
+1. 対象ファイルのディレクトリを特定する。
+2. 該当ディレクトリの規約を照合する。
+3. 逸脱項目を列挙し、修正案を提示する。
+4. 逸脱なしの場合は `✅ 規約準拠確認済み` のみ報告する。
 
-- [CLAUDE.md](../../CLAUDE.md) - プロジェクト固有ルール
-- [directorystructure.md](../../directorystructure.md) - ディレクトリ構造
-- [technologystack.md](../../technologystack.md) - 技術スタック
+## 報告形式
+
+```markdown
+## Documentation Standards 審査結果
+
+**対象**: [パス]
+
+- FrontMatter: ✅ / ⚠️ [詳細]
+- 見出し構造: ✅ / ⚠️ [詳細]
+- リンク規約: ✅ / ⚠️ [詳細]
+- 禁止事項: ✅ / ⚠️ [詳細]
+```
