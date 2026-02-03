@@ -5,7 +5,30 @@
 ./
 ├── .codeiumignore # Codeium 用除外パターン
 ├── .cursorignore # Cursor 用除外パターン
+├── .cursor/ # Cursor 用設定（rules/agents/skills/commands）
+│ ├── agents/ # プロジェクト専用サブエージェント
+│ ├── rules/ # Cursor ルール（.mdc）
+│ ├── skills/ # プロジェクト専用スキル
+│ └── commands/ # Cursor コマンド
 ├── .claude/ # Claude AI 設定
+│ ├── agents/ # プロジェクト専用サブエージェント
+│ │ ├── doc-validator.md # ドキュメント品質検証（読み取り専用）
+│ │ ├── content-writer.md # 調査結果の規約準拠書き込み
+│ │ ├── repo-scaffolder.md # 新規ファイルのテンプレート適用・生成
+│ │ ├── repo-cartographer.md # リポジトリ構造・参照関係の地図化
+│ │ └── external-fact-guardian.md # 外部仕様の書き込み前事実確認
+│ ├── skills/ # プロジェクト専用スキル
+│ │ ├── documentation-standards/ # 記述規約強制チェック
+│ │ ├── research-protocol/ # 技術調査の出典・不確実性プロトコル強制
+│ │ ├── content-scaffold/ # 新規ファイルテンプレート適用・バリデーション
+│ │ ├── schema-guard/ # JSON スキーマ適合検証
+│ │ ├── format-lint-audit/ # Format/Lint チェック実行と結果報告
+│ │ ├── docs-sync/ # 主要ドキュメントの実態同期
+│ │ └── context-compress-map/ # コンテキスト圧縮マップ生成
+│ ├── commands/ # カスタムコマンド（ci-check, format-fix 等）
+│ ├── hooks/ # Bash・WebFetch 検証スクリプト
+│ ├── settings.json # Claude Code 権限・hooks設定
+│ └── settings.local.json # ローカル追加設定
 ├── .config/ # Lint・検証設定
 │ ├── jsonschema.conf.yaml # JSON Schema 検証設定
 │ └── .yamllint.yml # YAML Lint 設定

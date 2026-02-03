@@ -89,3 +89,63 @@ npm run schema:check
 - セキュリティ: パイプ・リダイレクトを用いた Deny 回避を厳禁。
 
 </development_rules>
+
+<agent_routing>
+
+## 🤖 エージェント・スキルルーター（司令塔）
+
+### Always Scan First
+
+タスク実行の前に、以下2つのディレクトリを確認し、最適な専門家を召喚する：
+
+- `~/.claude/agents/` · `~/.claude/skills/`（グローバル資産）
+- `./.claude/agents/` · `./.claude/skills/`（プロジェクト固有資産）
+
+召喚の根拠は下記 **Hierarchy of Intelligence** に従う。
+
+---
+
+### Hierarchy of Intelligence（委任の基準）
+
+| タスク類型                                            | 委任先                                        | 理由                                   |
+| ----------------------------------------------------- | --------------------------------------------- | -------------------------------------- |
+| 技術仕様の調査・接地                                  | グローバル `tech-researcher`                  | 一次情報への接地は汎用規律             |
+| コードベース全体の構造探索                            | グローバル `codebase-explorer`                | 大規模探索は汎用規律                   |
+| 実装後の品質・完遂監査                                | グローバル `task-reviewer`                    | 検証義務は汎用規律                     |
+| Lint・フォーマッター自動修正                          | グローバル `lint-fix` スキル                  | ツール検知は汎用規律                   |
+| **ドキュメント品質検証**（FrontMatter・リンク整合性） | プロジェクト `doc-validator`                  | リポジトリ固有の検証ルールに基づく     |
+| **調査結果のリポジトリへの書き込み**                  | プロジェクト `content-writer`                 | 書き込み規約はリポジトリ固有           |
+| **新規ファイルのスキャフォルド生成**                  | プロジェクト `repo-scaffolder`                | テンプレートはリポジトリ固有           |
+| **リポジトリ構造・参照関係の地図化**                  | プロジェクト `repo-cartographer`              | ドキュメント構造の把握はリポジトリ固有 |
+| **外部仕様・時事情報の書き込み前事実確認**            | プロジェクト `external-fact-guardian`         | 一次情報ゲートはリポジトリ固有         |
+| **記述規約の強制チェック**                            | プロジェクト `documentation-standards` スキル | 規約はリポジトリ固有                   |
+| **技術調査の書き込み前ゲーティング**                  | プロジェクト `research-protocol` スキル       | 出典・不確実性注記はリポジトリ固有規約 |
+| **新規ファイル時のテンプレート適用**                  | プロジェクト `content-scaffold` スキル        | テンプレートはリポジトリ固有           |
+| **JSON スキーマ適合検証**                             | プロジェクト `schema-guard` スキル            | スキーマ定義はリポジトリ固有           |
+| **Format/Lint チェック実行**                          | プロジェクト `format-lint-audit` スキル       | 検証コマンドはリポジトリ固有           |
+| **主要ドキュメントの実態同期**                        | プロジェクト `docs-sync` スキル               | 対象ドキュメントはリポジトリ固有       |
+| **コンテキスト圧縮マップ生成**                        | プロジェクト `context-compress-map` スキル    | 情報密度維持のためのプロジェクト規律   |
+
+---
+
+### プロジェクト資産一覧
+
+**Agents** (`.claude/agents/`):
+
+- `doc-validator` — ドキュメント品質検証（読み取り専用）
+- `content-writer` — 調査結果の規約準拠書き込み
+- `repo-scaffolder` — 新規ファイルのテンプレート適用・生成（Claude Code のみ）
+- `repo-cartographer` — リポジトリ構造・参照関係の地図化
+- `external-fact-guardian` — 外部仕様の書き込み前事実確認
+
+**Skills** (`.claude/skills/`):
+
+- `documentation-standards` — 記述規約強制チェック
+- `research-protocol` — 技術調査の出典・不確実性プロトコル強制
+- `content-scaffold` — 新規ファイルテンプレート適用・バリデーション
+- `schema-guard` — JSON スキーマ適合検証
+- `format-lint-audit` — Format/Lint チェック実行と結果報告
+- `docs-sync` — 主要ドキュメント（README・directorystructure・technologystack）の実態同期
+- `context-compress-map` — コンテキスト圧縮マップ生成
+
+</agent_routing>
