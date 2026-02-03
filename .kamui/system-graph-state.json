@@ -4900,9 +4900,7 @@
     "technologystack.md"
   ],
   "uiState": {
-    "expandedDirs": [
-      "ai-knowledge-rulebook"
-    ],
+    "expandedDirs": ["ai-knowledge-rulebook"],
     "selectedPath": null
   },
   "directoryTreeMeta": {
@@ -4916,11 +4914,7 @@
     "isPartial": false,
     "branchPulse": {
       "generatedAt": 1764802279944,
-      "targets": [
-        "main",
-        "master",
-        "taka-123/add-claude-github-actions-1761484761202"
-      ],
+      "targets": ["main", "master", "taka-123/add-claude-github-actions-1761484761202"],
       "statsByBranch": {
         "main": {
           "branch": "main",
@@ -4956,9 +4950,7 @@
         "timestamp": 1764802279957,
         "lane": 0,
         "branchLabel": "main",
-        "branchTags": [
-          "main"
-        ],
+        "branchTags": ["main"],
         "isDefaultWorktree": true,
         "branchColor": "#4f85e8",
         "index": 0
@@ -4974,19 +4966,14 @@
           "parents": [],
           "parent": null,
           "refs": "HEAD -> main",
-          "branches": [
-            "HEAD -> main",
-            "main"
-          ]
+          "branches": ["HEAD -> main", "main"]
         },
         "commitHash": "2722fca21e5da22c7125978e4c8357741aeff84f",
         "lane": 0,
         "parentLinks": [],
         "primaryBranchName": "main",
         "branchColor": "#4f85e8",
-        "branchTags": [
-          "main"
-        ],
+        "branchTags": ["main"],
         "index": 1
       },
       {
@@ -5014,9 +5001,7 @@
       {
         "type": "staged",
         "label": "ステージ済み (1)",
-        "files": [
-          "gitignore"
-        ],
+        "files": ["gitignore"],
         "branch": "main",
         "targetCommitHash": "6ca5f51c0214b3098997a82cd01da75e4304094a",
         "worktreePath": "/Users/tf/projects/ai-knowledge-rulebook",
@@ -5034,17 +5019,10 @@
           "subject": "feat: 手動承認ルールをプロジェクトスコープに移動し、グローバル設定は最小限に抑える",
           "author": "Takahiro Furukawa",
           "timestamp": 1764467748,
-          "parents": [
-            "cb2af5782fa24459a91eb2c4fa871b3afc75e894"
-          ],
+          "parents": ["cb2af5782fa24459a91eb2c4fa871b3afc75e894"],
           "parent": "cb2af5782fa24459a91eb2c4fa871b3afc75e894",
           "refs": "HEAD -> main, origin/main, origin/HEAD",
-          "branches": [
-            "HEAD -> main",
-            "origin/main",
-            "origin/HEAD",
-            "main"
-          ]
+          "branches": ["HEAD -> main", "origin/main", "origin/HEAD", "main"]
         },
         "commitHash": "6ca5f51c0214b3098997a82cd01da75e4304094a",
         "lane": 0,
@@ -5056,9 +5034,7 @@
         ],
         "primaryBranchName": "main",
         "branchColor": "#4f85e8",
-        "branchTags": [
-          "main"
-        ],
+        "branchTags": ["main"],
         "worktrees": [
           {
             "path": "/Users/tf/projects/ai-knowledge-rulebook",
@@ -5143,14 +5119,10 @@
           "subject": "feat: kinopeee氏の提案をcursor用の設定として追加",
           "author": "Takahiro Furukawa",
           "timestamp": 1764464517,
-          "parents": [
-            "29749d20cce7b00d7c15124fb55092d3d40b3a51"
-          ],
+          "parents": ["29749d20cce7b00d7c15124fb55092d3d40b3a51"],
           "parent": "29749d20cce7b00d7c15124fb55092d3d40b3a51",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "cb2af5782fa24459a91eb2c4fa871b3afc75e894",
         "lane": 0,
@@ -5173,14 +5145,10 @@
           "subject": "refactor: フロントエンドデザインのスキル定義をプロジェクト範囲に移動する",
           "author": "Takahiro Furukawa",
           "timestamp": 1763678575,
-          "parents": [
-            "55750e70bb3488c7a97e34a2cf9ae7623da81115"
-          ],
+          "parents": ["55750e70bb3488c7a97e34a2cf9ae7623da81115"],
           "parent": "55750e70bb3488c7a97e34a2cf9ae7623da81115",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "29749d20cce7b00d7c15124fb55092d3d40b3a51",
         "lane": 0,
@@ -5203,14 +5171,10 @@
           "subject": "feat: ClaudeとCursorのプロジェクトルールにルール提案設定を追加",
           "author": "Takahiro Furukawa",
           "timestamp": 1763642787,
-          "parents": [
-            "f5368d7d0db8c0954a4dd5321b6faf28020fcf3e"
-          ],
+          "parents": ["f5368d7d0db8c0954a4dd5321b6faf28020fcf3e"],
           "parent": "f5368d7d0db8c0954a4dd5321b6faf28020fcf3e",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "55750e70bb3488c7a97e34a2cf9ae7623da81115",
         "lane": 0,
@@ -5233,14 +5197,10 @@
           "subject": "feat: CLAUDE.mdとAGENTS.mdの更新提案機能を追加し、会話履歴分析に基づく自動提案のフックを実装",
           "author": "Takahiro Furukawa",
           "timestamp": 1763600569,
-          "parents": [
-            "8f65252dc57c5b492228e9da6c5fab9239f77d43"
-          ],
+          "parents": ["8f65252dc57c5b492228e9da6c5fab9239f77d43"],
           "parent": "8f65252dc57c5b492228e9da6c5fab9239f77d43",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "f5368d7d0db8c0954a4dd5321b6faf28020fcf3e",
         "lane": 0,
@@ -5263,14 +5223,10 @@
           "subject": "feat: PROFILE.mdの内容を簡潔さと情報完全性のバランスを重視するように改訂し、情報収集や応答構成の指針を明確化",
           "author": "Takahiro Furukawa",
           "timestamp": 1763442134,
-          "parents": [
-            "b547f3fc3dbe487ebfa8dce588cf9b1f68f7f8d6"
-          ],
+          "parents": ["b547f3fc3dbe487ebfa8dce588cf9b1f68f7f8d6"],
           "parent": "b547f3fc3dbe487ebfa8dce588cf9b1f68f7f8d6",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "8f65252dc57c5b492228e9da6c5fab9239f77d43",
         "lane": 0,
@@ -5293,14 +5249,10 @@
           "subject": "feat: ハスキーとリントステージを追加し、コード品質とコミット前のチェックを改善",
           "author": "Takahiro Furukawa",
           "timestamp": 1763438646,
-          "parents": [
-            "1f88f8f49071c9b3232c9b665a0372ce270b7dc3"
-          ],
+          "parents": ["1f88f8f49071c9b3232c9b665a0372ce270b7dc3"],
           "parent": "1f88f8f49071c9b3232c9b665a0372ce270b7dc3",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "b547f3fc3dbe487ebfa8dce588cf9b1f68f7f8d6",
         "lane": 0,
@@ -5323,14 +5275,10 @@
           "subject": "feat: 微調整",
           "author": "Takahiro Furukawa",
           "timestamp": 1763436291,
-          "parents": [
-            "c7c6054dc08dce1eb4864c40aac8be43a1ab30f8"
-          ],
+          "parents": ["c7c6054dc08dce1eb4864c40aac8be43a1ab30f8"],
           "parent": "c7c6054dc08dce1eb4864c40aac8be43a1ab30f8",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "1f88f8f49071c9b3232c9b665a0372ce270b7dc3",
         "lane": 0,
@@ -5353,14 +5301,10 @@
           "subject": "feat: デザインスキル設定",
           "author": "Takahiro Furukawa",
           "timestamp": 1763362987,
-          "parents": [
-            "95a78a3d942ac2bf65f824df82db8a6fa1647301"
-          ],
+          "parents": ["95a78a3d942ac2bf65f824df82db8a6fa1647301"],
           "parent": "95a78a3d942ac2bf65f824df82db8a6fa1647301",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "c7c6054dc08dce1eb4864c40aac8be43a1ab30f8",
         "lane": 0,
@@ -5383,14 +5327,10 @@
           "subject": "feat: CCの自走力を強化してみる",
           "author": "Takahiro Furukawa",
           "timestamp": 1763359190,
-          "parents": [
-            "523e2401b0f105a438f134e0abc7d06b059dae19"
-          ],
+          "parents": ["523e2401b0f105a438f134e0abc7d06b059dae19"],
           "parent": "523e2401b0f105a438f134e0abc7d06b059dae19",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "95a78a3d942ac2bf65f824df82db8a6fa1647301",
         "lane": 0,
@@ -5413,14 +5353,10 @@
           "subject": "feat: スラッシュコマンド規約とタスク分類の詳細を追加",
           "author": "Takahiro Furukawa",
           "timestamp": 1763357793,
-          "parents": [
-            "a6b8a9ef4664ca9ec0ee94851d1aa392e7f058c3"
-          ],
+          "parents": ["a6b8a9ef4664ca9ec0ee94851d1aa392e7f058c3"],
           "parent": "a6b8a9ef4664ca9ec0ee94851d1aa392e7f058c3",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "523e2401b0f105a438f134e0abc7d06b059dae19",
         "lane": 0,
@@ -5443,9 +5379,7 @@
           "subject": "feat: slash commands追加とドキュメント整形・品質改善",
           "author": "Takahiro Furukawa",
           "timestamp": 1762393159,
-          "parents": [
-            "2f6a7d0fdcd18b6b0d164daa9a9d3482a2b84bd2"
-          ],
+          "parents": ["2f6a7d0fdcd18b6b0d164daa9a9d3482a2b84bd2"],
           "parent": "2f6a7d0fdcd18b6b0d164daa9a9d3482a2b84bd2",
           "refs": "task/task-1763122448787-b80200, task/task-1763122446704-cf1583, task/task-1763122444623-cca608, task/task-1763122442533-c2fb06, task/task-1763122440388-36c79a, cursor-rules-txvRr, cursor-rules-fW2DX, cursor-rules-aTi6G, cursor-rules-Gs2Ec, cursor-rules-CFj6T, cursor-rules-78vaF",
           "branches": [
@@ -5496,14 +5430,10 @@
           "subject": "feat: subagents, skill 設定",
           "author": "Takahiro Furukawa",
           "timestamp": 1762354340,
-          "parents": [
-            "7fcc2302b075276801ecee762162b2de49bdbc46"
-          ],
+          "parents": ["7fcc2302b075276801ecee762162b2de49bdbc46"],
           "parent": "7fcc2302b075276801ecee762162b2de49bdbc46",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "2f6a7d0fdcd18b6b0d164daa9a9d3482a2b84bd2",
         "lane": 0,
@@ -5526,14 +5456,10 @@
           "subject": "feat: claude code subagents, skills ドキュメント改良",
           "author": "Takahiro Furukawa",
           "timestamp": 1762351434,
-          "parents": [
-            "db835bb49ee98f3dbc70445d4c0343c06ef1006a"
-          ],
+          "parents": ["db835bb49ee98f3dbc70445d4c0343c06ef1006a"],
           "parent": "db835bb49ee98f3dbc70445d4c0343c06ef1006a",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "7fcc2302b075276801ecee762162b2de49bdbc46",
         "lane": 0,
@@ -5556,14 +5482,10 @@
           "subject": "feat: claude code global rule 更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1762346676,
-          "parents": [
-            "ccda8cf27be6fa597d9989753a9a34a0d4702758"
-          ],
+          "parents": ["ccda8cf27be6fa597d9989753a9a34a0d4702758"],
           "parent": "ccda8cf27be6fa597d9989753a9a34a0d4702758",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "db835bb49ee98f3dbc70445d4c0343c06ef1006a",
         "lane": 0,
@@ -5586,14 +5508,10 @@
           "subject": "feat: subagents, skills 整理",
           "author": "Takahiro Furukawa",
           "timestamp": 1762322016,
-          "parents": [
-            "92a535ba5bf59de5fe0758cbe480a01ec2cf15e4"
-          ],
+          "parents": ["92a535ba5bf59de5fe0758cbe480a01ec2cf15e4"],
           "parent": "92a535ba5bf59de5fe0758cbe480a01ec2cf15e4",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "ccda8cf27be6fa597d9989753a9a34a0d4702758",
         "lane": 0,
@@ -5616,9 +5534,7 @@
           "subject": "feat: ChatGPT設定簡略化、逆効果な設定を排除",
           "author": "Takahiro Furukawa",
           "timestamp": 1761920522,
-          "parents": [
-            "4d253b9f2d19ca88832b256bd604701e23a147ce"
-          ],
+          "parents": ["4d253b9f2d19ca88832b256bd604701e23a147ce"],
           "parent": "4d253b9f2d19ca88832b256bd604701e23a147ce",
           "refs": "feat-analyze-project-r8tut, feat-analyze-project-iB4W6, feat-analyze-project-7gdsP, chore-analyze-project-zyPvn",
           "branches": [
@@ -5655,14 +5571,10 @@
           "subject": "feat: コードレビュールール更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761868625,
-          "parents": [
-            "6376c44f21de0681f5277250f733a2ee80ea4bea"
-          ],
+          "parents": ["6376c44f21de0681f5277250f733a2ee80ea4bea"],
           "parent": "6376c44f21de0681f5277250f733a2ee80ea4bea",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "4d253b9f2d19ca88832b256bd604701e23a147ce",
         "lane": 0,
@@ -5685,14 +5597,10 @@
           "subject": "feat: MCP設定更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761868603,
-          "parents": [
-            "8dd01b77e74a6d1b058ee4e45122b3cd6404b6a1"
-          ],
+          "parents": ["8dd01b77e74a6d1b058ee4e45122b3cd6404b6a1"],
           "parent": "8dd01b77e74a6d1b058ee4e45122b3cd6404b6a1",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "6376c44f21de0681f5277250f733a2ee80ea4bea",
         "lane": 0,
@@ -5715,14 +5623,10 @@
           "subject": "feat: chatgpt, codex ルール更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761752023,
-          "parents": [
-            "0ab9b5fc346e4b0a69e7edc1ee80c206048519f5"
-          ],
+          "parents": ["0ab9b5fc346e4b0a69e7edc1ee80c206048519f5"],
           "parent": "0ab9b5fc346e4b0a69e7edc1ee80c206048519f5",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "8dd01b77e74a6d1b058ee4e45122b3cd6404b6a1",
         "lane": 0,
@@ -5745,14 +5649,10 @@
           "subject": "feat: claude code mcp更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761751214,
-          "parents": [
-            "b1d68ad1dbafbc00c908fa6d8dcf40200a51b37f"
-          ],
+          "parents": ["b1d68ad1dbafbc00c908fa6d8dcf40200a51b37f"],
           "parent": "b1d68ad1dbafbc00c908fa6d8dcf40200a51b37f",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "0ab9b5fc346e4b0a69e7edc1ee80c206048519f5",
         "lane": 0,
@@ -5775,14 +5675,10 @@
           "subject": "feat: 改行修正",
           "author": "Takahiro Furukawa",
           "timestamp": 1761652394,
-          "parents": [
-            "6c4f65854100aa0f6af7b3f3b8ec02b4f9a40c38"
-          ],
+          "parents": ["6c4f65854100aa0f6af7b3f3b8ec02b4f9a40c38"],
           "parent": "6c4f65854100aa0f6af7b3f3b8ec02b4f9a40c38",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "b1d68ad1dbafbc00c908fa6d8dcf40200a51b37f",
         "lane": 0,
@@ -5805,14 +5701,10 @@
           "subject": "feat: プロンプトパス修正",
           "author": "Takahiro Furukawa",
           "timestamp": 1761606891,
-          "parents": [
-            "fb8bcec7d37eb14708e3536d98cff660d9d9849b"
-          ],
+          "parents": ["fb8bcec7d37eb14708e3536d98cff660d9d9849b"],
           "parent": "fb8bcec7d37eb14708e3536d98cff660d9d9849b",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "6c4f65854100aa0f6af7b3f3b8ec02b4f9a40c38",
         "lane": 0,
@@ -5835,14 +5727,10 @@
           "subject": "feat: CodeRabbitレビューの日本語化設定を追加",
           "author": "claude[bot]",
           "timestamp": 1761485542,
-          "parents": [
-            "fb8bcec7d37eb14708e3536d98cff660d9d9849b"
-          ],
+          "parents": ["fb8bcec7d37eb14708e3536d98cff660d9d9849b"],
           "parent": "fb8bcec7d37eb14708e3536d98cff660d9d9849b",
           "refs": "origin/claude/issue-2-20251026-1330",
-          "branches": [
-            "origin/claude/issue-2-20251026-1330"
-          ]
+          "branches": ["origin/claude/issue-2-20251026-1330"]
         },
         "commitHash": "bcd7602c9be5cdb6d6964df191922a6305129cdb",
         "lane": 1,
@@ -5854,9 +5742,7 @@
         ],
         "primaryBranchName": "claude/issue-2-20251026-1330",
         "branchColor": "#4f85e8",
-        "branchTags": [
-          "claude/issue-2-20251026-1330"
-        ],
+        "branchTags": ["claude/issue-2-20251026-1330"],
         "index": 27
       },
       {
@@ -5873,10 +5759,7 @@
           ],
           "parent": "a5a515c6c7375a313a71a0b5cb88a9466edaf541",
           "refs": "",
-          "branches": [
-            "main",
-            "taka-123/add-claude-github-actions-1761484761202"
-          ]
+          "branches": ["main", "taka-123/add-claude-github-actions-1761484761202"]
         },
         "commitHash": "fb8bcec7d37eb14708e3536d98cff660d9d9849b",
         "lane": 0,
@@ -5892,9 +5775,7 @@
         ],
         "primaryBranchName": "main",
         "branchColor": "#4f85e8",
-        "branchTags": [
-          "taka-123/add-claude-github-actions-1761484761202"
-        ],
+        "branchTags": ["taka-123/add-claude-github-actions-1761484761202"],
         "index": 28
       },
       {
@@ -5905,9 +5786,7 @@
           "subject": "\"Claude Code Review workflow\"",
           "author": "taka-123",
           "timestamp": 1761484763,
-          "parents": [
-            "5503785c2448a115e35cb342d60fba239f1118ce"
-          ],
+          "parents": ["5503785c2448a115e35cb342d60fba239f1118ce"],
           "parent": "5503785c2448a115e35cb342d60fba239f1118ce",
           "refs": "origin/add-claude-github-actions-1761484761202",
           "branches": [
@@ -5941,9 +5820,7 @@
         ],
         "primaryBranchName": "main",
         "branchColor": "#4f85e8",
-        "branchTags": [
-          "add-claude-github-actions-1761484761202"
-        ],
+        "branchTags": ["add-claude-github-actions-1761484761202"],
         "index": 29
       },
       {
@@ -5954,9 +5831,7 @@
           "subject": "\"Claude PR Assistant workflow\"",
           "author": "taka-123",
           "timestamp": 1761484762,
-          "parents": [
-            "a5a515c6c7375a313a71a0b5cb88a9466edaf541"
-          ],
+          "parents": ["a5a515c6c7375a313a71a0b5cb88a9466edaf541"],
           "parent": "a5a515c6c7375a313a71a0b5cb88a9466edaf541",
           "refs": "",
           "branches": [
@@ -6000,14 +5875,10 @@
           "subject": "feat: 記事、README更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761349030,
-          "parents": [
-            "7a88c7352c5c937e162445cabfe1a16094e72490"
-          ],
+          "parents": ["7a88c7352c5c937e162445cabfe1a16094e72490"],
           "parent": "7a88c7352c5c937e162445cabfe1a16094e72490",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "a5a515c6c7375a313a71a0b5cb88a9466edaf541",
         "lane": 0,
@@ -6030,14 +5901,10 @@
           "subject": "feat: 技術スタックとディレクトリ構造のテンプレも用意",
           "author": "Takahiro Furukawa",
           "timestamp": 1761347826,
-          "parents": [
-            "c472bcad5dedc3cbfc88a17d6053a31ff14a6f25"
-          ],
+          "parents": ["c472bcad5dedc3cbfc88a17d6053a31ff14a6f25"],
           "parent": "c472bcad5dedc3cbfc88a17d6053a31ff14a6f25",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "7a88c7352c5c937e162445cabfe1a16094e72490",
         "lane": 0,
@@ -6060,14 +5927,10 @@
           "subject": "feat: 記事更新",
           "author": "Takahiro Furukawa",
           "timestamp": 1761345145,
-          "parents": [
-            "97d2106cdde928d941335b7b3692aa66c88311c6"
-          ],
+          "parents": ["97d2106cdde928d941335b7b3692aa66c88311c6"],
           "parent": "97d2106cdde928d941335b7b3692aa66c88311c6",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "c472bcad5dedc3cbfc88a17d6053a31ff14a6f25",
         "lane": 0,
@@ -6090,14 +5953,10 @@
           "subject": "feat: サービス名をマルチレポ化",
           "author": "Takahiro Furukawa",
           "timestamp": 1761331351,
-          "parents": [
-            "c67891e10bdecbb306a17c8604047a09c0fae4f5"
-          ],
+          "parents": ["c67891e10bdecbb306a17c8604047a09c0fae4f5"],
           "parent": "c67891e10bdecbb306a17c8604047a09c0fae4f5",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "97d2106cdde928d941335b7b3692aa66c88311c6",
         "lane": 0,
@@ -6120,14 +5979,10 @@
           "subject": "feat: グローバル・マルチレポ親ディレクトリのルール改良",
           "author": "Takahiro Furukawa",
           "timestamp": 1761206251,
-          "parents": [
-            "faa4675e4f2bb96f31bd17ae51932263688b7f95"
-          ],
+          "parents": ["faa4675e4f2bb96f31bd17ae51932263688b7f95"],
           "parent": "faa4675e4f2bb96f31bd17ae51932263688b7f95",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "c67891e10bdecbb306a17c8604047a09c0fae4f5",
         "lane": 0,
@@ -6150,14 +6005,10 @@
           "subject": "feat: マルチサービス親ディレクトリ用テンプレート追加",
           "author": "Takahiro Furukawa",
           "timestamp": 1761022852,
-          "parents": [
-            "8979def1de7149b2dd9cd8998a26a7c16e6a8f33"
-          ],
+          "parents": ["8979def1de7149b2dd9cd8998a26a7c16e6a8f33"],
           "parent": "8979def1de7149b2dd9cd8998a26a7c16e6a8f33",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "faa4675e4f2bb96f31bd17ae51932263688b7f95",
         "lane": 0,
@@ -6180,14 +6031,10 @@
           "subject": "feat: Windsurf の AGENTS.md サポートについて言及",
           "author": "Takahiro Furukawa",
           "timestamp": 1761017370,
-          "parents": [
-            "4edf6231c3ed2c0ee3d2d6d77090705bb8f20768"
-          ],
+          "parents": ["4edf6231c3ed2c0ee3d2d6d77090705bb8f20768"],
           "parent": "4edf6231c3ed2c0ee3d2d6d77090705bb8f20768",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "8979def1de7149b2dd9cd8998a26a7c16e6a8f33",
         "lane": 0,
@@ -6210,14 +6057,10 @@
           "subject": "feat: マルチレポ対応強化",
           "author": "Takahiro Furukawa",
           "timestamp": 1761013776,
-          "parents": [
-            "41438c8369f0cfec37b9c5ab86801450124b2fc4"
-          ],
+          "parents": ["41438c8369f0cfec37b9c5ab86801450124b2fc4"],
           "parent": "41438c8369f0cfec37b9c5ab86801450124b2fc4",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "4edf6231c3ed2c0ee3d2d6d77090705bb8f20768",
         "lane": 0,
@@ -6240,14 +6083,10 @@
           "subject": "feat: ディレクトリ構成、技術スタック修正",
           "author": "Takahiro Furukawa",
           "timestamp": 1761010772,
-          "parents": [
-            "31fd003254ab27bd70d40519535c2ec39a6569c0"
-          ],
+          "parents": ["31fd003254ab27bd70d40519535c2ec39a6569c0"],
           "parent": "31fd003254ab27bd70d40519535c2ec39a6569c0",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "41438c8369f0cfec37b9c5ab86801450124b2fc4",
         "lane": 0,
@@ -6270,14 +6109,10 @@
           "subject": "fix: ファイル名修正",
           "author": "Takahiro Furukawa",
           "timestamp": 1761009054,
-          "parents": [
-            "78db048e780d759af4d57ea489fc3ed1d82ea387"
-          ],
+          "parents": ["78db048e780d759af4d57ea489fc3ed1d82ea387"],
           "parent": "78db048e780d759af4d57ea489fc3ed1d82ea387",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "31fd003254ab27bd70d40519535c2ec39a6569c0",
         "lane": 0,
@@ -6300,14 +6135,10 @@
           "subject": "feat: VSCode系設定追記",
           "author": "Takahiro Furukawa",
           "timestamp": 1761006931,
-          "parents": [
-            "6f5f5503461aa79b83d8dd93e777e5dd1e5be993"
-          ],
+          "parents": ["6f5f5503461aa79b83d8dd93e777e5dd1e5be993"],
           "parent": "6f5f5503461aa79b83d8dd93e777e5dd1e5be993",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "78db048e780d759af4d57ea489fc3ed1d82ea387",
         "lane": 0,
@@ -6330,14 +6161,10 @@
           "subject": "feat: yamllint追記",
           "author": "Takahiro Furukawa",
           "timestamp": 1760919449,
-          "parents": [
-            "26dff6a0d7ce86400fecdea6c592a533adef69a3"
-          ],
+          "parents": ["26dff6a0d7ce86400fecdea6c592a533adef69a3"],
           "parent": "26dff6a0d7ce86400fecdea6c592a533adef69a3",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "6f5f5503461aa79b83d8dd93e777e5dd1e5be993",
         "lane": 0,
@@ -6360,14 +6187,10 @@
           "subject": "feat: Prettierによる既存ファイルの一括フォーマット適用",
           "author": "Takahiro Furukawa",
           "timestamp": 1760919105,
-          "parents": [
-            "a92e6680b4101cc0a21f3d998cac650530096d44"
-          ],
+          "parents": ["a92e6680b4101cc0a21f3d998cac650530096d44"],
           "parent": "a92e6680b4101cc0a21f3d998cac650530096d44",
           "refs": "",
-          "branches": [
-            "main"
-          ]
+          "branches": ["main"]
         },
         "commitHash": "26dff6a0d7ce86400fecdea6c592a533adef69a3",
         "lane": 0,
