@@ -19,8 +19,6 @@
   },
   "includeCoAuthoredBy": false,
   "permissions": {
-    "defaultMode": "default",
-    "disableBypassPermissionsMode": "disable",
     "allow": [
       "WebSearch",
       "WebFetch(domain:anthropic.mintlify.app)",
@@ -78,18 +76,18 @@
       "Bash(git rev-parse:*)",
       "Bash(git ls-files:*)",
       "Bash(git ls-remote:*)",
-      "Bash(git -C :* status)",
-      "Bash(git -C :* status:*)",
-      "Bash(git -C :* branch)",
-      "Bash(git -C :* log)",
-      "Bash(git -C :* log:*)",
-      "Bash(git -C :* show:*)",
-      "Bash(git -C :* diff)",
-      "Bash(git -C :* diff:*)",
-      "Bash(git -C :* describe:*)",
-      "Bash(git -C :* rev-parse:*)",
-      "Bash(git -C :* ls-files:*)",
-      "Bash(git -C :* ls-remote:*)",
+      "Bash(git -C * status)",
+      "Bash(git -C * status:*)",
+      "Bash(git -C * branch)",
+      "Bash(git -C * log)",
+      "Bash(git -C * log:*)",
+      "Bash(git -C * show:*)",
+      "Bash(git -C * diff)",
+      "Bash(git -C * diff:*)",
+      "Bash(git -C * describe:*)",
+      "Bash(git -C * rev-parse:*)",
+      "Bash(git -C * ls-files:*)",
+      "Bash(git -C * ls-remote:*)",
       "mcp__chrome-devtools__take_snapshot",
       "mcp__chrome-devtools__take_screenshot",
       "mcp__chrome-devtools__list_console_messages",
@@ -106,22 +104,6 @@
       "mcp__chrome-devtools__resize_page",
       "mcp__chrome-devtools__navigate_page_history",
       "mcp__chrome-devtools__wait_for"
-    ],
-    "ask": [
-      "Write(**)",
-      "Edit(**)",
-      "Bash(npm install:*)",
-      "Bash(npm update:*)",
-      "Bash(yarn add:*)",
-      "Bash(yarn remove:*)",
-      "Bash(yarn install:*)",
-      "Bash(pnpm install:*)",
-      "Bash(composer install:*)",
-      "Bash(composer update:*)",
-      "Bash(docker run:*)",
-      "Bash(docker exec:*)",
-      "Bash(git push:*)",
-      "Bash(git -C :* push:*)"
     ],
     "deny": [
       "Read(./.env)",
@@ -192,15 +174,15 @@
       "Bash(git tag -d:*)",
       "Bash(git branch -D:*)",
       "Bash(git config --global:*)",
-      "Bash(git -C :* push --force:*)",
-      "Bash(git -C :* push -f:*)",
-      "Bash(git -C :* reset --hard:*)",
-      "Bash(git -C :* rebase:*)",
-      "Bash(git -C :* clean -fdx:*)",
-      "Bash(git -C :* checkout -f:*)",
-      "Bash(git -C :* tag -d:*)",
-      "Bash(git -C :* branch -D:*)",
-      "Bash(git -C :* config --global:*)",
+      "Bash(git -C * push --force:*)",
+      "Bash(git -C * push -f:*)",
+      "Bash(git -C * reset --hard:*)",
+      "Bash(git -C * rebase:*)",
+      "Bash(git -C * clean -fdx:*)",
+      "Bash(git -C * checkout -f:*)",
+      "Bash(git -C * tag -d:*)",
+      "Bash(git -C * branch -D:*)",
+      "Bash(git -C * config --global:*)",
       "Bash(docker system prune:*)",
       "Bash(docker volume rm:*)",
       "Bash(docker run --privileged:*)",
@@ -227,7 +209,25 @@
       "Bash(az vm delete:*)",
       "Bash(az group delete:*)",
       "Bash(az sql server delete:*)"
-    ]
+    ],
+    "ask": [
+      "Write(**)",
+      "Edit(**)",
+      "Bash(npm install:*)",
+      "Bash(npm update:*)",
+      "Bash(yarn add:*)",
+      "Bash(yarn remove:*)",
+      "Bash(yarn install:*)",
+      "Bash(pnpm install:*)",
+      "Bash(composer install:*)",
+      "Bash(composer update:*)",
+      "Bash(docker run:*)",
+      "Bash(docker exec:*)",
+      "Bash(git push:*)",
+      "Bash(git -C * push:*)"
+    ],
+    "defaultMode": "default",
+    "disableBypassPermissionsMode": "disable"
   },
   "hooks": {
     "Notification": [
@@ -269,7 +269,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r 'if .tool_input.command | test(\"rm -rf|dd if=|:(){ :|:& };:\") then {\"decision\": \"block\", \"reason\": \"危険なコマンドは実行できません。別の方法を検討してください。\"} else empty end'"
+            "command": "jq -r 'if .tool_input.command | test(\"rm -rf|dd if=|:(\\\\)\\\\{ :\\\\|:& \\\\};:\") then {\"decision\": \"block\", \"reason\": \"危険なコマンドは実行できません。別の方法を検討してください。\"} else empty end'"
           }
         ]
       },
