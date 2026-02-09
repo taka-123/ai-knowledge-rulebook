@@ -14,38 +14,26 @@ Windows: %USERPROFILE%\claude.json
 ```json
 {
   "mcpServers": {
-    // serena, filesystem, github はセキュリティや必要性の観点から除外
+    "github": {
+      "type": "http",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_PAT}"
+      }
+    },
     "context7": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@latest"],
-      "env": {}
+      "args": ["-y", "@upstash/context7-mcp"]
     },
-    "chrome-devtools": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["chrome-devtools-mcp@latest"],
-      "env": {}
+    "exa": {
+      "type": "http",
+      "url": "https://mcp.exa.ai/mcp"
     },
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"],
-      "env": {}
-    },
-    "notion": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@notionhq/notion-mcp-server"],
-      "env": {
-        "NOTION_TOKEN": "[ここに自身のNotion Integration Tokenを入れる]"
-      }
-    },
-    "codex": {
-      "type": "stdio",
-      "command": "[which codex の結果]",
-      "args": ["mcp-server"],
-      "env": {}
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }
