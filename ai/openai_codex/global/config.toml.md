@@ -8,36 +8,37 @@
 -->
 
 ```toml
+# ~/.codex/config.toml
+
+## デフォルトモデル
+model = "gpt-5.3-codex"
+
+## 推論コストと安定性のバランス。重いタスク時は都度 /model か --model_reasoning_effort で上げる運用が無難
+model_reasoning_effort = "high"
+
+## 常用する安全ライン（“実行責任付きAI”として使う前提）
+sandbox_mode = "workspace-write"
+
+## 必要なときだけ参照する想定。プロジェクトでは disabled に落とすことが多い
+web_search = "cached"
+
+## 通知音
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Glass.aiff"]
 
-model = "gpt-5-codex"
-model_reasoning_effort = "high"
-sandbox_mode = "workspace-write"
-approval_policy = "on-request"
-
-[tools]
-web_search = true
+## MCPサーバー
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"
 
 [mcp_servers.context7]
 command = "npx"
-args = ["-y", "@upstash/context7-mcp@latest"]
+args = ["-y", "@upstash/context7-mcp"]
 
-[mcp_servers.chrome-devtools]
-command = "npx"
-args = ["chrome-devtools-mcp@latest", "--isolated=true"]
+[mcp_servers.github]
+url = "https://api.githubcopilot.com/mcp/"
+bearer_token_env_var = "GITHUB_PAT"
 
 [mcp_servers.playwright]
 command = "npx"
-args = ["-y", "@playwright/mcp@latest"]
-
-[mcp_servers.notion]
-command = "npx"
-args = ["-y", "@notionhq/notion-mcp-server"]
-env = { NOTION_TOKEN = "[ここに自身のNotion Integration Tokenを入れる]" }
-
-[mcp_servers.claude_code]
-type = "stdio"
-command = "claude"
-args = ["mcp","serve"]
+args = ["@playwright/mcp@latest"]
 
 ```
