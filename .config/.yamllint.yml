@@ -3,6 +3,8 @@ extends: default
 ignore: |
   node_modules/
   .git/
+  .kamui/
+  tmp/
 
 rules:
   # Prettier (printWidth: 120) と競合するため無効化
