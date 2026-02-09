@@ -1,6 +1,6 @@
 ---
 name: agent-factory
-description: ユーザーの要求に基づき、新しい Subagent または Skill を設計・生成します。
+description: ユーザーの要求に基づき、新しい Subagent または Skill を設計・生成する。Subagent/Skill の新規作成を依頼されたとき、または /agent-factory で手動起動。
 disable-model-invocation: true # 重要：Claudeが勝手にエージェントを作らないよう、ユーザー起動(/agent-factory)に限定
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: lint-fix
-description: プロジェクトのリンターを自律検知し、自動修正を試みます。
+description: プロジェクトのリンターを自律検知し自動修正する。コード編集後、lint/format エラー発生時、または「lint 直して」「整形して」の依頼時に使用。
 user-invocable: true
 ---
 
