@@ -13,10 +13,11 @@ OpenAI Codex CLI グローバル設定
 
 ## Codex: 状況に応じたスキルの適用
 
-利用可能な `~/.codex/skills/` の SKILL.md は、タスクに応じて JIT でロードせよ。とくに次の場合は該当スキルをロードしてから作業せよ。
+利用可能な `~/.agents/skills/` の SKILL.md は、タスクに応じて JIT でロードせよ。とくに次の場合は該当スキルをロードしてから作業せよ。
 
 - **CSS・スタイル・UIコンポーネントの編集・追加時** → `ui-standardizer`
 - **lint/format 失敗時・コード編集後の検証時** → `lint-fix`
 - **エラー・不具合・デバッグの依頼時** → `debug-strategist`
 - **複雑な実装の着手前** → `task-planner`
 - **コミットメッセージ・PR 作成時** → `git-helper`
+- **「バックログ用のmd記法」等、Backlog向けMarkdown整形の依頼時** → `backlog-markdown-formatting`
