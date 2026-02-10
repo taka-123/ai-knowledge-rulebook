@@ -29,6 +29,8 @@
    コード編集後は `lint-fix` を、コミット/PR作成時は `git-helper` を活用せよ。
 6. **UI/UX規約 (`ui-standardizer`)**:
    CSSやUIコンポーネントの変更時は、必ずこのスキルでプロジェクト規約の遵守を強制せよ。
+7. **Backlog Markdown整形 (`backlog-markdown-formatting`)**:
+   「バックログ用のmd記法で」などの依頼時は、このスキルで整形ルールを適用せよ。
 
 ## ⚙️ 文脈設計プロトコル (Context Engineering)
 
