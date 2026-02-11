@@ -1,0 +1,31 @@
+# Safe read and validation rules for project intelligence tasks
+
+prefix_rule(
+    pattern = ["pwd"],
+    decision = "allow",
+    justification = "Working directory checks are read-only.",
+)
+
+prefix_rule(
+    pattern = ["ls"],
+    decision = "allow",
+    justification = "Directory listing is read-only.",
+)
+
+prefix_rule(
+    pattern = [["cat", "sed", "rg", "find", "git"], ["--help", "status", "log", "show", "diff", "branch", "ls-files"]],
+    decision = "allow",
+    justification = "Inspection commands are read-only when used for scanning.",
+)
+
+prefix_rule(
+    pattern = ["npm", "run", ["format:check", "lint", "lint:md", "lint:yaml", "lint:json", "schema:check"]],
+    decision = "allow",
+    justification = "Standard validation commands are safe to run.",
+)
+
+prefix_rule(
+    pattern = ["./format.sh", "check"],
+    decision = "allow",
+    justification = "Check mode is safe and read-oriented.",
+)

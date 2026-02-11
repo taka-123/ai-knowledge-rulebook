@@ -31,3 +31,19 @@ alwaysApply: true
 ## External Facts
 
 - 時事性/仕様依存の情報は `@~/.cursor/agents/tech-researcher.md` を使用し、URL と取得日を必ず添付する。
+
+## Minimal Trigger Dictionary (Cross-Tool Names)
+
+- `最新仕様` `release` `API変更` `依存更新` -> `tech-researcher`
+- `影響範囲` `参照追跡` `構造調査` -> `codebase-explorer`
+- `レビュー` `回帰` `PR確認` -> `task-reviewer`
+- `lint` `format` `schema` `test` `CI` -> `lint-fix`
+- `debug` `不具合` `再現` `stacktrace` -> `debug-strategist`
+- `計画` `分解` `実装手順` -> `task-planner`
+- `UI` `CSS` `デザイン` `レイアウト` -> `ui-standardizer`
+- `commit` `branch` `PR` `changelog` -> `git-helper`
+- `agent作成` `skill作成` `rule作成` `workflow作成` -> `agent-factory`
+
+## High-Risk Guard
+
+- `deploy` `migrate` `terraform apply` `git push --force` は必ずユーザー承認を取る。

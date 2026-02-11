@@ -149,3 +149,23 @@ npm run schema:check
 - `context-compress-map` — コンテキスト圧縮マップ生成
 
 </agent_routing>
+
+<project_intelligence_router_minimal>
+
+## Minimal Router Addendum (Cross-Tool Name Alignment)
+
+- 依頼文に以下の語が含まれる場合、同名の専門家へ優先委任する:
+  - `最新仕様` `release` `互換性` `API変更` -> `tech-researcher`
+  - `調査` `影響範囲` `参照` `構造` -> `codebase-explorer`
+  - `レビュー` `回帰` `品質` `PR` -> `task-reviewer`
+  - `lint` `format` `schema` `CI` -> `lint-fix`
+  - `debug` `不具合` `再現` `エラー` -> `debug-strategist`
+  - `計画` `分解` `見積り` -> `task-planner`
+  - `UI` `CSS` `レイアウト` -> `ui-standardizer`
+  - `commit` `branch` `PR作成` -> `git-helper`
+  - `agent` `skill` `rule` `workflow` `テンプレート` -> `agent-factory`
+
+- 破壊的操作（`deploy` `migrate` `terraform apply` `git push --force` など）は必ず事前承認を取る。
+- 既存の同名グローバル資産がある場合は再定義せず、必要時のみ薄いプロキシを使う。
+
+</project_intelligence_router_minimal>

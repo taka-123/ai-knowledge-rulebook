@@ -1,0 +1,43 @@
+# Prompt/forbidden rules for high-risk operations
+
+prefix_rule(
+    pattern = ["npm", "run", ["format", "fix", "fix:md", "fix:yaml", "fix:json"]],
+    decision = "prompt",
+    justification = "Auto-fix commands modify repository files.",
+)
+
+prefix_rule(
+    pattern = ["git", ["add", "commit", "merge", "tag", "push"]],
+    decision = "prompt",
+    justification = "Git write operations require explicit approval.",
+)
+
+prefix_rule(
+    pattern = [["terraform", "kubectl", "helm", "vercel", "flyctl", "netlify", "aws", "gcloud", "az"]],
+    decision = "prompt",
+    justification = "Deploy/infra changes require approval.",
+)
+
+prefix_rule(
+    pattern = [["prisma", "alembic", "flyway", "liquibase", "drizzle-kit", "knex"]],
+    decision = "prompt",
+    justification = "Migration commands alter persistent data and require approval.",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "Force push is forbidden.",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "Hard reset can irreversibly remove local work.",
+)
+
+prefix_rule(
+    pattern = ["rm", "-rf", "/"],
+    decision = "forbidden",
+    justification = "Destructive system command is forbidden.",
+)
