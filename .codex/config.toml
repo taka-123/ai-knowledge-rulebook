@@ -1,0 +1,14 @@
+[project]
+name = "ai-knowledge-rulebook"
+trust = true
+
+[paths]
+rules_dir = ".codex/rules"
+skills_dir = ".agents/skills"
+
+[routing]
+primary_agents = ["tech-researcher", "codebase-explorer", "task-reviewer"]
+primary_skills = ["agent-factory", "debug-strategist", "git-helper", "lint-fix", "task-planner", "ui-standardizer"]
+
+[safety]
+require_approval_for = ["deploy", "migrate", "terraform apply", "git push --force", "db schema change"]
