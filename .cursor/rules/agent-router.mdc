@@ -32,18 +32,35 @@ alwaysApply: true
 
 - 時事性/仕様依存の情報は `@~/.cursor/agents/tech-researcher.md` を使用し、URL と取得日を必ず添付する。
 
-## Minimal Trigger Dictionary (Cross-Tool Names)
+## Trigger Dictionary (Cross-Tool Canonical Names)
 
-- `最新仕様` `release` `API変更` `依存更新` -> `tech-researcher`
-- `影響範囲` `参照追跡` `構造調査` -> `codebase-explorer`
-- `レビュー` `回帰` `PR確認` -> `task-reviewer`
+If multiple match, prefer Tier 1 > Tier 2 > Tier 3.
+
+### Tier 1 — Agents
+
+- `最新仕様` `release` `API変更` `依存更新` `changelog` `version` -> `tech-researcher`
+- `影響範囲` `参照追跡` `構造調査` `dependency map` -> `codebase-explorer`
+- `レビュー` `回帰` `PR確認` `品質` -> `task-reviewer`
+
+### Tier 2 — Global Skills
+
 - `lint` `format` `schema` `test` `CI` -> `lint-fix`
-- `debug` `不具合` `再現` `stacktrace` -> `debug-strategist`
-- `計画` `分解` `実装手順` -> `task-planner`
-- `UI` `CSS` `デザイン` `レイアウト` -> `ui-standardizer`
-- `commit` `branch` `PR` `changelog` -> `git-helper`
-- `agent作成` `skill作成` `rule作成` `workflow作成` -> `agent-factory`
+- `debug` `不具合` `再現` `stacktrace` `CI failure` -> `debug-strategist`
+- `計画` `分解` `実装手順` `milestone` `roadmap` -> `task-planner`
+- `UI` `CSS` `デザイン` `レイアウト` `accessibility` -> `ui-standardizer`
+- `commit` `branch` `PR` `changelog` `release` -> `git-helper`
+- `agent作成` `skill作成` `rule作成` `workflow作成` `template` -> `agent-factory`
+
+### Tier 3 — Project Skills
+
+- `ドキュメント作成` `notes` `clips` `ai profile` -> `documentation-standards`
+- `技術情報` `仕様確認` `出典` `citation` -> `research-protocol`
+- `新規ファイル` `テンプレート` `scaffold` `ノート作成` -> `content-scaffold`
+- `json validation` `スキーマ検証` `ai profile json` -> `schema-guard`
+- `format check` `lint error` `CI通過確認` `整形` -> `format-lint-audit`
+- `README` `directory` `structure` `ドキュメント同期` -> `docs-sync`
+- `要約` `圧縮` `map` `context` `サマリー` -> `context-compress-map`
 
 ## High-Risk Guard
 
-- `deploy` `migrate` `terraform apply` `git push --force` は必ずユーザー承認を取る。
+<SCRUTINY_REQUIRED> `deploy` `migrate` `terraform apply` `git push --force` — 承認必須。

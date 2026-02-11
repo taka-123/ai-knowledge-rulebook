@@ -5,9 +5,9 @@ description: Build concise implementation plans for complex tasks. Auto-trigger 
 
 # Task Planner
 
-## Single Workflow
+## ワークフロー
 
-1. Define goal and constraints.
-2. Split work into small verifiable steps.
-3. Mark risks and approval-gated operations.
-4. Track progress and completion criteria.
+1. 目標と制約条件を定義する。
+2. 検証可能な小タスクに分割する。
+3. リスクと承認が必要な操作を明示する。
+4. 進捗と完了条件を追跡する。

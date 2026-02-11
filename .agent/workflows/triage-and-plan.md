@@ -1,6 +1,6 @@
 # Workflow: triage-and-plan
 
-1. Clarify goal, scope, and constraints.
-2. Classify task risk (low/normal/high).
-3. Build a 3-5 step minimal plan.
-4. Mark approval-required steps.
+1. 目標、スコープ、制約を明確にする。
+2. タスクのリスクを分類する（low / normal / high）。
+3. 3〜5 ステップの最小計画を立てる。
+4. 承認が必要なステップを明示する。

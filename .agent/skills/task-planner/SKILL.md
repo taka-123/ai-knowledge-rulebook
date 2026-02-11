@@ -5,9 +5,9 @@ description: Plan complex work into verifiable steps. Auto-trigger keywords: pla
 
 # Task Planner
 
-## Single Workflow
+## ワークフロー
 
-1. Define goal and assumptions.
-2. Split into ordered small tasks.
-3. Add risks and dependencies.
-4. Define completion checks.
+1. 目標と前提条件を定義する。
+2. 順序付きの小タスクに分割する。
+3. リスクと依存関係を追加する。
+4. 完了条件を定義する。

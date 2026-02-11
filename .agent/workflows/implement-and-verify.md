@@ -1,6 +1,6 @@
 # Workflow: implement-and-verify
 
-1. Implement one small step at a time.
-2. Run the smallest relevant verification command.
-3. Record changed paths and observed outcomes.
-4. Stop and ask approval before risky operations.
+1. 一度に 1 つの小さなステップを実装する。
+2. 最も関連性の高い検証コマンドを実行する。
+3. 変更パスと観測結果を記録する。
+4. リスクのある操作の前に承認を求める。

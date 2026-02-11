@@ -5,13 +5,13 @@ description: Support safe git/PR/release flow. Auto-trigger keywords: commit, br
 
 # Git Helper
 
-## Single Workflow
+## ワークフロー
 
-1. Summarize scope and branch state.
-2. Propose commit and PR steps.
-3. Flag risky commands and request approval.
-4. Provide safe command sequence.
+1. 変更範囲とブランチの状態を要約する。
+2. コミットと PR の手順を提案する。
+3. リスクのある操作を明示し、承認を求める。
+4. 安全なコマンドシーケンスを提示する。
 
-## Safety
+## 安全規約
 
-- `git push --force` is forbidden.
+- `git push --force` は実行禁止。

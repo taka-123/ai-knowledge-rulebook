@@ -5,9 +5,9 @@ description: Fix lint/format/schema issues with minimal edits. Auto-trigger keyw
 
 # Lint Fix
 
-## Single Workflow
+## ワークフロー
 
-1. Detect failing command.
-2. Fix only the offending scope.
-3. Re-run minimal verification.
-4. Report pass/fail and residual issues.
+1. 失敗しているコマンドを検出する。
+2. 問題箇所のみを修正する。
+3. 最小限の再検証を実行する。
+4. pass/fail と残存問題を報告する。

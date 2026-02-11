@@ -5,9 +5,9 @@ description: Keep UI/CSS updates consistent and intentional. Auto-trigger keywor
 
 # UI Standardizer
 
-## Single Workflow
+## ワークフロー
 
-1. Identify current design language.
-2. Propose minimal consistent UI/CSS updates.
-3. Check desktop/mobile and accessibility impact.
-4. Summarize tradeoffs.
+1. 現在のデザイン言語を把握する。
+2. 一貫性のある最小限の UI/CSS 変更を提案する。
+3. デスクトップ/モバイルおよびアクセシビリティへの影響を確認する。
+4. トレードオフを要約する。

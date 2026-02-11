@@ -152,20 +152,39 @@ npm run schema:check
 
 <project_intelligence_router_minimal>
 
-## Minimal Router Addendum (Cross-Tool Name Alignment)
+## Minimal Router Addendum (Cross-Tool Canonical Names)
 
-- 依頼文に以下の語が含まれる場合、同名の専門家へ優先委任する:
-  - `最新仕様` `release` `互換性` `API変更` -> `tech-researcher`
-  - `調査` `影響範囲` `参照` `構造` -> `codebase-explorer`
-  - `レビュー` `回帰` `品質` `PR` -> `task-reviewer`
-  - `lint` `format` `schema` `CI` -> `lint-fix`
-  - `debug` `不具合` `再現` `エラー` -> `debug-strategist`
-  - `計画` `分解` `見積り` -> `task-planner`
-  - `UI` `CSS` `レイアウト` -> `ui-standardizer`
-  - `commit` `branch` `PR作成` -> `git-helper`
-  - `agent` `skill` `rule` `workflow` `テンプレート` -> `agent-factory`
+依頼文に以下の語が含まれる場合、同名の専門家へ優先委任する。
+複数マッチ時は Tier 1 > Tier 2 > Tier 3 を優先。
 
-- 破壊的操作（`deploy` `migrate` `terraform apply` `git push --force` など）は必ず事前承認を取る。
+### Tier 1 — Agents
+
+- `最新仕様` `release` `互換性` `API変更` `changelog` `version` `依存更新` -> `tech-researcher`
+- `調査` `影響範囲` `参照` `構造` `dependency map` -> `codebase-explorer`
+- `レビュー` `回帰` `品質` `PR` -> `task-reviewer`
+
+### Tier 2 — Global Skills
+
+- `lint` `format` `schema` `CI` `test` -> `lint-fix`
+- `debug` `不具合` `再現` `エラー` `stacktrace` `CI failure` -> `debug-strategist`
+- `計画` `分解` `見積り` `milestone` `roadmap` `実装手順` -> `task-planner`
+- `UI` `CSS` `レイアウト` `accessibility` -> `ui-standardizer`
+- `commit` `branch` `PR作成` `changelog` `release` -> `git-helper`
+- `agent` `skill` `rule` `workflow` `テンプレート` -> `agent-factory`
+
+### Tier 3 — Project Skills
+
+- `ドキュメント作成` `notes` `clips` `ai profile` -> `documentation-standards`
+- `技術情報` `仕様確認` `出典` `citation` -> `research-protocol`
+- `新規ファイル` `テンプレート` `scaffold` `ノート作成` -> `content-scaffold`
+- `json validation` `スキーマ検証` `ai profile json` -> `schema-guard`
+- `format check` `lint error` `CI通過確認` `整形` -> `format-lint-audit`
+- `README` `directory` `structure` `ドキュメント同期` -> `docs-sync`
+- `要約` `圧縮` `map` `context` `サマリー` -> `context-compress-map`
+
+### Safety
+
+- <SCRUTINY_REQUIRED> 破壊的操作（`deploy` `migrate` `terraform apply` `git push --force`）は承認必須。
 - 既存の同名グローバル資産がある場合は再定義せず、必要時のみ薄いプロキシを使う。
 
 </project_intelligence_router_minimal>
