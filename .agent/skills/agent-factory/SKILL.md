@@ -5,9 +5,9 @@ description: Create focused agent/skill/rule/workflow files. Auto-trigger keywor
 
 # Agent Factory
 
-## Single Workflow
+## ワークフロー
 
-1. Resolve target path and intent.
-2. Generate one minimal definition.
-3. Include explicit trigger words.
-4. Add safety constraints if high-risk actions are related.
+1. 対象パスと意図を特定する。
+2. 最小限の定義ファイルを 1 つ生成する。
+3. 明示的なトリガーワードを含める。
+4. 高リスク操作に関連する場合は安全規約を追加する。

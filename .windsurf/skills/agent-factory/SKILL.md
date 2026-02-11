@@ -5,9 +5,9 @@ description: Create minimal agent/skill/rule/workflow definitions. Auto-trigger 
 
 # Agent Factory
 
-## Single Workflow
+## ワークフロー
 
-1. Confirm target tool and destination path.
-2. Create one focused definition file.
-3. Include trigger keywords in description.
-4. Add safety note for destructive operations when relevant.
+1. 対象ツールと配置先パスを確認する。
+2. 最小限の定義ファイルを 1 つ生成する。
+3. description にトリガーキーワードを含める。
+4. 破壊的操作に関連する場合は安全規約を追記する。

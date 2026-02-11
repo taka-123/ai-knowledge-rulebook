@@ -5,9 +5,9 @@ description: Debug failing behavior with reproduce-isolate-fix loop. Auto-trigge
 
 # Debug Strategist
 
-## Single Workflow
+## ワークフロー
 
-1. Reproduce the failure.
-2. Isolate root cause.
-3. Apply minimal fix.
-4. Verify with the closest lint/test command.
+1. 問題を再現する。
+2. 根本原因を特定する。
+3. 最小限の修正を適用する。
+4. 最も近い lint/test コマンドで検証する。

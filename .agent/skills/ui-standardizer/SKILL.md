@@ -5,9 +5,9 @@ description: Standardize UI/CSS updates for consistency and clarity. Auto-trigge
 
 # UI Standardizer
 
-## Single Workflow
+## ワークフロー
 
-1. Assess current style patterns.
-2. Propose minimal consistent changes.
-3. Validate responsive/accessibility impact.
-4. Report tradeoffs and next actions.
+1. 現在のスタイルパターンを評価する。
+2. 一貫性のある最小限の変更を提案する。
+3. レスポンシブ・アクセシビリティへの影響を検証する。
+4. トレードオフと次のアクションを報告する。

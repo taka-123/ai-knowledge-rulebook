@@ -5,13 +5,13 @@ description: Break down complex implementation into small verifiable steps. Auto
 
 # Task Planner
 
-## Single Workflow
+## ワークフロー
 
-1. Define goal, constraints, and non-goals.
-2. Split into 3-5 ordered steps with success criteria.
-3. Mark high-risk steps (deploy/migrate/data-impact) as approval-gated.
-4. Execute in minimal increments and track completion.
+1. 目的、制約、非目標を定義する。
+2. 成功基準付きの 3〜5 ステップに分割する。
+3. 高リスクステップ（deploy/migrate/データ影響）を承認ゲート付きにする。
+4. 最小単位で実行し、完了を追跡する。
 
-## Output Contract
+## 出力規約
 
-- Provide concise checklist and current step.
+- 簡潔なチェックリストと現在のステップを提示する。

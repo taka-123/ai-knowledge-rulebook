@@ -5,13 +5,13 @@ description: Resolve lint/format/schema failures with minimal edits. Auto-trigge
 
 # Lint Fix
 
-## Single Workflow
+## ワークフロー
 
-1. Identify failing lint/format/schema command.
-2. Apply the smallest patch to satisfy the failing rule.
-3. Re-run only the necessary verification command(s).
-4. Report pass/fail with remaining risks.
+1. 失敗している lint/format/schema コマンドを特定する。
+2. 失敗ルールを満たす最小のパッチを適用する。
+3. 必要な検証コマンドのみを再実行する。
+4. pass/fail と残存リスクを報告する。
 
-## Safety
+## 安全規約
 
-- Auto-fix commands that modify many files require user confirmation.
+- 大量ファイルを変更する自動修正はユーザー確認が必要。

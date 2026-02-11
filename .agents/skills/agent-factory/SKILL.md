@@ -5,15 +5,15 @@ description: Create or update one agent/skill/rule/workflow at a time with minim
 
 # Agent Factory
 
-## Single Workflow
+## ワークフロー
 
-1. Confirm target tool and destination path.
-2. Reuse existing names (`tech-researcher`, `codebase-explorer`, `task-reviewer`, `agent-factory`, `debug-strategist`, `git-helper`, `lint-fix`, `task-planner`, `ui-standardizer`).
-3. Generate a minimal file with one purpose only.
-4. Add trigger keywords to description for auto-activation.
-5. Mark deploy/migrate/push --force as approval-required when relevant.
+1. 対象ツールと配置パスを確認する。
+2. 既存の正規名（`tech-researcher`, `codebase-explorer` 等）を再利用し、重複を避ける。
+3. 1ファイル＝1目的で最小限のファイルを生成する。
+4. description に発火キーワードを含め、自動検出を有効にする。
+5. deploy/migrate/push --force が関わる場合は承認必須と明記する。
 
-## Output Contract
+## 出力規約
 
-- Report created or edited paths only.
-- Explain role in one line per file.
+- 作成・編集したパスのみ報告する。
+- 各ファイルの役割を1行で説明する。

@@ -5,14 +5,14 @@ description: Prepare safe git workflows for commit/PR/review/release tasks. Auto
 
 # Git Helper
 
-## Single Workflow
+## ワークフロー
 
-1. Summarize changed scope and branch context.
-2. Propose minimal commit grouping and PR checklist.
-3. Highlight risky operations and require confirmation.
-4. Provide non-destructive git command suggestions.
+1. 変更範囲とブランチの状態を要約する。
+2. 最小限のコミットグループと PR チェックリストを提案する。
+3. リスクのある操作を明示し、確認を求める。
+4. 非破壊的な git コマンドのみを提案する。
 
-## Safety
+## 安全規約
 
-- Never run `git push --force`.
-- Any push, merge, or history rewrite needs explicit approval.
+- `git push --force` は実行禁止。
+- <SCRUTINY_REQUIRED> push, merge, 履歴書き換えは承認必須。
