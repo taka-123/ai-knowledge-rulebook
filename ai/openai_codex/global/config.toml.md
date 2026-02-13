@@ -41,4 +41,8 @@ bearer_token_env_var = "GITHUB_PAT"
 command = "npx"
 args = ["@playwright/mcp@latest"]
 
+[mcp_servers.drawio]
+command = "npx"
+args = ["-y", "@drawio/mcp"]
+
 ```

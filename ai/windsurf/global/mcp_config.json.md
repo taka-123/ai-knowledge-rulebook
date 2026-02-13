@@ -12,13 +12,26 @@ Windows: %APPDATA%\Codeium\windsurf\mcp_config.json
 ```json
 {
   "mcpServers": {
-    "mcp-hub": {
+    "github": {
+      "url": "https://api.githubcopilot.com/mcp/",
+      "headers": {
+        "Authorization": "Bearer <PLACEHOLDER_GITHUB_PAT>"
+      }
+    },
+    "context7": {
       "command": "npx",
-      "args": [
-        "-y",
-        "mcp-hub-mcp@latest",
-        "~/.codeium/windsurf/mcp-hub-mcp.json"
-      ]
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "exa": {
+      "url": "https://mcp.exa.ai/mcp"
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "drawio": {
+      "command": "npx",
+      "args": ["-y", "@drawio/mcp"]
     }
   }
 }
