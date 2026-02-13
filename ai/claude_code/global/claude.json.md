@@ -34,6 +34,10 @@ Windows: %USERPROFILE%\claude.json
       "type": "stdio",
       "command": "npx",
       "args": ["@playwright/mcp@latest"]
+    },
+    "drawio": {
+      "command": "npx",
+      "args": ["-y", "@drawio/mcp"]
     }
   }
 }
