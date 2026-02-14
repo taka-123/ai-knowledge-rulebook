@@ -1,81 +1,41 @@
 ---
 name: documentation-standards
-description: このリポジトリのドキュメント記述規約を強制チェックするスキル。ドキュメント作成・編集・レビュー時に適用されるべき規約の审査を行う。キーワード「ドキュメント作成」「notes」「clips」「ai/ プロファイル」「レビュー」で自動検出。
-user-invocable: true
-allowed-tools: Read, Grep, Glob
+description: Use when repository documents must follow consistent Japanese technical writing style, file references, and verification notes; When NOT to use: code-only refactors with no documentation output; Trigger Keywords: ドキュメント, 記述規約, 文章品質, 参照, 構成.
 ---
 
-# Documentation Standards Skill
+# documentation-standards
 
-このスキルは ai-knowledge-rulebook プロジェクトの記述規約を強制する。
+## When to use
 
-## 適用範囲
+- 技術文書の体裁を統一する。
+- 参照パスと検証記述を明確化する。
 
-| ディレクトリ | 適用される規約                                   |
-| ------------ | ------------------------------------------------ |
-| `notes/`     | FrontMatter必須、H1は1つのみ、見出し階層         |
-| `clips/`     | 引用元URL・取得日必須、要約であることの明示      |
-| `ai/`        | スキーマ適合、既存プロファイルとのスタイル一貫性 |
-| `policy/`    | 既存スタイル維持、変更の最小化                   |
-| `snippets/`  | コードブロックに言語指定、見出し構造             |
+## When NOT to use
 
-## 規約詳細
+- ドキュメント更新が発生しない修正。
+- 内部検証のみの一時作業。
 
-### FrontMatter（`notes/` 配下のみ）
+## Trigger Keywords
 
-**必須フィールド**:
+- ドキュメント
+- 記述規約
+- 文章品質
+- 参照
+- 構成
 
-```yaml
----
-created: YYYY-MM-DD
-updated: YYYY-MM-DD
-tags:
-  - tag1
-  - tag2
----
-```
+## Examples
 
-- `created`: 初規作成日。一度設定したら変更しない。
-- `updated`: 最後に変更した日付。編集のたびに更新する。
-- `tags`: 1つ以上の配列。検索・分類の根拠となる。
+### Example 1
 
-### 見出し構造
+Input: AI_SCAN の報告書を規約準拠に整えて。
+Output: 結論先行、根拠明示、ファイル参照付きの構成へ修正する。
 
-- H1 (`#`) はファイルに **1つのみ**。
-- H2以降は階層的に使用する。
-- 見出しの前後には空行を入れる。
+### Example 2
 
-### リンク規約
+Input: 手順書が冗長なので簡潔化したい。
+Output: 重複説明を除去し、実行コマンドと判定基準を分離して整理する。
 
-- **内部リンク**: 相対パスで記載する。
-- **外部リンク**: 必ず出典・取得日を明記する。
+### Example 3
 
-```markdown
-[公式ドキュメント](https://example.com/docs)（出典: 2025-01-05 取得）
-```
-
-### 禁止事項
-
-- 個人情報・機密情報（APIキーなど）の記載
-- 未検証の技術情報を「確定事項」として記載すること
-- 推測と事実の混同（区別が明確でない記述）
-
-## 審査フロー
-
-1. 対象ファイルのディレクトリを特定する。
-2. 該当ディレクトリの規約を照合する。
-3. 逸脱項目を列挙し、修正案を提示する。
-4. 逸脱なしの場合は `✅ 規約準拠確認済み` のみ報告する。
-
-## 報告形式
-
-```markdown
-## Documentation Standards 審査結果
-
-**対象**: [パス]
-
-- FrontMatter: ✅ / ⚠️ [詳細]
-- 見出し構造: ✅ / ⚠️ [詳細]
-- リンク規約: ✅ / ⚠️ [詳細]
-- 禁止事項: ✅ / ⚠️ [詳細]
-```
+Input: パス表記を統一して読みやすくして。
+Output: すべてのファイル参照をコード形式へ統一し、曖昧参照を削除する。

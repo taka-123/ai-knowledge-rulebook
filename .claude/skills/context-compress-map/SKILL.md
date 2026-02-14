@@ -1,53 +1,41 @@
 ---
 name: context-compress-map
-description: 長いコンテキストを決定に必要な最小の構造化マップに圧縮するスキル。キーワード「要約」「圧縮」「map」「context」「サマリー」で自動検出。メインコンテキストの情報密度を維持するために使用する。
-user-invocable: true
-allowed-tools: Read
-disable-model-invocation: true
+description: Use when large repository context must be compressed into a navigable map of files, decisions, and next actions without losing traceability; When NOT to use: short single-file tasks with obvious scope; Trigger Keywords: 要約, コンテキスト, map, 全体像, 影響範囲.
 ---
 
-# Context Compress Map
+# context-compress-map
 
-長いコンテキストを「決定に必要な最小情報」に圧縮し、構造化マップとして出力する。グローバル原則「メインコンテキストの情報密度を最高に保て」の実装形です。
+## When to use
 
-## 実行手順
+- 大量情報を圧縮して共有したい。
+- 影響範囲を短時間で把握したい。
 
-1. コンテキストの中から「核心の目標」と「それを支える最小事実」を特定する。
-2. 物語的な説明や反復を除去する。決定に関連する項目のみを残す。
-3. 以下のマップ形式で出力する。余分な文章は一切付けない。
+## When NOT to use
 
-## 出力形式（Map Only）
+- スコープが明白な単一ファイル作業。
+- 要約不要な短い回答。
 
-```markdown
-## Compressed Map
+## Trigger Keywords
 
-**目的**: [核心の目標]
-**前提**: [固定された条件]
+- 要約
+- コンテキスト
+- map
+- 全体像
+- 影響範囲
 
-### 主要事実
+## Examples
 
-- [事実1]
-- [事実2]
+### Example 1
 
-### 決定済み
+Input: このリポジトリの AI ルール構成を3分で理解できる形にして。
+Output: ルール階層、Skill配置、検証コマンドを図式化した要約を作成する。
 
-- [既に決まっていること]
+### Example 2
 
-### 未決
+Input: 変更候補ファイルを優先度付きで整理して。
+Output: P0/P1/P2 の優先度でファイル一覧と理由を提示する。
 
-- [まだ決まっていないこと]
+### Example 3
 
-### リスク
-
-- [注意すべき事項]
-
-### 次の手
-
-- [推奨アクション]
-```
-
-## 制約
-
-- 出力はマップ形式のみ。「はい」「わかりました」のような余分な応答は付けない。
-- 圧縮により情報が失われる場合は、元の情報へのポインタ（ファイルパス・セクション名等）を残す。
-- 編集を伴った場合は、必要な検証コマンドが実行されたことを確認する。
+Input: 次の実装フェーズへ引き継ぐための圧縮メモを作って。
+Output: 完了項目、未完項目、再開コマンドを含む再開マップを生成する。

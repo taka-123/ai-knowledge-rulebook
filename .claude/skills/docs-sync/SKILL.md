@@ -1,45 +1,41 @@
 ---
 name: docs-sync
-description: リポジトリの変更後に README.md・directorystructure.md・technologystack.md が実態と一致しているか確認し、不整合があれば同期するスキル。キーワード「README」「directory」「structure」「tech stack」「ドキュメント同期」「構成変更」で自動検出。
-user-invocable: true
-allowed-tools: Read, Glob, Bash
-disable-model-invocation: true
+description: Use when README, directory structure, and technology stack documents must be synchronized with current repository reality; When NOT to use: isolated feature work without documentation impact; Trigger Keywords: README, directorystructure, technologystack, 同期, 実態反映.
 ---
 
-# Docs Sync
+# docs-sync
 
-リポジトリの構成やスタックに変更があった際に、以下3つのドキュメントが実態と一致しているか確認し、不整合があれば最小限に同期する。
+## When to use
 
-対象ドキュメント:
+- 主要ドキュメントを実態と同期したい。
+- 構成変更に伴って説明を更新する。
 
-- `README.md`
-- `directorystructure.md`
-- `technologystack.md`
+## When NOT to use
 
-## 実行手順
+- ドキュメント非対象の作業。
+- 実態差分が無い場合。
 
-1. 変更セット（追加・削除・変更されたディレクトリ・ファイル・スタック）を特定する。
-2. 上記3ファイルを読み込み、変更セットと照合する。
-3. 不整合があれば、確認済みの事実のみを最小限で反映する。推測による変更は行わない。
-4. 編集後は `./format.sh check` を実行し結果を報告する。
+## Trigger Keywords
 
-## 判定ルール
+- README
+- directorystructure
+- technologystack
+- 同期
+- 実態反映
 
-- 確認済みの変更のみを反映する。推測は一切行わない。
-- 既存のスタイルと一貫性を維持する。
-- 変更は最小限に収める。
+## Examples
 
-## 出力形式
+### Example 1
 
-```markdown
-## Docs Sync 結果
+Input: 新しい rules ディレクトリ追加をドキュメントへ反映して。
+Output: `directorystructure.md` の該当ツリーを更新し、README の参照を整合させる。
 
-- **対象ドキュメント**: [更新したファイル]
-- **更新内容**: [何を・なぜ変更したか]
-- **検証**: ./format.sh check の結果
-```
+### Example 2
 
-## 制約
+Input: 実行コマンドが変わったので説明を同期して。
+Output: `package.json` の scripts と一致するように運用手順を更新する。
 
-- 3つの対象ドキュメント以外を変更してはならない。
-- 編集後の検証は必須。
+### Example 3
+
+Input: 技術スタックのバージョン表記を実態に合わせたい。
+Output: `technologystack.md` を現行 `package.json`/実行環境に合わせて修正する。

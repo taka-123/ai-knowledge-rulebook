@@ -1,0 +1,15 @@
+---
+description: Trigger keyword map for canonical skills.
+globs:
+  - "**/*"
+alwaysApply: false
+---
+
+- `task-planner`: 計画, 分解, roadmap, milestone
+- `debug-strategist`: debug, 不具合, 再現, stacktrace
+- `lint-fix`: lint, format, markdownlint, prettier, yamllint
+- `schema-guard`: schema, JSON検証, ajv
+- `docs-sync`: README, directorystructure, technologystack, 同期
+- `context-compress-map`: 要約, コンテキスト, 全体像
+
+Each route must resolve to `.claude/skills/<name>/SKILL.md`.

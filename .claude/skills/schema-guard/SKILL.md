@@ -1,39 +1,41 @@
 ---
 name: schema-guard
-description: ai/ と notes/ の JSON が schemas/ で定義されたスキーマに適合するか検証するスキル。キーワード「schema」「json validation」「ai profile」「notes json」「スキーマ検証」で自動検出。
-user-invocable: true
-allowed-tools: Read, Bash
-disable-model-invocation: true
+description: Use when JSON assets must conform to repository schemas and validation output must be interpreted into minimal corrective edits; When NOT to use: non-JSON tasks with no schema boundary; Trigger Keywords: schema, JSON検証, check-jsonschema, ajv, 型整合.
 ---
 
-# Schema Guard
+# schema-guard
 
-`ai/` と `notes/` 配下の JSON ファイルが `schemas/` で定義されたスキーマに適合するか検証する。
+## When to use
 
-## 実行手順
+- JSON がスキーマ適合しているか検証する。
+- 検証エラーを最小差分で直す。
 
-1. `npm run schema:check` を実行する。
-2. 失敗した場合、出力から対象ファイルと不適合フィールドを特定する。
-3. 最小限の修正を提示し、再実行で検証を確認する。
+## When NOT to use
 
-## 判定ルール
+- JSON を扱わない作業。
+- スキーマ外の仕様議論。
 
-- スキーマ自体は明示的な指示がない場合は変更しない。
-- データファイルの修正をスキーマの緩和より優先する。
+## Trigger Keywords
 
-## 出力形式
+- schema
+- JSON検証
+- check-jsonschema
+- ajv
+- 型整合
 
-```markdown
-## Schema Guard 検証結果
+## Examples
 
-- **コマンド**: npm run schema:check
-- **結果**: pass / fail
-- **問題**: [不適合ファイルとフィールド]
-- **修正方針**: [最小限の変更内容]
-- **再検証**: 実施済み / 未実施
-```
+### Example 1
 
-## 制約
+Input: `notes/*.json` を schema に合わせて検証して。
+Output: `npm run schema:check` の結果を解析し、違反キーのみ修正案を提示する。
 
-- 検証コマンドの出力を必ず報告に含める。
-- 再チェックの結果も報告する。
+### Example 2
+
+Input: AI profile JSON の不整合を見つけて。
+Output: `schemas/ai_profile.schema.json` との不一致点を行単位で列挙する。
+
+### Example 3
+
+Input: 検証失敗時の直し方を具体化して。
+Output: 必須キー追加、型変換、不要キー削除の順で最小修正手順を示す。

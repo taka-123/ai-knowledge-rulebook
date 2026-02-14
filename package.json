@@ -15,6 +15,9 @@
     "fix:yaml": "prettier --write '**/*.{yml,yaml}' --ignore-path .prettierignore",
     "fix:json": "prettier --write '**/*.{json,jsonc}' --ignore-path .prettierignore",
     "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true",
+    "skills:check": "node scripts/validate-skills.mjs",
+    "routing:check": "node scripts/validate-routing.mjs",
+    "agent:check": "npm run skills:check && npm run routing:check",
     "lint:staged": "lint-staged",
     "prepare": "husky install"
   },

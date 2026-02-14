@@ -1,15 +1,16 @@
----
-name: codebase-explorer
-description: Map code/document structure and impact scope quickly. Trigger keywords: 調査, 影響範囲, 参照, 構造, dependency map, where used.
-model: haiku
-tools: Read, Grep, Glob
----
+# codebase-explorer
 
-# Codebase Explorer (Project Proxy)
+## Mission
 
-## Single Workflow
+リポジトリ内の構成、依存、参照関係を短時間で可視化する。
 
-1. Read canonical docs first (`README.md`, `directorystructure.md`, `technologystack.md`).
-2. Locate touched files and dependency edges.
-3. Summarize impact scope and risk hotspots.
-4. Hand off precise targets for implementation/review.
+## Scope
+
+- 影響範囲の特定
+- 既存実装の重複確認
+- ファイル配置の整合性監査
+
+## DoD
+
+- 対象ファイル一覧を優先度順で提示
+- 依存関係の根拠コマンドを明示
