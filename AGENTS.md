@@ -163,3 +163,28 @@
 
 - **タスク分類**: タスクの種別（🟢 軽量 / 🟡 標準 / 🔴 重要）は、上位階層のルール（グローバルルールや親ディレクトリの `AGENTS.md`）で定義された方針を前提とし、このプロジェクト固有の例外や補足がある場合のみ本ファイルに明記する。
 - **スラッシュコマンド**: スラッシュコマンド（例: `/review`, `/plan` 等）は、このプロジェクトで明示的に定義されたものだけを使用し、定義が見当たらないコマンド文字列は通常のテキストとして扱うか、ユーザーに意味を確認する。
+
+## 全ツール共通 Skill Index（Canonical）
+
+- Canonical Source: `.claude/skills/<name>/SKILL.md`
+- Router Boundaries:
+  - Claude Code: `CLAUDE.md` + `.claude/CLAUDE.md`
+  - Cursor: `.cursor/rules/*.mdc`
+  - Windsurf: `.windsurf/rules/*.md`
+
+### Skills
+
+- `task-planner`
+- `lint-fix`
+- `debug-strategist`
+- `ui-standardizer`
+- `git-helper`
+- `backlog-markdown-formatting`
+- `agent-factory`
+- `documentation-standards`
+- `research-protocol`
+- `content-scaffold`
+- `schema-guard`
+- `format-lint-audit`
+- `docs-sync`
+- `context-compress-map`

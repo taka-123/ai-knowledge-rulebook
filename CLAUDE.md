@@ -1,5 +1,12 @@
 # Project Intelligence Guidelines
 
+## 2026 Constitution (Canonical)
+
+- Skill の正典は `.claude/skills/<name>/SKILL.md` に限定する。
+- ルーター（`CLAUDE.md`, `.cursor/rules`, `.windsurf/rules`）には Skill 本文を複製しない。
+- ルーティング変更時は `npm run agent:check` を実行して、Name/Description/Examples 制約と参照整合性を検証する。
+- プロジェクト固有の Claude 規約は `.claude/CLAUDE.md` を一次参照とし、本ファイルは司令塔として境界と優先順位を定義する。
+
 Note: 本ファイルはグローバル原則を継承し、プロジェクト固有の指示を優先します。
 
 <project_context>

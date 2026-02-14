@@ -9,5 +9,8 @@ __pycache__/
 .idea/
 tmp/
 
-# IDE Settings
+# ローカルの作業メモ／実行計画書（Git管理しない）
+.work/
+
+# Claude Code
 .claude/settings.local.json

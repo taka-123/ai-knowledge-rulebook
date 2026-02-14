@@ -1,42 +1,41 @@
 ---
 name: format-lint-audit
-description: プロジェクトのformat/lint検証を実行し結果を報告するスキル。キーワード「format」「lint」「整形」「検証」「prettier」「markdownlint」「yamllint」「lint error」で自動検出。
-user-invocable: true
-allowed-tools: Read, Bash
-disable-model-invocation: true
+description: Use when final quality gates must run repository formatting and lint checks with explicit pass or fail reporting; When NOT to use: exploratory drafting before files are finalized; Trigger Keywords: quality gate, format:check, lint, CI, 検証.
 ---
 
-# Format/Lint Audit
+# format-lint-audit
 
-プロジェクトのフォーマット・Lint チェックを実行し、結果を整理して報告する。
+## When to use
 
-## 実行手順
+- 変更後の最終検証を実施する。
+- CI 相当の品質ゲートを確認する。
 
-1. `./format.sh check` を実行する。
-2. 変更したファイルの種類に応じて個別チェックを追加する：
-   - Markdown: `npm run lint:md`
-   - YAML: `npm run lint:yaml`
-   - JSON: `npm run lint:json`
-3. 結果を pass/fail で報告し、失敗時は次の手を提示する。
+## When NOT to use
 
-## 判定ルール
+- 実装前の草案段階。
+- 編集中で結果が安定しない段階。
 
-- 明示的な指示がない場合は自動修正を実行しない。
-- 新しい依存関係を `npm install` で追加してはならない。
-- コマンドが失敗した場合は、エラーを捕捉して最小限の修正を提示する。
+## Trigger Keywords
 
-## 出力形式
+- quality gate
+- format:check
+- lint
+- CI
+- 検証
 
-```markdown
-## Format/Lint Audit 結果
+## Examples
 
-- **コマンド**: [実行したコマンド]
-- **結果**: pass / fail
-- **問題**: [エラー・警告の詳細]
-- **次の手**: [推奨アクション]
-```
+### Example 1
 
-## 制約
+Input: 変更後に品質ゲートを一括で確認したい。
+Output: `npm run format:check` と `npm run schema:check` を実行し、結果を要約する。
 
-- 実行したコマンドと結果を正確に報告する。
-- 既存の警告で本タスク対象外のものは「対象外」と明記する。
+### Example 2
+
+Input: markdownlint だけ再検証して。
+Output: 対象ファイルに `npx markdownlint-cli2` を実行し、合否を明示する。
+
+### Example 3
+
+Input: CI 前のチェックリストを作って。
+Output: 実行コマンド、期待結果、失敗時の修正先を1表にまとめる。
