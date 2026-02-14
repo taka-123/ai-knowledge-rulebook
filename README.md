@@ -36,6 +36,13 @@
 - GitHub 上で `main` ブランチ保護（直 push 禁止・レビュー 1 名以上・必須ステータスチェック）を設定する。
 - Secret scanning / Push Protection を有効化する。
 
+### 開発環境の準備
+
+```bash
+npm install
+pip install check-jsonschema yamllint
+```
+
 ## 謝辞
 
 本プロジェクトのAIルールテンプレートは、以下の方々の公開情報を参考に作成しました。心より感謝申し上げます。
