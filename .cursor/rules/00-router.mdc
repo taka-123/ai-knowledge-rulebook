@@ -5,7 +5,7 @@ globs:
 alwaysApply: true
 ---
 
-Use `/.claude/skills` as canonical source.
+Use `.claude/skills` as canonical source.
 
 Routing priority:
 1. Planning intent -> `task-planner`

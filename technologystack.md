@@ -22,13 +22,12 @@
 - Markdownlint: ^0.36.0
   - CLI: markdownlint-cli2 ^0.15.0
   - 設定ファイル: `.markdownlint.jsonc`
-- yamllint
-  - Python製ツール（pip install yamllint）
+- yamllint（Python製、`pip install yamllint` でインストール）
   - 設定ファイル: `.config/.yamllint.yml`
 
 ## JSON Schema検証
 
-- check-jsonschema（Python製）
+- check-jsonschema（Python製、`pip install check-jsonschema` でインストール）
   - AI プロファイル: `schemas/ai_profile.schema.json`
   - ノート: `schemas/notes.schema.json`
 
