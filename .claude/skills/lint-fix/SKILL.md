@@ -45,9 +45,9 @@ Output: `.config/.yamllint.yml` を尊重しつつ対象 YAML を修正し、`np
 ## 1. Workflow
 
 1. **Intake**: 失敗ログまたは対象ファイルを受け取り、エラー種別（Markdown / YAML / JSON / Prettier）を判別する。
-2. **Reproduce**: 該当する lint コマンド（`npm run lint:md` 等）を実行し、エラーを再現する。
-3. **Auto-Fix**: 自動修正コマンド（`npm run fix:md` / `npm run fix:yaml` / `npm run fix:json`）を実行する。自動修正不可の場合は手動修正を Edit で適用する。
-4. **Verify**: 修正後に同じ lint コマンドを再実行し、exit 0 を確認する。残存エラーがあれば Step 3 に戻る。
+2. **Reproduce**: `npm run format:check`（= `./format.sh check`）を実行し、全カテゴリのエラーを一括再現する。特定カテゴリのみ確認する場合は `npm run lint:md` / `npm run lint:yaml` / `npm run lint:json` を個別実行する。
+3. **Auto-Fix**: `npm run format`（= `./format.sh fix`）を実行し、全カテゴリを一括自動修正する。一括修正で解消しない場合は手動修正を Edit で適用する。
+4. **Verify**: `npm run format:check` を再実行し、exit 0 を確認する。残存エラーがあれば Step 3 に戻る。
 5. **Report**: Output Format に従い、修正内容と検証結果を出力する。
 
 ## 2. Checklist

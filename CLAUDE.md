@@ -178,6 +178,7 @@ npm run schema:check
 - `UI` `CSS` `レイアウト` `accessibility` -> `ui-standardizer`
 - `commit` `branch` `PR作成` `changelog` `release` -> `git-helper`
 - `agent` `skill` `rule` `workflow` `テンプレート` -> `agent-factory`
+- `Backlog` `バックログ` `markdown整形` `checklist` `issue` -> `backlog-markdown-formatting`
 
 ### Tier 3 — Project Skills
 
