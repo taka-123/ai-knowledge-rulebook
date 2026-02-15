@@ -174,17 +174,32 @@
 
 ### Skills
 
-- `task-planner`
-- `lint-fix`
-- `debug-strategist`
-- `ui-standardizer`
-- `git-helper`
-- `backlog-markdown-formatting`
-- `agent-factory`
-- `documentation-standards`
-- `research-protocol`
-- `content-scaffold`
-- `schema-guard`
-- `format-lint-audit`
-- `docs-sync`
-- `context-compress-map`
+| Skill                         | Category     | 4-Section Body | Router Coverage            |
+| ----------------------------- | ------------ | -------------- | -------------------------- |
+| `task-planner`                | Planning     | ✅             | CLAUDE + Cursor + Windsurf |
+| `lint-fix`                    | Fixer        | ✅             | CLAUDE + Cursor + Windsurf |
+| `debug-strategist`            | Debug        | ✅             | CLAUDE + Cursor + Windsurf |
+| `ui-standardizer`             | UI/UX        | ✅             | CLAUDE + Cursor + Windsurf |
+| `git-helper`                  | Git          | ✅             | CLAUDE + Cursor + Windsurf |
+| `backlog-markdown-formatting` | Format       | ✅             | CLAUDE + Cursor + Windsurf |
+| `agent-factory`               | Meta         | ✅             | CLAUDE + Cursor + Windsurf |
+| `documentation-standards`     | Quality      | ✅             | CLAUDE + Cursor + Windsurf |
+| `research-protocol`           | Research     | ✅             | CLAUDE + Cursor + Windsurf |
+| `content-scaffold`            | Generator    | ✅             | CLAUDE + Cursor + Windsurf |
+| `schema-guard`                | Validation   | ✅             | CLAUDE + Cursor + Windsurf |
+| `format-lint-audit`           | Quality Gate | ✅             | CLAUDE + Cursor + Windsurf |
+| `docs-sync`                   | Sync         | ✅             | CLAUDE + Cursor + Windsurf |
+| `context-compress-map`        | Context      | ✅             | CLAUDE + Cursor + Windsurf |
+
+### Agents
+
+| Agent                    | Category   | Tools                                       | 4-Section |
+| ------------------------ | ---------- | ------------------------------------------- | --------- |
+| `doc-validator`          | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
+| `task-reviewer`          | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
+| `external-fact-guardian` | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
+| `codebase-explorer`      | Explorer   | Read, Grep, Glob, Bash                      | ✅        |
+| `repo-cartographer`      | Explorer   | Read, Grep, Glob, Bash                      | ✅        |
+| `content-writer`         | Fixer      | Read, Edit, Write, Bash                     | ✅        |
+| `repo-scaffolder`        | Fixer      | Read, Edit, Write, Bash                     | ✅        |
+| `tech-researcher`        | Researcher | Read, Grep, Glob, Bash, WebSearch, WebFetch | ✅        |

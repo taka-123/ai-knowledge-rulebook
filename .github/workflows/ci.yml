@@ -33,3 +33,5 @@ jobs:
         run: npm run schema:check
       - name: Gitleaks (secret scan)
         uses: zricethezav/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
