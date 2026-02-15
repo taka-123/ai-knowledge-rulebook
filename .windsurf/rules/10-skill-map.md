@@ -9,5 +9,11 @@
 - `docs-sync`: README, directorystructure, technologystack, 同期
 - `research-protocol`: 最新, 仕様確認, 出典
 - `context-compress-map`: 要約, コンテキスト, 全体像
+- `ui-standardizer`: UI, CSS, レイアウト, accessibility, a11y, デザイン
+- `git-helper`: commit, branch, diff, PR, rollback, changelog
+- `backlog-markdown-formatting`: Backlog, markdown整形, 見出し, checklist, issue
+- `agent-factory`: agent, skill, router, workflow, trigger, テンプレート
+- `documentation-standards`: ドキュメント, 記述規約, 文章品質, 参照, 構成
+- `content-scaffold`: 新規ファイル, scaffold, テンプレート, 雛形, 初期化
 
 All mappings resolve to `.claude/skills/<name>/SKILL.md`.
