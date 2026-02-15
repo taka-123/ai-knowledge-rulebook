@@ -22,7 +22,7 @@ Use proactively when new files or directories must be generated from repository-
    - ルーター: `.mdc`（Cursor）または `.md`（Windsurf）の適切な形式
 3. **Generate**: Write で雛形ファイルを生成する。プレースホルダではなく、種別固有の具体的な初期内容を埋め込む。
 4. **Register**: 必要に応じて `README.md`（Skills Index）や `directorystructure.md` への参照を追加する。
-5. **Validate**: `npm run lint:md` で構文チェック、`npm run agent:check`（Skill/Agent の場合）で制約チェックを実行する。
+5. **Validate**: `npm run lint:md` で構文チェック、`npm run agent:check`（Skill/Agent の場合）で Name/Description 制約とルーティング整合性を検証する。
 
 ## 2. Checklist
 
@@ -36,7 +36,7 @@ Use proactively when new files or directories must be generated from repository-
 ### Post-flight
 
 - [ ] 生成ファイルが `npm run lint:md` を通過
-- [ ] Skill の場合: `npm run skills:check` が exit 0
+- [ ] Skill/Agent の場合: `npm run agent:check` が exit 0
 - [ ] Agent の場合: 4-Section（Workflow / Checklist / Output Format / Memory Strategy）が全て記述済み
 - [ ] `directorystructure.md` が実態と整合（必要に応じて更新済み）
 - [ ] 生成ファイルにプレースホルダ（`<TODO>`, `TBD` 等）が残っていないこと
@@ -65,15 +65,14 @@ Use proactively when new files or directories must be generated from repository-
 
 ### Validation
 
-| Check   | Command                 | Result |
-| ------- | ----------------------- | ------ |
-| Lint    | `npm run lint:md`       | PASS   |
-| Skills  | `npm run skills:check`  | PASS   |
-| Routing | `npm run routing:check` | PASS   |
+| Check | Command               | Result |
+| ----- | --------------------- | ------ |
+| Lint  | `npm run lint:md`     | PASS   |
+| Agent | `npm run agent:check` | PASS   |
 ```
 
 ## 4. Memory Strategy
 
 - **Persist**: 過去に生成したファイル種別ごとのテンプレートパターンと、プロジェクト固有の命名規則・FrontMatter 要件を記憶する。
 - **Invalidate**: `directorystructure.md` またはテンプレート元（`content-scaffold` Skill）が更新された場合にキャッシュを無効化する。
-- **Share**: 生成したファイルパスを `doc-validator` に提供し、即時検証の入力とする。Skill 生成時は `repo-cartographer` にルーティング登録の確認を依頼する。
+- **Share**: 生成したファイルパスを `documentation-standards` Skill に提供し、品質検証の入力とする。Skill/Agent 生成時は `repo-cartographer` にルーティング登録の確認を依頼する。

@@ -93,7 +93,7 @@ Output: KPI、根拠、テスト結果、残課題の固定セクションを持
 
 ### Next Steps
 
-- Recommend `doc-validator` review on: <file path>
+- Recommend `documentation-standards` review on: <file path>
 - Register in router: <router file path> (if Skill/Agent)
 ```
 
@@ -101,4 +101,4 @@ Output: KPI、根拠、テスト結果、残課題の固定セクションを持
 
 - **Persist**: ファイル種別ごとのテンプレート構造とプロジェクト固有のコマンドリストをキャッシュし、次回の生成を高速化する。
 - **Invalidate**: テンプレート構造の規約（AGENTS.md の 4-Section Architecture 定義、SKILL.md の構造要件）が変更された場合にキャッシュを無効化する。
-- **Share**: 生成したファイルパスを `doc-validator` Agent に提供し、品質検証の入力とする。Skill/Agent 生成時は `repo-cartographer` にパスを提供し、ルーター登録漏れの検出に活用する。
+- **Share**: 生成したファイルパスを `documentation-standards` Skill に提供し、品質検証の入力とする。Skill/Agent 生成時は `repo-cartographer` にパスを提供し、ルーター登録漏れの検出に活用する。

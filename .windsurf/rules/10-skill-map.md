@@ -15,5 +15,6 @@
 - `agent-factory`: agent, skill, router, workflow, trigger, テンプレート
 - `documentation-standards`: ドキュメント, 記述規約, 文章品質, 参照, 構成
 - `content-scaffold`: 新規ファイル, scaffold, テンプレート, 雛形, 初期化
+- `format-lint-audit`: format check, lint error, CI通過確認, 整形, 品質ゲート
 
 All mappings resolve to `.claude/skills/<name>/SKILL.md`.
