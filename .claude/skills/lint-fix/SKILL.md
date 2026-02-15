@@ -39,3 +39,56 @@ Output: `npm run fix:json` を実行し、`npm run lint:json` で結果を検証
 
 Input: YAML の lint だけ落ちているので最小修正で通して。
 Output: `.config/.yamllint.yml` を尊重しつつ対象 YAML を修正し、`npm run lint:yaml` を通す。
+
+---
+
+## 1. Workflow
+
+1. **Intake**: 失敗ログまたは対象ファイルを受け取り、エラー種別（Markdown / YAML / JSON / Prettier）を判別する。
+2. **Reproduce**: 該当する lint コマンド（`npm run lint:md` 等）を実行し、エラーを再現する。
+3. **Auto-Fix**: 自動修正コマンド（`npm run fix:md` / `npm run fix:yaml` / `npm run fix:json`）を実行する。自動修正不可の場合は手動修正を Edit で適用する。
+4. **Verify**: 修正後に同じ lint コマンドを再実行し、exit 0 を確認する。残存エラーがあれば Step 3 に戻る。
+5. **Report**: Output Format に従い、修正内容と検証結果を出力する。
+
+## 2. Checklist
+
+### Pre-flight
+
+- [ ] エラーログまたは対象ファイルが明示されている
+- [ ] エラー種別（md / yaml / json / prettier）が判別済み
+- [ ] 該当する設定ファイル（`.markdownlint.jsonc` 等）を確認済み
+
+### Post-flight
+
+- [ ] 全エラーが解消されている（lint コマンド exit 0）
+- [ ] 修正差分が最小（エラー箇所のみ変更）
+- [ ] 設定ファイル自体は変更していない（意図的変更を除く）
+
+## 3. Output Format
+
+```markdown
+## lint-fix Report
+
+**Action**: AUTO-FIX | MANUAL-FIX | MIXED
+**Target**: <file path(s)>
+**Error Type**: Markdownlint | yamllint | Prettier | JSON
+
+### Fixes Applied
+
+| #   | File             | Line | Rule  | Before             | After            |
+| --- | ---------------- | ---- | ----- | ------------------ | ---------------- |
+| 1   | notes/2025-01.md | 12   | MD032 | missing blank line | added blank line |
+
+### Verification
+
+| Command                | Exit Code | Status |
+| ---------------------- | --------- | ------ |
+| `npm run lint:md`      | 0         | PASS   |
+| `npm run format:check` | 0         | PASS   |
+```
+
+## 4. Memory Strategy
+
+- **Persist**: ファイル形式ごとの頻出エラーパターンと修正コマンドをキャッシュし、次回の修正を高速化する。
+- **Invalidate**: lint 設定ファイル（`.markdownlint.jsonc`、`.prettierrc.json`、`.config/.yamllint.yml`）が変更された場合にキャッシュを無効化する。
+- **Share**: 修正完了後のファイルパスを `format-lint-audit` に提供し、最終品質ゲートの再実行に活用する。
