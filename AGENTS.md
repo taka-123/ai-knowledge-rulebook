@@ -164,42 +164,40 @@
 - **タスク分類**: タスクの種別（🟢 軽量 / 🟡 標準 / 🔴 重要）は、上位階層のルール（グローバルルールや親ディレクトリの `AGENTS.md`）で定義された方針を前提とし、このプロジェクト固有の例外や補足がある場合のみ本ファイルに明記する。
 - **スラッシュコマンド**: スラッシュコマンド（例: `/review`, `/plan` 等）は、このプロジェクトで明示的に定義されたものだけを使用し、定義が見当たらないコマンド文字列は通常のテキストとして扱うか、ユーザーに意味を確認する。
 
-## 全ツール共通 Skill Index（Canonical）
+## プロジェクト共通 Skill / Agent 一覧
 
-- Canonical Source: `.claude/skills/<name>/SKILL.md`
-- Router Boundaries:
-  - Claude Code: `CLAUDE.md` + `.claude/CLAUDE.md`
-  - Cursor: `.cursor/rules/*.mdc`
-  - Windsurf: `.windsurf/rules/*.md`
+Canonical Source: `.claude/skills/<name>/SKILL.md`
+
+各ツール固有のルーティング設定は以下を参照：
+
+- Claude Code: `CLAUDE.md` + `.claude/CLAUDE.md`
+- Cursor: `.cursor/rules/*.mdc` + `.cursor/agents/*.md`
+- Windsurf: `.windsurf/rules/*.md`
 
 ### Skills
 
-| Skill                         | Category     | 4-Section Body | Router Coverage            |
-| ----------------------------- | ------------ | -------------- | -------------------------- |
-| `task-planner`                | Planning     | ✅             | CLAUDE + Cursor + Windsurf |
-| `lint-fix`                    | Fixer        | ✅             | CLAUDE + Cursor + Windsurf |
-| `debug-strategist`            | Debug        | ✅             | CLAUDE + Cursor + Windsurf |
-| `ui-standardizer`             | UI/UX        | ✅             | CLAUDE + Cursor + Windsurf |
-| `git-helper`                  | Git          | ✅             | CLAUDE + Cursor + Windsurf |
-| `backlog-markdown-formatting` | Format       | ✅             | CLAUDE + Cursor + Windsurf |
-| `agent-factory`               | Meta         | ✅             | CLAUDE + Cursor + Windsurf |
-| `documentation-standards`     | Quality      | ✅             | CLAUDE + Cursor + Windsurf |
-| `research-protocol`           | Research     | ✅             | CLAUDE + Cursor + Windsurf |
-| `content-scaffold`            | Generator    | ✅             | CLAUDE + Cursor + Windsurf |
-| `schema-guard`                | Validation   | ✅             | CLAUDE + Cursor + Windsurf |
-| `format-lint-audit`           | Quality Gate | ✅             | CLAUDE + Cursor + Windsurf |
-| `docs-sync`                   | Sync         | ✅             | CLAUDE + Cursor + Windsurf |
-| `context-compress-map`        | Context      | ✅             | CLAUDE + Cursor + Windsurf |
+| Skill                         | Category     |
+| ----------------------------- | ------------ |
+| `backlog-markdown-formatting` | Format       |
+| `content-scaffold`            | Generator    |
+| `context-compress-map`        | Context      |
+| `debug-strategist`            | Debug        |
+| `documentation-standards`     | Quality      |
+| `docs-sync`                   | Sync         |
+| `format-lint-audit`           | Quality Gate |
+| `git-helper`                  | Git          |
+| `lint-fix`                    | Fixer        |
+| `research-protocol`           | Research     |
+| `schema-guard`                | Validation   |
+| `task-planner`                | Planning     |
+| `ui-standardizer`             | UI/UX        |
 
 ### Agents
 
-| Agent                    | Category   | Tools                                       | 4-Section |
-| ------------------------ | ---------- | ------------------------------------------- | --------- |
-| `doc-validator`          | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
-| `task-reviewer`          | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
-| `external-fact-guardian` | Reviewer   | Read, Grep, Glob, Bash                      | ✅        |
-| `codebase-explorer`      | Explorer   | Read, Grep, Glob, Bash                      | ✅        |
-| `repo-cartographer`      | Explorer   | Read, Grep, Glob, Bash                      | ✅        |
-| `content-writer`         | Fixer      | Read, Edit, Write, Bash                     | ✅        |
-| `repo-scaffolder`        | Fixer      | Read, Edit, Write, Bash                     | ✅        |
-| `tech-researcher`        | Researcher | Read, Grep, Glob, Bash, WebSearch, WebFetch | ✅        |
+| Agent                    | Category | Read-only |
+| ------------------------ | -------- | --------- |
+| `content-writer`         | Fixer    | No        |
+| `doc-validator`          | Reviewer | Yes       |
+| `external-fact-guardian` | Reviewer | Yes       |
+| `repo-cartographer`      | Explorer | Yes       |
+| `repo-scaffolder`        | Fixer    | No        |
