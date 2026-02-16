@@ -7,18 +7,22 @@
 ├── .cursorignore # Cursor 用除外パターン
 ├── .cursor/ # Cursor 用設定（rules/agents/skills/commands）
 │ ├── agents/ # Cursor 専用サブエージェント
+│ │ ├── content-writer.md # 調査結果の規約準拠書き込み
+│ │ ├── doc-validator.md # ドキュメント品質検証（読み取り専用）
+│ │ ├── external-fact-guardian.md # 外部仕様の書き込み前事実確認
+│ │ ├── repo-cartographer.md # リポジトリ構造・参照関係の地図化
+│ │ └── repo-scaffolder.md # 新規ファイルのテンプレート適用・生成
 │ ├── rules/ # Cursor ルール（.mdc）
 │ ├── skills -> ../.claude/skills # シンボリックリンク（Canonical Source 参照）
 │ └── commands/ # Cursor コマンド
 ├── .claude/ # Claude AI 設定
 │ ├── agents/ # プロジェクト専用サブエージェント
-│ │ ├── doc-validator.md # ドキュメント品質検証（読み取り専用）
 │ │ ├── content-writer.md # 調査結果の規約準拠書き込み
-│ │ ├── repo-scaffolder.md # 新規ファイルのテンプレート適用・生成
-│ │ ├── repo-cartographer.md # リポジトリ構造・参照関係の地図化
+│ │ ├── doc-validator.md # ドキュメント品質検証（読み取り専用）
 │ │ └── external-fact-guardian.md # 外部仕様の書き込み前事実確認
+│ │ ├── repo-cartographer.md # リポジトリ構造・参照関係の地図化
+│ │ ├── repo-scaffolder.md # 新規ファイルのテンプレート適用・生成
 │ ├── skills/ # Canonical Source — 全ツール共通スキル定義
-│ │ ├── agent-factory/ # エージェント・スキル生成
 │ │ ├── backlog-markdown-formatting/ # バックログ用 Markdown 整形
 │ │ ├── content-scaffold/ # 新規ファイルテンプレート適用・バリデーション
 │ │ ├── context-compress-map/ # コンテキスト圧縮マップ生成

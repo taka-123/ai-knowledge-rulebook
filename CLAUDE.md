@@ -114,12 +114,24 @@ npm run schema:check
 
 ### Hierarchy of Intelligence（委任の基準）
 
+> **優先順位ポリシー**: グローバル資産（`~/.claude/`）は汎用規律を提供する。
+> プロジェクト資産（`.claude/`）はリポジトリ固有の規約・テンプレート・コマンドを持つものだけ配置する。
+> 同名資産が両方に存在する場合、プロジェクト版が優先される。
+> グローバルで十分な機能は**プロジェクトに複製しない**。
+
+#### グローバル委任（`~/.claude/` で提供）
+
+| タスク類型                   | 委任先                         | 理由                       |
+| ---------------------------- | ------------------------------ | -------------------------- |
+| 技術仕様の調査・接地         | グローバル `tech-researcher`   | 一次情報への接地は汎用規律 |
+| コードベース全体の構造探索   | グローバル `codebase-explorer` | 大規模探索は汎用規律       |
+| 実装後の品質・完遂監査       | グローバル `task-reviewer`     | 検証義務は汎用規律         |
+| Lint・フォーマッター自動修正 | グローバル `lint-fix` スキル   | ツール検知は汎用規律       |
+
+#### プロジェクト委任（`.claude/` で提供 — リポジトリ固有ロジックあり）
+
 | タスク類型                                            | 委任先                                        | 理由                                   |
 | ----------------------------------------------------- | --------------------------------------------- | -------------------------------------- |
-| 技術仕様の調査・接地                                  | グローバル `tech-researcher`                  | 一次情報への接地は汎用規律             |
-| コードベース全体の構造探索                            | グローバル `codebase-explorer`                | 大規模探索は汎用規律                   |
-| 実装後の品質・完遂監査                                | グローバル `task-reviewer`                    | 検証義務は汎用規律                     |
-| Lint・フォーマッター自動修正                          | グローバル `lint-fix` スキル                  | ツール検知は汎用規律                   |
 | **ドキュメント品質検証**（FrontMatter・リンク整合性） | プロジェクト `doc-validator`                  | リポジトリ固有の検証ルールに基づく     |
 | **調査結果のリポジトリへの書き込み**                  | プロジェクト `content-writer`                 | 書き込み規約はリポジトリ固有           |
 | **新規ファイルのスキャフォルド生成**                  | プロジェクト `repo-scaffolder`                | テンプレートはリポジトリ固有           |
@@ -145,15 +157,21 @@ npm run schema:check
 - `repo-cartographer` — リポジトリ構造・参照関係の地図化
 - `external-fact-guardian` — 外部仕様の書き込み前事実確認
 
-**Skills** (`.claude/skills/`):
+**Skills** (`.claude/skills/` — リポジトリ固有ロジックを持つもの):
 
-- `documentation-standards` — 記述規約強制チェック
-- `research-protocol` — 技術調査の出典・不確実性プロトコル強制
+- `backlog-markdown-formatting` — バックログ用 Markdown 整形
 - `content-scaffold` — 新規ファイルテンプレート適用・バリデーション
-- `schema-guard` — JSON スキーマ適合検証
-- `format-lint-audit` — Format/Lint チェック実行と結果報告
-- `docs-sync` — 主要ドキュメント（README・directorystructure・technologystack）の実態同期
 - `context-compress-map` — コンテキスト圧縮マップ生成
+- `debug-strategist` — デバッグ戦略策定（リポジトリ固有コマンド付き）
+- `documentation-standards` — 記述規約強制チェック
+- `docs-sync` — 主要ドキュメントの実態同期
+- `format-lint-audit` — Format/Lint チェック実行と結果報告
+- `git-helper` — Git 操作補助（リポジトリ固有コミット規約付き）
+- `lint-fix` — Lint 自動修正（リポジトリ固有リンター対応）
+- `research-protocol` — 技術調査の出典・不確実性プロトコル強制
+- `schema-guard` — JSON スキーマ適合検証
+- `task-planner` — タスク計画・分解（リポジトリ固有検証コマンド付き）
+- `ui-standardizer` — UI/UX 規約チェック
 
 </agent_routing>
 
@@ -164,23 +182,23 @@ npm run schema:check
 依頼文に以下の語が含まれる場合、同名の専門家へ優先委任する。
 複数マッチ時は Tier 1 > Tier 2 > Tier 3 を優先。
 
-### Tier 1 — Agents
+### Tier 1 — Global Agents（`~/.claude/agents/` で提供）
 
 - `最新仕様` `release` `互換性` `API変更` `changelog` `version` `依存更新` -> `tech-researcher`
 - `調査` `影響範囲` `参照` `構造` `dependency map` -> `codebase-explorer`
 - `レビュー` `回帰` `品質` `PR` -> `task-reviewer`
 
-### Tier 2 — Global Skills
+### Tier 2 — Global Skills（`~/.claude/skills/` で提供）
 
 - `lint` `format` `schema` `CI` `test` -> `lint-fix`
 - `debug` `不具合` `再現` `エラー` `stacktrace` `CI failure` -> `debug-strategist`
 - `計画` `分解` `見積り` `milestone` `roadmap` `実装手順` -> `task-planner`
 - `UI` `CSS` `レイアウト` `accessibility` -> `ui-standardizer`
 - `commit` `branch` `PR作成` `changelog` `release` -> `git-helper`
-- `agent` `skill` `rule` `workflow` `テンプレート` -> `agent-factory`
+- `agent` `skill` `rule` `workflow` -> `agent-factory`
 - `Backlog` `バックログ` `markdown整形` `checklist` `issue` -> `backlog-markdown-formatting`
 
-### Tier 3 — Project Skills
+### Tier 3 — Project Skills（`.claude/skills/` でオーバーライド）
 
 - `ドキュメント作成` `notes` `clips` `ai profile` -> `documentation-standards`
 - `技術情報` `仕様確認` `出典` `citation` -> `research-protocol`
