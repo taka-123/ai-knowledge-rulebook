@@ -89,120 +89,22 @@ npm run schema:check
 
 </development_rules>
 
-<agent_routing>
+<agent_skill_policy>
 
-## 🤖 エージェント・スキルルーター（司令塔）
+## 委任ポリシー
 
-### Always Scan First
+各 agent/skill の description に発動条件と Trigger Keywords が定義されている。
+CLAUDE.md にマッピングを複製せず、以下の原則のみ遵守する。
 
-タスク実行の前に、以下2つのディレクトリを確認し、最適な専門家を召喚する：
+### 優先順位
 
-- `~/.claude/agents/` · `~/.claude/skills/`（グローバル資産）
-- `./.claude/agents/` · `./.claude/skills/`（プロジェクト固有資産）
+1. 同名資産がグローバル（`~/.claude/`）とプロジェクト（`.claude/`）の両方に存在する場合、プロジェクト版が優先される。
+2. 複数候補がマッチした場合: agents > skills の順で選択する。
+3. 破壊的操作（`deploy`, `migrate`, `git push --force`）は承認必須。
 
-召喚の根拠は下記 **Hierarchy of Intelligence** に従う。
+### 品質ゲート
 
----
+- 完了報告前に品質監査を実行せよ。
+- コード編集後は `format-lint-audit` または `lint-fix` で整合性を確認せよ。
 
-### Hierarchy of Intelligence（委任の基準）
-
-> **優先順位ポリシー**: グローバル資産（`~/.claude/`）は汎用規律を提供する。
-> プロジェクト資産（`.claude/`）はリポジトリ固有の規約・テンプレート・コマンドを持つものだけ配置する。
-> 同名資産が両方に存在する場合、プロジェクト版が優先される。
-> グローバルで十分な機能は**プロジェクトに複製しない**。
-
-#### グローバル委任（`~/.claude/` で提供）
-
-| タスク類型                   | 委任先                         | 理由                       |
-| ---------------------------- | ------------------------------ | -------------------------- |
-| 技術仕様の調査・接地         | グローバル `tech-researcher`   | 一次情報への接地は汎用規律 |
-| コードベース全体の構造探索   | グローバル `codebase-explorer` | 大規模探索は汎用規律       |
-| 実装後の品質・完遂監査       | グローバル `task-reviewer`     | 検証義務は汎用規律         |
-| Lint・フォーマッター自動修正 | グローバル `lint-fix` スキル   | ツール検知は汎用規律       |
-
-#### プロジェクト委任（`.claude/` で提供 — リポジトリ固有ロジックあり）
-
-| タスク類型                                            | 委任先                                        | 理由                                   |
-| ----------------------------------------------------- | --------------------------------------------- | -------------------------------------- |
-| **ドキュメント品質検証**（FrontMatter・リンク整合性） | プロジェクト `doc-validator`                  | リポジトリ固有の検証ルールに基づく     |
-| **調査結果のリポジトリへの書き込み**                  | プロジェクト `content-writer`                 | 書き込み規約はリポジトリ固有           |
-| **新規ファイルのスキャフォルド生成**                  | プロジェクト `repo-scaffolder`                | テンプレートはリポジトリ固有           |
-| **リポジトリ構造・参照関係の地図化**                  | プロジェクト `repo-cartographer`              | ドキュメント構造の把握はリポジトリ固有 |
-| **外部仕様・時事情報の書き込み前事実確認**            | プロジェクト `external-fact-guardian`         | 一次情報ゲートはリポジトリ固有         |
-| **記述規約の強制チェック**                            | プロジェクト `documentation-standards` スキル | 規約はリポジトリ固有                   |
-| **技術調査の書き込み前ゲーティング**                  | プロジェクト `research-protocol` スキル       | 出典・不確実性注記はリポジトリ固有規約 |
-| **新規ファイル時のテンプレート適用**                  | プロジェクト `content-scaffold` スキル        | テンプレートはリポジトリ固有           |
-| **JSON スキーマ適合検証**                             | プロジェクト `schema-guard` スキル            | スキーマ定義はリポジトリ固有           |
-| **Format/Lint チェック実行**                          | プロジェクト `format-lint-audit` スキル       | 検証コマンドはリポジトリ固有           |
-| **主要ドキュメントの実態同期**                        | プロジェクト `docs-sync` スキル               | 対象ドキュメントはリポジトリ固有       |
-| **コンテキスト圧縮マップ生成**                        | プロジェクト `context-compress-map` スキル    | 情報密度維持のためのプロジェクト規律   |
-
----
-
-### プロジェクト資産一覧
-
-**Agents** (`.claude/agents/`):
-
-- `doc-validator` — ドキュメント品質検証（読み取り専用）
-- `content-writer` — 調査結果の規約準拠書き込み
-- `repo-scaffolder` — 新規ファイルのテンプレート適用・生成（Claude Code のみ）
-- `repo-cartographer` — リポジトリ構造・参照関係の地図化
-- `external-fact-guardian` — 外部仕様の書き込み前事実確認
-
-**Skills** (`.claude/skills/` — リポジトリ固有ロジックを持つもの):
-
-- `backlog-markdown-formatting` — バックログ用 Markdown 整形
-- `content-scaffold` — 新規ファイルテンプレート適用・バリデーション
-- `context-compress-map` — コンテキスト圧縮マップ生成
-- `debug-strategist` — デバッグ戦略策定（リポジトリ固有コマンド付き）
-- `documentation-standards` — 記述規約強制チェック
-- `docs-sync` — 主要ドキュメントの実態同期
-- `format-lint-audit` — Format/Lint チェック実行と結果報告
-- `git-helper` — Git 操作補助（リポジトリ固有コミット規約付き）
-- `lint-fix` — Lint 自動修正（リポジトリ固有リンター対応）
-- `research-protocol` — 技術調査の出典・不確実性プロトコル強制
-- `schema-guard` — JSON スキーマ適合検証
-- `task-planner` — タスク計画・分解（リポジトリ固有検証コマンド付き）
-- `ui-standardizer` — UI/UX 規約チェック
-
-</agent_routing>
-
-<project_intelligence_router_minimal>
-
-## Minimal Router Addendum (Cross-Tool Canonical Names)
-
-依頼文に以下の語が含まれる場合、同名の専門家へ優先委任する。
-複数マッチ時は Tier 1 > Tier 2 > Tier 3 を優先。
-
-### Tier 1 — Global Agents（`~/.claude/agents/` で提供）
-
-- `最新仕様` `release` `互換性` `API変更` `changelog` `version` `依存更新` -> `tech-researcher`
-- `調査` `影響範囲` `参照` `構造` `dependency map` -> `codebase-explorer`
-- `レビュー` `回帰` `品質` `PR` -> `task-reviewer`
-
-### Tier 2 — Global Skills（`~/.claude/skills/` で提供）
-
-- `lint` `format` `schema` `CI` `test` -> `lint-fix`
-- `debug` `不具合` `再現` `エラー` `stacktrace` `CI failure` -> `debug-strategist`
-- `計画` `分解` `見積り` `milestone` `roadmap` `実装手順` -> `task-planner`
-- `UI` `CSS` `レイアウト` `accessibility` -> `ui-standardizer`
-- `commit` `branch` `PR作成` `changelog` `release` -> `git-helper`
-- `agent` `skill` `rule` `workflow` -> `agent-factory`
-- `Backlog` `バックログ` `markdown整形` `checklist` `issue` -> `backlog-markdown-formatting`
-
-### Tier 3 — Project Skills（`.claude/skills/` でオーバーライド）
-
-- `ドキュメント作成` `notes` `clips` `ai profile` -> `documentation-standards`
-- `技術情報` `仕様確認` `出典` `citation` -> `research-protocol`
-- `新規ファイル` `テンプレート` `scaffold` `ノート作成` -> `content-scaffold`
-- `json validation` `スキーマ検証` `ai profile json` -> `schema-guard`
-- `format check` `lint error` `CI通過確認` `整形` -> `format-lint-audit`
-- `README` `directory` `structure` `ドキュメント同期` -> `docs-sync`
-- `要約` `圧縮` `map` `context` `サマリー` -> `context-compress-map`
-
-### Safety
-
-- <SCRUTINY_REQUIRED> 破壊的操作（`deploy` `migrate` `terraform apply` `git push --force`）は承認必須。
-- 既存の同名グローバル資産がある場合は再定義せず、必要時のみ薄いプロキシを使う。
-
-</project_intelligence_router_minimal>
+</agent_skill_policy>
