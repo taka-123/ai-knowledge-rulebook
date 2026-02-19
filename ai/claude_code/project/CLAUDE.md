@@ -4,9 +4,9 @@ Note: 本ファイルはグローバル原則を継承し、プロジェクト�
 
 <project_context>
 
-- Overview: @README.md
-- Architecture: @directorystructure.md
-- Tech Stack: @technologystack.md
+- Overview: README.md
+- Architecture: directorystructure.md
+- Tech Stack: technologystack.md
 
 </project_context>
 
@@ -50,7 +50,7 @@ Note: 本ファイルはグローバル原則を継承し、プロジェクト�
 
 ## 固有規約
 
-- コードレビュー: @AGENTS.md `## コードレビュー` に準拠
+- コードレビュー: AGENTS.md `## コードレビュー` に準拠
 - セキュリティ: パイプ・リダイレクトを用いた Deny 回避を厳禁。
 
 </development_rules>

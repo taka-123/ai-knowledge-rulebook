@@ -9,14 +9,6 @@
 
 Note: 本ファイルはグローバル原則を継承し、プロジェクト固有の指示を優先します。
 
-<project_context>
-
-- Overview: @README.md
-- Architecture: @directorystructure.md
-- Tech Stack: @technologystack.md
-
-</project_context>
-
 <development_commands>
 
 ## フォーマット・検証
@@ -92,7 +84,7 @@ npm run schema:check
 
 ## 固有規約
 
-- コードレビュー: @AGENTS.md `## コードレビュー` に準拠
+- コードレビュー: AGENTS.md `## コードレビュー` に準拠
 - セキュリティ: パイプ・リダイレクトを用いた Deny 回避を厳禁。
 
 </development_rules>
