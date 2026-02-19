@@ -11,9 +11,20 @@ OpenAI Codex CLI グローバル設定
 
 ---
 
-## Codex: 状況に応じたスキルの適用
+## Codex: Skills / Agents 運用
 
-利用可能な `~/.agents/skills/` の SKILL.md は、タスクに応じて JIT でロードせよ。とくに次の場合は該当スキルをロードしてから作業せよ。
+### 探索対象
+
+- Skills: `~/.agents/skills/<skill>/SKILL.md` / `.agents/skills/<skill>/SKILL.md`
+- Agents（roles）: `~/.codex/config.toml` / `.codex/config.toml` の `[agents]` 定義
+
+### 運用ルール
+
+- タスク着手前に、関連する Skills と Agents 設定を確認する。
+- 複雑タスクでは、利用可能な agent role を優先的に活用する。
+- スキル名に言及がある場合は、該当 `SKILL.md` を JIT でロードする。
+
+### 優先ロードトリガー
 
 - **CSS・スタイル・UIコンポーネントの編集・追加時** → `ui-standardizer`
 - **lint/format 失敗時・コード編集後の検証時** → `lint-fix`

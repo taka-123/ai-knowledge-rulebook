@@ -4,9 +4,9 @@ Note: 本ファイルはグローバル原則を継承し、プロジェクト�
 
 <project_context>
 
-- Overview: README.md
-- Architecture: directorystructure.md
-- Tech Stack: technologystack.md
+- 概要: README.md
+- アーキテクチャ: directorystructure.md
+- 技術スタック: technologystack.md
 
 </project_context>
 
