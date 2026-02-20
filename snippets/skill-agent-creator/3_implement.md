@@ -13,6 +13,8 @@
     - `description` = 3要素形式の description をそのまま使用
     - `developer_instructions` = Markdown body の4セクション内容を平文で集約
     - `model`, `sandbox_mode`（Reviewer型は `"read-only"`, Fixer型は省略）, `approval_policy`
+    - `model` は実装当日の公式情報で選定する。旧値を惰性的に使わず、確認したモデル名と確認日を最終レポートに記載する。
+    - 実装当日に推奨がある場合はそれを使う。別モデルを使う場合は、速度・コスト・可用性の具体理由を必須で記載する。
 - **SKILL.md 実装**:
   - 各 skill に 3〜5 個の具体的 Examples を必須実装。
   - プロジェクト実コード（`src/main`, `src/worker`, `src/common`, `build.sh`）に基づく具体文脈を必須反映。
