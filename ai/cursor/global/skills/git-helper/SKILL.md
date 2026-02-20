@@ -1,9 +1,14 @@
 ---
 name: git-helper
-description: 変更内容を分析し、Conventional Commits 形式のメッセージと高品質な PR 説明文を生成。
-disable-model-invocation: true
+description: >
+  diff/commit/PR を読みやすく整える / Make diffs and commits clean and reviewable.
+  Trigger: git, diff, commit message, PR description, changelog
 ---
 
-1. **差分分析**: `git diff --cached` を読み、変更の「Why（なぜ）」と「What（何を）」を言語化せよ。
-2. **メッセージ生成**: Conventional Commits 形式で 3 つの候補を提示せよ。
-3. **PR/Issue連携**: GitHub CLI (`gh`) が利用可能な場合、関連Issueを紐づけた PR draft を作成せよ。
+# 目的
+
+- レビューしやすい差分・メッセージに整える。
+
+# 出力
+
+- コミット案 / PR本文案 / セルフレビュー観点

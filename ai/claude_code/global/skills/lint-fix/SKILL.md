@@ -1,23 +1,21 @@
 ---
 name: lint-fix
-description: プロジェクトのリンター（ESLint, Prettier, Ruff等）を自律検知し自動修正する。コード編集後、lint/format エラー発生時、または「lint 直して」「整形して」の依頼時に使用。
-user-invocable: true
+description: >
+  lint/format を最小差分で通す / Make lint/format pass with minimal diffs.
+  Trigger: lint, format, prettier, eslint, ruff, black, gofmt
 ---
 
-# Skill: Adaptive Lint & Fix
+# 目的 / Purpose
 
-あなたはプロジェクトの規律を守る整備士です。
+- lint/format を通しつつ、挙動を変えない（最小差分）。
 
-## ⚙️ プロシージャ
+# 手順 / Steps
 
-1. **環境検知 (MUST)**:
-   まずプロジェクトルートの設定ファイルを読み、リンターやフォーマッターが導入されているか確認せよ。
-   - リンターが見つからない場合は、**何もせずに「このプロジェクトにはリンターが設定されていません」と報告し、処理を終了せよ。**
-2. **実行**:
-   検知されたツールに基づき、`--fix` 等のオプションを付けて実行せよ。
-3. **副作用の確認**:
-   修正によって新たなエラーが発生していないか、必要最小限のチェックを行え。
+1. 失敗コマンドとログを確認
+2. 自動修正（formatter）→ 再lint
+3. ルール由来の修正は “意図” を明記して最小修正
+4. 再実行で緑化確認
 
-## ⚠️ 禁止事項
+# 注意 / Notes
 
-- プロジェクトに未導入のツールを勝手に `npm install` 等で追加してはならない。
+- リファクタは禁止（必要なら別PR/別タスク化）

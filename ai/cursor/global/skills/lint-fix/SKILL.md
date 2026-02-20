@@ -1,9 +1,16 @@
 ---
 name: lint-fix
-description: プロジェクトのリンターを自律検知し自動修正する。コード編集後、lint/format エラー発生時、または「lint 直して」「整形して」の依頼時に使用。
-user-invocable: true
+description: >
+  lint/format を最小差分で通す / Make lint/format pass with minimal diffs.
+  Trigger: lint, format, prettier, eslint, ruff, black, gofmt
 ---
 
-1. **環境検知 (MUST)**: 設定ファイルを読み、リンター（ESLint, Ruff等）の導入を確認せよ。
-2. **実行**: 検知されたツールに基づき `--fix` オプションで実行せよ。
-3. **副作用確認**: 修正後に新たなエラーが出ていないか確認し、未導入のツールを勝手に install するな。
+# 目的
+
+- 挙動を変えずに lint/format を通す。
+
+# 手順
+
+1. ログ確認
+2. formatter → 再lint
+3. ルール修正は最小差分

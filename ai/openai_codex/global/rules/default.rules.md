@@ -1,4 +1,9 @@
-# 読み取り専用・安全 (allow)
+<!-- ## Codex（Global Rules）: `~/.codex/rules/default.rules` -->
+
+```python
+# Codex command approval rules (Starlark)
+
+# Read-only / safe commands
 prefix_rule(
     pattern = ["pwd"],
     decision = "allow",
@@ -11,6 +16,13 @@ prefix_rule(
     decision = "allow",
     justification = "Listing files is safe.",
     match = ["ls", "ls -la"],
+)
+
+prefix_rule(
+    pattern = ["cat"],
+    decision = "allow",
+    justification = "Viewing text files is read-only.",
+    match = ["cat README.md"],
 )
 
 prefix_rule(
@@ -69,116 +81,117 @@ prefix_rule(
     match = ["rg TODO .", "grep -R \"TODO\" ."],
 )
 
-# ローカル変更・ネットワーク (prompt)
+# Mutating / network commands require explicit confirmation
 prefix_rule(
     pattern = [["rm", "mv", "cp"]],
     decision = "prompt",
-    justification = "File operations outside the sandbox require confirmation.",
+    justification = "File operations can be destructive.",
     match = ["rm file.txt", "mv a b", "cp a b"],
 )
 
 prefix_rule(
     pattern = ["git", "add"],
     decision = "prompt",
-    justification = "Staging changes the index; confirm before running outside the sandbox.",
+    justification = "Staging changes the index.",
     match = ["git add .", "git add path/to/file"],
 )
 
 prefix_rule(
     pattern = ["git", ["checkout", "switch", "restore"]],
     decision = "prompt",
-    justification = "Can overwrite working tree; confirm before running outside the sandbox.",
+    justification = "Can overwrite working tree.",
     match = ["git checkout main", "git switch -c feat", "git restore file.txt"],
 )
 
 prefix_rule(
     pattern = ["git", "commit"],
     decision = "prompt",
-    justification = "Committing creates history; confirm before running outside the sandbox.",
+    justification = "Committing creates history.",
     match = ["git commit -m \"msg\""],
 )
 
 prefix_rule(
     pattern = ["git", "push"],
     decision = "prompt",
-    justification = "Pushing changes can affect remotes/CI; confirm every time.",
+    justification = "Pushing can affect remotes and CI.",
     match = ["git push", "git push origin HEAD"],
 )
 
 prefix_rule(
     pattern = [["curl", "wget"]],
     decision = "prompt",
-    justification = "Network access outside the sandbox requires confirmation.",
+    justification = "Network access requires confirmation.",
     match = ["curl -I https://example.com", "wget https://example.com/index.html"],
 )
 
 prefix_rule(
     pattern = ["gh"],
     decision = "prompt",
-    justification = "GitHub CLI may access credentials and modify remote state; confirm.",
+    justification = "GitHub CLI can access credentials and remote state.",
     match = ["gh auth status", "gh pr view 1"],
 )
 
 prefix_rule(
     pattern = [["npm", "pnpm", "yarn", "bun"], ["install", "add", "remove", "update"]],
     decision = "prompt",
-    justification = "Dependency installation outside the sandbox can modify environment; confirm.",
+    justification = "Dependency operations can modify local and lockfile state.",
     match = ["npm install", "pnpm add zod", "yarn add react"],
 )
 
 prefix_rule(
     pattern = ["pip", ["install", "uninstall"]],
     decision = "prompt",
-    justification = "Python package install/uninstall can modify environment; confirm.",
+    justification = "Python package operations can modify environment.",
     match = ["pip install foo", "pip uninstall foo"],
 )
 
 prefix_rule(
     pattern = ["uv", ["add", "sync", "lock"]],
     decision = "prompt",
-    justification = "uv can modify pyproject.toml and environment; confirm.",
+    justification = "uv can modify pyproject.toml and environment.",
     match = ["uv add requests", "uv sync"],
 )
 
 prefix_rule(
     pattern = ["poetry", ["add", "remove", "update"]],
     decision = "prompt",
-    justification = "Poetry can modify pyproject.toml and lockfile; confirm.",
+    justification = "Poetry can modify pyproject.toml and lockfile.",
     match = ["poetry add requests", "poetry update"],
 )
 
 prefix_rule(
     pattern = ["chmod"],
     decision = "prompt",
-    justification = "Changing file modes outside the sandbox requires confirmation.",
+    justification = "Changing file modes requires confirmation.",
     match = ["chmod +x script.sh"],
 )
 
-# 高リスク (forbidden)
+# Forbidden destructive commands
 prefix_rule(
     pattern = ["sudo"],
     decision = "forbidden",
-    justification = "Privilege escalation is forbidden. Run within the sandbox or perform manually.",
+    justification = "Privilege escalation is forbidden.",
     match = ["sudo -n true"],
 )
 
 prefix_rule(
     pattern = ["rm", "-rf", "/"],
     decision = "forbidden",
-    justification = "System-destroying command is forbidden. Never run. Prefer deleting specific paths.",
+    justification = "System-destroying command is forbidden.",
     match = ["rm -rf /"],
 )
 
 prefix_rule(
     pattern = ["dd"],
     decision = "forbidden",
-    justification = "Raw disk write is forbidden. Can destroy data. Use sandbox or run manually if required.",
+    justification = "Raw disk write is forbidden.",
     match = ["dd if=/dev/zero of=/dev/sda"],
 )
 
 prefix_rule(
     pattern = [["mkfs", "diskutil"]],
     decision = "forbidden",
-    justification = "Disk formatting/partitioning is forbidden.",
+    justification = "Disk formatting and partitioning are forbidden.",
     match = ["diskutil eraseDisk APFS Foo /dev/diskX"],
 )
+```

@@ -1,28 +1,14 @@
 ---
 name: git-helper
-description: 変更を最小差分に保ったまま、差分レビュー・コミット分割・安全な巻き戻し手順を提示する（自動pushはしない）
+description: >
+  diff/commit/PR を読みやすく整える / Make diffs and commits clean and reviewable.
+  Trigger: commit message, PR description, changelog, diff cleanup
 ---
 
-# Git Helper
+# 目的
 
-## 目的
+- レビューしやすい差分・メッセージに整える。
 
-- diff 前提の運用を崩さずに、レビューしやすい単位へ整える。
+# 出力
 
-## できること
-
-- 影響範囲の説明（どのファイルがどう変わったか）
-- コミット分割案（論理単位）
-- 安全な取り消し手順（reset/revert/restore の使い分け）
-- PR に載せる説明の骨子（要点だけ）
-
-## できないこと（明確に禁止）
-
-- ユーザーの明示指示なしに `git push` しない
-- 履歴改変（rebase/force push）を勝手に実行しない
-
-## ガイドライン
-
-- まず `git diff` / `git status` / `git log` を前提に状況を整理する。
-- コミットは「1コミット=1意図」を目標にする（ただし細かすぎない）。
-- 履歴改変が必要な場合は、必ずリスク（共有ブランチ・CI・レビュー）を併記する。
+- コミット案 / PR本文案 / セルフレビュー観点

@@ -1,16 +1,21 @@
 ---
 name: git-helper
-description: 変更内容を分析し、高品質なコミットメッセージやプルリクエスト（PR）の説明を生成します。
-disable-model-invocation: true # 勝手にコミット案を出さないよう手動(/git-helper)に限定
+description: >
+  diff/commit/PR を読みやすく整える / Make diffs and commits clean and reviewable.
+  Trigger: git, diff, commit message, PR description, changelog
 ---
 
-# Skill: Git Helper
+# 目的 / Purpose
 
-あなたは「歴史の記録者」です。
+- レビューしやすい差分・メッセージに整える。
 
-1. **差分分析**: `git diff --cached` を読み、変更の本質（Why & What）を理解せよ。
-2. **メッセージ生成**: 以下の形式で出力せよ。
-   - `feat(scope): 概要`
-   - `- 変更詳細1`
-   - `- 変更詳細2`
-3. **PR作成**: GitHub CLI (`gh`) が使える場合は、Issue番号を紐づけた PR draft の作成までサポートせよ。
+# 手順 / Steps
+
+1. 変更点を “意図” でグルーピング
+2. 不要な差分（空白/順序）を減らす
+3. コミットメッセージ案（Conventional Commits でも可）を提示
+4. PR本文のテンプレ（目的/変更/影響/テスト）を提示
+
+# 出力 / Output
+
+- 「コミット案」+「PR本文案」+「セルフレビュー観点」

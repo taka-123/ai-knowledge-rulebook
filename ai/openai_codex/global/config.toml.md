@@ -1,25 +1,13 @@
-<!--
-  注意:
-  - filesystemは脆弱性修正版(≥0.6.4)を必須、serenaは企業非推奨／個人は強ハードニング下のみ。
-  - OpenAI Codex の設定ファイルです
-  - [参照を許可するパス] などは実際の絶対パスに置き換えてください
-  - GitHub PATとNotion Tokenは実際の値に置き換えてください
-  - セキュリティのため、環境変数の使用を推奨します
--->
+<!-- ~/.codex/config.toml に記載 -->
 
 ```toml
-# ~/.codex/config.toml
-
 ## デフォルトモデル
 model = "gpt-5.3-codex"
-
-## 推論コストと安定性のバランス。重いタスク時は都度 /model か --model_reasoning_effort で上げる運用が無難
 model_reasoning_effort = "high"
 
-## 常用する安全ライン（“実行責任付きAI”として使う前提）
+## 安全寄りのデフォルト
+approval_policy = "on-request"
 sandbox_mode = "workspace-write"
-
-## 必要なときだけ参照する想定。プロジェクトでは disabled に落とすことが多い
 web_search = "cached"
 
 ## 通知音
@@ -45,4 +33,30 @@ args = ["@playwright/mcp@latest"]
 command = "npx"
 args = ["-y", "@drawio/mcp"]
 
+# マルチエージェント
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+
+## 役割（role）:
+[agents.default]
+description = "汎用実装・修正 / General purpose coding helper."
+
+[agents.explorer]
+description = "探索・読解特化 / Fast read-heavy exploration."
+config_file = "agents/explorer.toml"
+
+[agents.reviewer]
+description = "品質レビュー（安全性・正しさ・保守性） / Review for correctness & maintainability."
+config_file = "agents/reviewer.toml"
+
+[agents.test_runner]
+description = "テスト実行と失敗収束 / Run tests and fix failures."
+config_file = "agents/test_runner.toml"
+
+[agents.security_reviewer]
+description = "セキュリティ監査 / Security review for code and config."
+config_file = "agents/security_reviewer.toml"
 ```
