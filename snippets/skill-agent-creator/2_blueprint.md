@@ -25,7 +25,11 @@
    - 各エージェントの「役割・判断基準・ワークフロー」は共通。プラットフォームごとに書式を変換して生成する。
    - Claude Code / Cursor: YAML frontmatter（`name`, `description`, `tools`, `disallowedTools`, `model`, `memory`）+ Markdown body
    - Codex: TOML（`description`, `developer_instructions`, `model`, `sandbox_mode`, `approval_policy`）。body の内容は `developer_instructions` に集約する。
-     </non*negotiables_2026*黄金律>
+7. **Model Selection Policy (必須)**:
+   - `model` は固定値を前提にせず、実装時点で公式ドキュメントの最新推奨を確認して選定する。
+   - 公式ドキュメントの古いサンプル値を流用しない。選定理由と確認日を設計書に明記する。
+
+</non*negotiables_2026*黄金律>
 
 <language_policy>
 
