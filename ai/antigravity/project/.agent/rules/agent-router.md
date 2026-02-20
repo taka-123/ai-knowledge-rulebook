@@ -1,0 +1,21 @@
+<!-- .agent/rules/*.md -->
+
+> **2025-10-21 重要**: Windsurf は `AGENTS.md` を**ネイティブサポート**している可能性が高いことが実証されました（公式ドキュメントには未記載）。`.agent/rules/*.md` からの明示的参照がなくても、`AGENTS.md` が自動的に Rules として認識されます。
+>
+> **推奨運用**:
+>
+> - **基本**: `AGENTS.md` のみを配置（`.agent/rules/*.md` は不要）
+> - **明示的参照が必要な場合**: 以下の方法で `.agent/rules/*.md` から参照
+
+---
+
+[../common/project/AGENTS.md](../common/project/AGENTS.md)に記載のものを添付し、
+[adjustment_rule.md](../../../snippets/editor/adjustment_rule.md)を使用して、該当プロジェクト用に調整してください。
+
+もしくは、それを、同階層の、`AGENTS.md`で行い、`.agent/rules/*.md`からは、
+
+```
+- @AGENTS.md に従う
+```
+
+と書いて、それを読み込ませることで保守性を高める（ただし、Windsurf のネイティブサポートにより、この記述は不要になる可能性が高い）。
