@@ -30,7 +30,8 @@
         "*.npmjs.org",
         "pypi.org",
         "files.pythonhosted.org",
-        "*.rds.amazonaws.com"
+        "*.rds.amazonaws.com",
+        "*.bing.com"
       ]
     }
   },
@@ -116,7 +117,9 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git pull)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(trash *)",
+      "Bash(gomi *)"
     ]
   },
   "hooks": {

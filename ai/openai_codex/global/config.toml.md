@@ -59,4 +59,7 @@ config_file = "agents/test_runner.toml"
 [agents.security_reviewer]
 description = "セキュリティ監査 / Security review for code and config."
 config_file = "agents/security_reviewer.toml"
+
+[sandbox_workspace_write]
+network_access = true
 ```
