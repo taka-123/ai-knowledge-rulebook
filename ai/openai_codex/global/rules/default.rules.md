@@ -1,197 +1,247 @@
 <!-- ## Codex（Global Rules）: `~/.codex/rules/default.rules` -->
 
 ```python
-# Codex command approval rules (Starlark)
+# Codex コマンド承認ルール（Starlark）
 
-# Read-only / safe commands
+# 読み取り中心の安全なコマンド
 prefix_rule(
     pattern = ["pwd"],
     decision = "allow",
-    justification = "Working directory check is safe.",
-    match = ["pwd"],
 )
 
 prefix_rule(
     pattern = ["ls"],
     decision = "allow",
-    justification = "Listing files is safe.",
-    match = ["ls", "ls -la"],
 )
 
 prefix_rule(
     pattern = ["cat"],
     decision = "allow",
-    justification = "Viewing text files is read-only.",
-    match = ["cat README.md"],
 )
 
 prefix_rule(
     pattern = ["whoami"],
     decision = "allow",
-    justification = "Identity check is safe.",
-    match = ["whoami"],
 )
 
 prefix_rule(
     pattern = ["which"],
     decision = "allow",
-    justification = "Binary location check is safe.",
-    match = ["which git", "which node"],
 )
 
 prefix_rule(
     pattern = ["git", "status"],
     decision = "allow",
-    justification = "Repository status is read-only.",
-    match = ["git status"],
 )
 
 prefix_rule(
     pattern = ["git", "branch"],
     decision = "allow",
-    justification = "Branch list is read-only.",
-    match = ["git branch", "git branch -a"],
 )
 
 prefix_rule(
     pattern = ["git", "diff"],
     decision = "allow",
-    justification = "Diff is read-only.",
-    match = ["git diff", "git diff --stat", "git diff --cached"],
 )
 
 prefix_rule(
     pattern = ["git", "log"],
     decision = "allow",
-    justification = "Log is read-only.",
-    match = ["git log -n 20", "git log --oneline -n 50"],
 )
 
 prefix_rule(
     pattern = ["git", "show"],
     decision = "allow",
-    justification = "Show is read-only.",
-    match = ["git show HEAD", "git show --name-only HEAD"],
 )
 
 prefix_rule(
     pattern = [["rg", "grep"]],
     decision = "allow",
-    justification = "Search commands are read-only.",
-    match = ["rg TODO .", "grep -R \"TODO\" ."],
 )
 
-# Mutating / network commands require explicit confirmation
+prefix_rule(
+    pattern = ["trash"],
+    decision = "allow",
+)
+
+prefix_rule(
+    pattern = ["gomi"],
+    decision = "allow",
+)
+
+# 変更・外部アクセスを伴うため確認が必要なコマンド
 prefix_rule(
     pattern = [["rm", "mv", "cp"]],
     decision = "prompt",
-    justification = "File operations can be destructive.",
-    match = ["rm file.txt", "mv a b", "cp a b"],
+    justification = "ファイル操作は破壊的変更につながる可能性があります。",
 )
 
 prefix_rule(
     pattern = ["git", "add"],
     decision = "prompt",
-    justification = "Staging changes the index.",
-    match = ["git add .", "git add path/to/file"],
+    justification = "ステージングで Git の状態が変化します。",
 )
 
 prefix_rule(
     pattern = ["git", ["checkout", "switch", "restore"]],
     decision = "prompt",
-    justification = "Can overwrite working tree.",
-    match = ["git checkout main", "git switch -c feat", "git restore file.txt"],
+    justification = "ワークツリーの内容を上書きする可能性があります。",
 )
 
 prefix_rule(
     pattern = ["git", "commit"],
     decision = "prompt",
-    justification = "Committing creates history.",
-    match = ["git commit -m \"msg\""],
+    justification = "コミットは履歴を更新します。",
 )
 
 prefix_rule(
     pattern = ["git", "push"],
     decision = "prompt",
-    justification = "Pushing can affect remotes and CI.",
-    match = ["git push", "git push origin HEAD"],
+    justification = "リモートや CI に影響するため事前確認が必要です。",
 )
 
 prefix_rule(
     pattern = [["curl", "wget"]],
     decision = "prompt",
-    justification = "Network access requires confirmation.",
-    match = ["curl -I https://example.com", "wget https://example.com/index.html"],
+    justification = "ネットワークアクセスを伴うため確認します。",
 )
 
 prefix_rule(
     pattern = ["gh"],
     decision = "prompt",
-    justification = "GitHub CLI can access credentials and remote state.",
-    match = ["gh auth status", "gh pr view 1"],
+    justification = "認証情報やリモート状態にアクセスするため確認します。",
 )
 
 prefix_rule(
     pattern = [["npm", "pnpm", "yarn", "bun"], ["install", "add", "remove", "update"]],
     decision = "prompt",
-    justification = "Dependency operations can modify local and lockfile state.",
-    match = ["npm install", "pnpm add zod", "yarn add react"],
+    justification = "依存関係やロックファイルを変更する可能性があります。",
 )
 
 prefix_rule(
     pattern = ["pip", ["install", "uninstall"]],
     decision = "prompt",
-    justification = "Python package operations can modify environment.",
-    match = ["pip install foo", "pip uninstall foo"],
+    justification = "Python 環境の状態を変更します。",
 )
 
 prefix_rule(
     pattern = ["uv", ["add", "sync", "lock"]],
     decision = "prompt",
-    justification = "uv can modify pyproject.toml and environment.",
-    match = ["uv add requests", "uv sync"],
+    justification = "依存関係や環境設定を変更する可能性があります。",
 )
 
 prefix_rule(
     pattern = ["poetry", ["add", "remove", "update"]],
     decision = "prompt",
-    justification = "Poetry can modify pyproject.toml and lockfile.",
-    match = ["poetry add requests", "poetry update"],
+    justification = "依存関係や lockfile を更新する可能性があります。",
 )
 
 prefix_rule(
     pattern = ["chmod"],
     decision = "prompt",
-    justification = "Changing file modes requires confirmation.",
-    match = ["chmod +x script.sh"],
+    justification = "ファイル権限を変更するため確認します。",
 )
 
-# Forbidden destructive commands
+prefix_rule(
+    pattern = ["psql"],
+    decision = "prompt",
+    justification = "DB への直接操作は影響範囲が大きいため確認します。",
+)
+
+prefix_rule(
+    pattern = ["mysql"],
+    decision = "prompt",
+    justification = "DB への直接操作は影響範囲が大きいため確認します。",
+)
+
+prefix_rule(
+    pattern = ["docker", "compose"],
+    decision = "prompt",
+    justification = "コンテナ構成や稼働状態に影響するため確認します。",
+)
+
+prefix_rule(
+    pattern = ["docker-compose"],
+    decision = "prompt",
+    justification = "コンテナ構成や稼働状態に影響するため確認します。",
+)
+
+# 実行を禁止する高リスクコマンド
 prefix_rule(
     pattern = ["sudo"],
     decision = "forbidden",
-    justification = "Privilege escalation is forbidden.",
-    match = ["sudo -n true"],
+    justification = "権限昇格は許可しません。",
 )
 
 prefix_rule(
     pattern = ["rm", "-rf", "/"],
     decision = "forbidden",
-    justification = "System-destroying command is forbidden.",
-    match = ["rm -rf /"],
+    justification = "システム破壊につながるため禁止します。",
 )
 
 prefix_rule(
     pattern = ["dd"],
     decision = "forbidden",
-    justification = "Raw disk write is forbidden.",
-    match = ["dd if=/dev/zero of=/dev/sda"],
+    justification = "ディスクへ直接書き込む高リスク操作のため禁止します。",
 )
 
 prefix_rule(
     pattern = [["mkfs", "diskutil"]],
     decision = "forbidden",
-    justification = "Disk formatting and partitioning are forbidden.",
-    match = ["diskutil eraseDisk APFS Foo /dev/diskX"],
+    justification = "ディスク初期化やパーティション操作は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["ssh"],
+    decision = "forbidden",
+    justification = "外部環境への直接接続は本プロファイルでは禁止します。",
+)
+
+prefix_rule(
+    pattern = ["scp"],
+    decision = "forbidden",
+    justification = "外部へのファイル転送は本プロファイルでは禁止します。",
+)
+
+prefix_rule(
+    pattern = ["aws"],
+    decision = "forbidden",
+    justification = "クラウド資格情報や本番環境に影響しうるため禁止します。",
+)
+
+prefix_rule(
+    pattern = ["terraform"],
+    decision = "forbidden",
+    justification = "インフラ変更の影響が大きいため禁止します。",
+)
+
+prefix_rule(
+    pattern = ["kubectl"],
+    decision = "forbidden",
+    justification = "クラスタ操作の影響が大きいため禁止します。",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force"],
+    decision = "forbidden",
+    justification = "履歴破壊につながる force push は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "履歴破壊につながる force push は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["git", "reset", "--hard"],
+    decision = "forbidden",
+    justification = "ローカル変更を失う可能性があるため禁止します。",
+)
+
+prefix_rule(
+    pattern = ["git", "clean", "-fdx"],
+    decision = "forbidden",
+    justification = "未追跡ファイルを不可逆に削除するため禁止します。",
 )
 ```
