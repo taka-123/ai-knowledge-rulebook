@@ -1,64 +1,68 @@
 ---
 name: docs-sync
-description: Use when README and structure documents must be synchronized with actual repository layout and commands; When NOT to use: when changes are isolated and documentation truth remains unchanged; Trigger Keywords: [README, directorystructure, technologystack, 同期, 実態反映].
+description: Use when README or operational documents must be synchronized with current repository structure and executable commands; When NOT to use: when changes are isolated and do not affect documented facts; Trigger Keywords: [README, directorystructure, technologystack, 同期, 実態反映].
 ---
 
 # docs-sync
 
 ## When to use
 
-- コード・スキル・スクリプトの変更後に README や AGENTS.md が実態と乖離した場合。
-- ディレクトリ構成・コマンド一覧・スキル一覧が実ファイルと合わなくなった場合。
+- `.claude/skills/README.md` のスキル一覧が `.claude/skills/*/SKILL.md` 実体とずれたとき。
+- `.work/AI_SCAN.md` や `.work/AI_BLUEPRINT.md` のコマンド記述を実態へ合わせるとき。
+- `package.json` scripts 更新後にドキュメントの手順を同期するとき。
 
 ## When NOT to use
 
-- 変更が文書に記載されていない範囲のみで、文書の真実性が保たれている場合。
-- 構成が未確定で確定版文書を更新できない場合。
+- 実装差分が文書に影響しない軽微な修正だけのとき。
+- 仕様が未確定で、文書を確定更新できないとき。
+- 外部情報の真偽確認が主目的で、文書同期ではないとき。
 
 ## Trigger Keywords
 
 - README
-- directorystructure
-- technologystack
 - 同期
 - 実態反映
+- コマンド更新
+- docs-sync
 
 ## Procedure
 
-1. `git diff --name-only HEAD` または `git diff --staged --name-only` で変更ファイルを列挙する。
-2. 変更ファイルが参照されている文書箇所を `grep -r` または Grep ツールで特定する（README.md, AGENTS.md, `.claude/CLAUDE.md` 等）。
-3. 実態（`ls`, `cat package.json` 等）を確認し、文書の記載と差分を特定する。
-4. **変更箇所のみ**を最小差分で更新する（関係ない段落を書き直さない）。
-5. `npm run lint:md` を実行して Markdown 整合性を確認する。
+1. `git diff --name-only` で変更ファイルを抽出し、文書更新対象を決める。完了条件: 対象ファイルが確定。
+2. `cat package.json` と `find .claude/skills -mindepth 2 -maxdepth 2 -name SKILL.md` で実体を確認する。完了条件: 参照元データ取得。
+3. 文書内の古い記述を実体に合わせて最小差分で更新する。完了条件: 変更が対象節に限定。
+4. `npx markdownlint-cli2 .claude/skills/README.md` を実行する。完了条件: 0 error。
+5. 更新箇所と根拠コマンドをレポート化する。完了条件: 根拠付きで説明可能。
 
 ## Output Contract
 
-- 更新した文書パスと変更行番号を報告する。
-- 「実態 vs 文書の差分」を Before/After で示す。
-- 確認に使ったコマンドと結果を添える。
+| 項目 | 形式 |
+| --- | --- |
+| Updated Docs | `- path` 箇条書き |
+| Source of Truth | 参照したコマンド/ファイル |
+| Diff Summary | `1. before -> after` |
+| Verification | `npx markdownlint-cli2 ...` 結果 |
 
 ### NG例
 
-```
-❌ 変更されていない段落を「ついでに」書き直す（差分が広がる）
-❌ 実態確認コマンドを実行せず記憶で文書を更新する
-❌ lint:md を通さず整形崩れを混入させる
-❌ README 全体を書き直す（最小差分を守る）
-```
+❌ 実体確認なしで記憶だけで書き換える（誤情報混入）。
+
+❌ 関係ない章までまとめて書き直す（差分過大）。
+
+❌ 根拠コマンドを記録しない（追跡不能）。
 
 ## Examples
 
 ### Example 1
 
-Input: 新しいスキルを追加したので README のスキル一覧が古くなった。
-Output: `ls .claude/skills/` の結果と README の一覧を比較し、追加分のみ README に反映する。
+Input: `.claude/skills/README.md` に未実在スキル名が残っている。
+Output: 実体一覧に合わせた修正版 README と修正差分表。
 
 ### Example 2
 
-Input: `package.json` に新しい npm script を追加したが CLAUDE.md のコマンド一覧が古い。
-Output: `cat package.json | jq '.scripts'` の結果を確認し、CLAUDE.md の該当セクションを最小差分で更新する。
+Input: `package.json` の scripts 更新後に `.work/AI_BLUEPRINT.md` のコマンド記述を同期したい。
+Output: scripts 節の更新と `cat package.json` 根拠を含む報告。
 
 ### Example 3
 
-Input: `schemas/` に新しいスキーマファイルを追加したが README に記載がない。
-Output: README の該当セクションにファイル名と用途を1行追記し、`npm run lint:md` パスを確認する。
+Input: `.claude/skills/skill-discoverer/SKILL.md` 追加後に関連ドキュメントへ反映したい。
+Output: 反映済みファイル一覧と `npx markdownlint-cli2` PASS 記録。

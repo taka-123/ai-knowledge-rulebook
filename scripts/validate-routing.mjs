@@ -6,13 +6,8 @@ const root = process.cwd()
 const required = [
   'CLAUDE.md',
   '.claude/CLAUDE.md',
-  '.cursor/rules/00-router.mdc',
-  '.cursor/rules/10-skill-map.mdc',
-  '.cursor/rules/20-scope-map.mdc',
-  '.windsurf/rules/00-router.md',
-  '.windsurf/rules/10-skill-map.md',
-  '.windsurf/rules/20-scope-map.md',
 ]
+const deprecatedRuleDirs = ['.cursor/rules', '.windsurf/rules']
 
 const errors = []
 
@@ -23,20 +18,19 @@ for (const rel of required) {
   }
 }
 
-function collectFiles(dir, extPattern) {
+for (const dir of deprecatedRuleDirs) {
   const full = path.join(root, dir)
-  if (!fs.existsSync(full)) return []
-  return fs
-    .readdirSync(full)
-    .filter(f => extPattern.test(f))
-    .map(f => path.join(full, f))
+  if (!fs.existsSync(full)) continue
+
+  const entries = fs.readdirSync(full)
+  if (entries.length > 0) {
+    errors.push(`${dir}: rule files are deprecated; use CLAUDE.md + .claude/skills shared source`)
+  }
 }
 
 const routeFiles = [
   path.join(root, 'CLAUDE.md'),
   path.join(root, '.claude', 'CLAUDE.md'),
-  ...collectFiles('.cursor/rules', /\.mdc$/),
-  ...collectFiles('.windsurf/rules', /\.md$/),
 ].filter(p => fs.existsSync(p))
 
 for (const file of routeFiles) {
@@ -46,7 +40,7 @@ for (const file of routeFiles) {
   }
 }
 
-for (const dir of ['.claude/skills', '.cursor/rules', '.windsurf/rules']) {
+for (const dir of ['.claude/skills']) {
   const full = path.join(root, dir)
   if (!fs.existsSync(full)) continue
   for (const entry of fs.readdirSync(full)) {

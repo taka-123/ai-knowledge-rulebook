@@ -1,19 +1,21 @@
 ---
 name: schema-guard
-description: Use when JSON assets must be validated against repository schemas and corrected with minimal diffs; When NOT to use: when no schema boundary exists or the task is non-JSON only; Trigger Keywords: [schema, JSON検証, check-jsonschema, ajv, 型整合].
+description: Use when JSON assets must be validated against repository schemas and corrected with minimal, schema-safe diffs; When NOT to use: when no schema boundary applies or the task does not involve JSON files; Trigger Keywords: [schema, JSON検証, check-jsonschema, ajv, 型整合].
 ---
 
 # schema-guard
 
 ## When to use
 
-- `npm run schema:check` が失敗していて、どの JSON の何が違反しているか特定したい場合。
-- `ai/` または `notes/` 配下の JSON ファイルを編集した後にスキーマ適合性を確認したい場合。
+- `npm run schema:check` の結果を確認し、JSON の適合性を監査するとき。
+- `ai/claude_code/project/.claude/settings.json` の変更がスキーマ境界に影響しないか確認するとき。
+- `schemas/ai_profile.schema.json` / `schemas/notes.schema.json` の適用範囲を文書化するとき。
 
 ## When NOT to use
 
-- JSON を扱わない作業のみの場合。
-- `schemas/` にスキーマ定義が存在しない対象に対して検証を要求する場合。
+- JSON 以外のファイルのみを扱うとき。
+- スキーマ定義が存在しない対象へ推測でルールを適用するとき。
+- lint 修正だけでスキーマ検証を必要としないとき。
 
 ## Trigger Keywords
 
@@ -23,57 +25,45 @@ description: Use when JSON assets must be validated against repository schemas a
 - ajv
 - 型整合
 
-## このリポジトリのスキーマ構成
-
-| 検証対象 | スキーマファイル |
-|---|---|
-| `ai/**/*.json` | `schemas/ai_profile.schema.json` |
-| `notes/**/*.json` | `schemas/notes.schema.json` |
-
-検証コマンド: `npm run schema:check`
-
 ## Procedure
 
-1. `npm run schema:check` を実行してエラー出力全体を取得する。
-2. エラーメッセージから「どのファイル」「どのフィールド」が違反しているかを特定する。
-3. 対応するスキーマファイル（`schemas/*.json`）を読み、**required フィールド・型・enum 値**を確認する。
-4. 違反フィールドのみを最小差分で修正する（スキーマに定義されていない余分なフィールドは追加しない）。
-5. `npm run schema:check` を再実行し、exit 0 を確認する。
+1. `npm run schema:check` を実行して違反の有無を確認する。完了条件: コマンド結果が取得済み。
+2. 対象 JSON と対応スキーマ（`schemas/ai_profile.schema.json`, `schemas/notes.schema.json`）を照合する。完了条件: 対応関係が確定。
+3. 違反フィールドのみ最小差分で修正する。完了条件: 追加修正が必要最小限。
+4. `npm run schema:check` を再実行し、PASS/FAIL を記録する。完了条件: 検証結果が確定。
+5. 修正内容をファイル単位で一覧化する。完了条件: 追跡可能なレポート完成。
 
 ## Output Contract
 
-| 項目 | 内容 |
-|---|---|
-| 失敗ファイル | `ai/foo/profile.json` |
-| 違反フィールド | `required: ["title"]` が未定義 |
-| 修正内容 | `"title": "..."` を追加 |
-| 再実行結果 | exit 0 (PASS) |
-
-- 複数ファイルが失敗している場合は、全件を上記表形式で列挙してから一括修正する。
-- 修正が複数フィールドにまたがる場合も、1 回の再実行で全件 PASS を目指す。
+| 項目 | 形式 |
+| --- | --- |
+| Target JSON | `path/to/file.json` |
+| Schema | `schemas/*.json` |
+| Violation | `required/type/enum` など |
+| Fix | 変更フィールドの説明 |
+| Re-check | `npm run schema:check: PASS/FAIL` |
 
 ### NG例
 
-```
-❌ エラーメッセージを読まずにフィールドを推測で追加する
-❌ スキーマに定義されていないフィールドを追加する（別のバリデーションエラーになる）
-❌ JSON の構造（配列↔オブジェクト）をスキーマ確認なしで変える
-❌ 修正後に schema:check を再実行しない
-```
+❌ スキーマを読まずにフィールドを推測で追加する（再発リスク）。
+
+❌ エラーと無関係なキーをまとめて変更する（差分過大）。
+
+❌ 再検証を行わずに終了する（品質未確定）。
 
 ## Examples
 
 ### Example 1
 
-Input: `npm run schema:check` が `ai/profiles/gpt4.json` で失敗している。
-Output: エラー内容から不足フィールドを特定し、`schemas/ai_profile.schema.json` を確認して最小追記を行い、再実行で exit 0 を確認する。
+Input: `npm run schema:check` を実行し、現在の JSON 適合状況を確認したい。
+Output: コマンド結果と対象スキーマ一覧の表。
 
 ### Example 2
 
-Input: `notes/2025/q1.json` に型違反がある（string を期待しているフィールドに number が入っている）。
-Output: 対象フィールドのみ型を修正し、他のフィールドは触らずに `npm run schema:check` が PASS することを確認する。
+Input: `ai/claude_code/project/.claude/settings.json` の更新が schema チェックへ影響するか確認したい。
+Output: 影響有無の判定と必要対応のチェックリスト。
 
 ### Example 3
 
-Input: 新規に `ai/profiles/new-model.json` を追加したい。
-Output: `schemas/ai_profile.schema.json` の required フィールドを全て含む最小構成 JSON を生成し、`npm run schema:check` が exit 0 であることを確認する。
+Input: `schemas/notes.schema.json` の必須項目を確認して運用手順へ反映したい。
+Output: 必須項目一覧と `npm run schema:check` 実行結果。

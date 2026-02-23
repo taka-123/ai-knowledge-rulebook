@@ -1,19 +1,21 @@
 ---
 name: git-helper
-description: Use when repository changes must be grouped into reviewable commits with safe rollback guidance; When NOT to use: when no file changes exist or version control operations are out of scope; Trigger Keywords: [commit, branch, diff, PR, rollback].
+description: Use when repository changes must be organized into reviewable diffs and commit units with rollback awareness; When NOT to use: when no file changes exist or git operations are outside scope; Trigger Keywords: [commit, branch, diff, PR, rollback].
 ---
 
 # git-helper
 
 ## When to use
 
-- 複数ファイルの変更を意味単位でコミットに分割してレビューしやすくしたい場合。
-- 変更を安全にロールバックできる形でまとめたい場合。
+- `.claude/skills/*/SKILL.md` と agent 定義の複数差分を意図単位で整理したいとき。
+- レビュー前に `git diff` を読みやすい粒度へ分割したいとき。
+- ロールバックしやすいコミット構成を設計したいとき。
 
 ## When NOT to use
 
-- 実ファイル変更がなくコミット対象がない場合。
-- Git 操作を伴わない単なる相談の場合。
+- 変更ファイルが存在せずコミット対象がないとき。
+- Git 操作そのものが禁止されるタスク条件のとき。
+- 履歴改変（rebase など）を要求されていないとき。
 
 ## Trigger Keywords
 
@@ -25,43 +27,42 @@ description: Use when repository changes must be grouped into reviewable commits
 
 ## Procedure
 
-1. `git status --short` と `git diff --staged --name-only` で変更全体を可視化する。
-2. 差分を「意図単位」でグルーピングする（機能追加 / バグ修正 / 整形 / ドキュメント）。
-3. 各グループごとにコミットメッセージ案を作る（1コミット1意図、`feat:` / `fix:` / `docs:` 等の prefix を使う）。
-4. PR 説明テンプレート（目的 / 変更点 / 検証方法 / ロールバック方針）を差分に合わせて埋める。
-5. ロールバック手段（`git revert <SHA>` または対象コミット）を 1 行で示す。
+1. `git status --short` で作業ツリーの全差分を確認する。完了条件: 変更一覧を把握。
+2. `git diff --name-only` と `git diff` で意図ごとに差分を分類する。完了条件: グループ分け完了。
+3. 各グループのコミットメッセージ候補を作成する。完了条件: 1コミット1意図の草案完成。
+4. ロールバック時の最小単位を明示し、順序を提案する。完了条件: 逆順適用手順が説明可能。
+5. レビュー向けに差分サマリを出力する。完了条件: 変更目的と範囲が明確。
 
 ## Output Contract
 
-必ず以下の順で提示する：
-
-1. **コミット分割案**: グループ名と含めるファイル一覧
-2. **各コミットメッセージ案**: `type: 内容` 形式
-3. **PR 本文案**: 目的・変更点・検証・ロールバック
-4. **ロールバック方針**: `git revert` 対象を明記
+| 項目 | 形式 |
+| --- | --- |
+| Change Groups | `1. skill-update: .claude/skills/lint-fix/SKILL.md` |
+| Commit Plan | `feat/docs/chore` などの候補 |
+| Rollback Unit | コミット単位の戻し方 |
+| Review Notes | リスクと確認ポイント |
 
 ### NG例
 
-```
-❌ 変更意図が異なるファイルを1コミットに混ぜる
-❌ 変更していないファイルをコミット対象に含める
-❌ force push 前提の運用を推奨する（main への force push は原則禁止）
-❌ ロールバック方針を省略する
-```
+❌ 意図が異なる変更を 1 コミットに混在させる（レビュー困難）。
+
+❌ ロールバック手順を示さない（運用リスク）。
+
+❌ 差分確認なしでコミット案を提示する（根拠不足）。
 
 ## Examples
 
 ### Example 1
 
-Input: スキルファイルの改良とスクリプトの追加が混在している。
-Output: スキル改良コミット + スクリプト追加コミットに分割案を示し、各メッセージと PR 本文案を提示する。
+Input: `.claude/skills/lint-fix/SKILL.md` と `.claude/skills/schema-guard/SKILL.md` を同時更新した。
+Output: skill品質修正コミットとして 1 グループ化した計画表。
 
 ### Example 2
 
-Input: ドキュメント更新と JSON 修正を整理してコミットしたい。
-Output: `docs:` コミットと `fix:` コミットに分離し、`git revert` 対象を明示する。
+Input: `.claude/agents/content-writer.md` と `.cursor/agents/content-writer.md` を同期更新した。
+Output: プラットフォーム整合コミット案とレビュー観点。
 
 ### Example 3
 
-Input: 誤ってコミットした変更を安全に巻き戻したい。
-Output: `git revert <SHA>` コマンドと、revert コミットのメッセージ案を提示する。
+Input: `.codex/agents/doc-validator.toml` のみ更新した。
+Output: Codex設定更新専用コミット案とロールバック単位。
