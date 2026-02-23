@@ -14,6 +14,7 @@ description: Use when implementation requires step-by-step planning with explici
 
 - 単一ファイルの軽微な文言修正のみで完了する場合。
 - 既存手順が確定しており追加計画が不要な場合。
+- ユーザーが「計画不要で実装して」と明示している場合。
 
 ## Trigger Keywords
 
@@ -25,16 +26,24 @@ description: Use when implementation requires step-by-step planning with explici
 
 ## Procedure
 
-1. 依頼文を読み、対象範囲と期待成果を明確化する。
-2. 関連ファイルと既存規約を確認し、最小差分で実行する。
-3. 検証コマンドの結果を記録し、結論と残課題を報告する。
+1. タスクを 🟢/🟡/🔴 で分類し、破壊的変更の有無を先に宣言する。
+2. 対象ファイルを明示する（新規/更新/削除を分ける）。
+3. 実装ステップを 3〜6 手順で書く（各手順に完了条件を付ける）。
+4. 検証コマンドを先に固定する（最低: `npm run format:check`、必要時 `npm run schema:check`）。
+5. 依存・前提不足がある場合だけ質問し、それ以外は実装に進む。
+
+## Output Contract
+
+- 必ず「目的 / 制約 / 影響範囲 / 実装手順 / 検証」をこの順で提示する。
+- 実装手順はチェックリスト形式で出す（完了判断が曖昧な文を避ける）。
+- 「調査だけ」で終わらせず、次の実行アクションを 1 行で明記する。
 
 ## Examples
 
 ### Example 1
 
 Input: src/main/api.ts と src/common/types.ts の同時改修順を決めたい。
-Output: 影響範囲、実装順、検証順を4ステップで提示し、最後に ./build.sh 実行を完了条件にする。
+Output: 影響範囲、実装順、検証順を4ステップで提示し、最後に `npm run format:check` と `npm run schema:check` を完了条件にする。
 
 ### Example 2
 
