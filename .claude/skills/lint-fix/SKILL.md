@@ -1,20 +1,21 @@
 ---
 name: lint-fix
-description: Use when lint or format checks fail and deterministic repository commands must be applied to fix issues; When NOT to use: when there is no failing lint signal or the task is architecture design only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
+description: Use when lint or format checks fail and deterministic repository commands are needed to resolve violations; When NOT to use: when no failing lint signal exists or the task is pure design discussion; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
 ---
 
 # lint-fix
 
 ## When to use
 
-- lint 出力に基づく修正を機械的に進める必要がある場合。
-- 複数ディレクトリにまたがる整形崩れを修正したい場合。
+- `npm run format:check` が FAIL し、修正対象ファイルが明確なとき。
+- `npm run lint:md` / `npm run lint:json` / `npm run lint:yaml` の失敗を収束させるとき。
+- `.work/AI_BLUEPRINT.md` など文書更新後に lint 違反を最小差分で直すとき。
 
 ## When NOT to use
 
-- 失敗ログがなく推測のみで修正対象を決める場合。
-- 設計議論のみで実ファイル修正が不要な場合。
-- 今回変更していないファイルや箇所への formatter 実行（差分が無関係に広がるため禁止）。
+- 失敗ログがなく、どこが壊れているか不明なとき。
+- 実装方針検討だけで、修正作業に入らないとき。
+- 大規模リファクタを同時に行う必要があるとき。
 
 ## Trigger Keywords
 
@@ -26,31 +27,42 @@ description: Use when lint or format checks fail and deterministic repository co
 
 ## Procedure
 
-1. 失敗コマンドとエラーログを固定する。ログがなければ `npm run format:check` を先に実行する。
-2. **今回変更した箇所のみ**を対象に自動修正を適用する（新規ファイルはファイル全体でよいが、既存ファイルは変更箇所に限定し、無関係な差分を出さない）。
-3. 自動修正で残った項目だけを手動で最小修正する（挙動変更を入れない）。
-4. 同じコマンドを再実行し、失敗件数が 0 になったことを確認する。
-5. 変更ファイルと修正理由を 1 行ずつ記録する。
+1. `npm run format:check` を実行して失敗箇所を取得する。完了条件: 失敗ログが保存済み。
+2. 対象に応じて `npm run lint:md` / `npm run lint:json` / `npm run lint:yaml` を実行し、違反カテゴリを確定する。完了条件: 違反種別が分類済み。
+3. 該当ファイルのみを最小差分で修正する。完了条件: 無関係差分がない。
+4. 同じコマンドを再実行して違反が解消したか確認する。完了条件: 失敗件数 0 または残件明示。
+5. 修正内容と未解決項目をレポート化する。完了条件: 再現可能な記録がある。
 
 ## Output Contract
 
-- 必ず「失敗コマンド / 修正内容 / 再実行結果 / 未解決」を出す。
-- 未解決がある場合は、次に必要な追加情報（ログや環境差）を 1 つだけ要求する。
-- リファクタや命名変更など、lint解消と無関係な変更は含めない。
+| 項目 | 形式 |
+| --- | --- |
+| Failed Command | `npm run ...` |
+| Fixed Files | `- path` 箇条書き |
+| Re-run Result | PASS / FAIL |
+| Remaining Issues | `None` または番号付き |
+
+### NG例
+
+❌ 失敗ログを取らずに推測で修正する（原因不明）。
+
+❌ 関係ないファイルまで自動整形する（差分肥大）。
+
+❌ 再実行せずに「修正完了」と報告する（検証不足）。
 
 ## Examples
 
 ### Example 1
 
-Input: API ハンドラファイルで prettier エラーが出ている。
-Output: 該当ファイルのみ修正し、format check の再実行結果を記録する。
+Input: `npm run format:check` で `.work/AI_BLUEPRINT.md` が警告対象になった。
+Output: 対象ファイル修正後の再実行結果表。
 
 ### Example 2
 
-Input: 設定ファイルとビルドスクリプト周辺の行末空白を解消したい。
-Output: 最小差分で修正し、lint コマンドの pass を確認する。
+Input: `npm run lint:md` が `.claude/skills/skill-discoverer/SKILL.md` で失敗した。
+Output: 規約違反修正後の PASS 記録。
 
 ### Example 3
 
-Input: キューワーカーの import 並び替え違反を直したい。
-Output: 違反箇所を修正後に再検証し、残課題があれば一覧化する。
+Input: `npm run lint:yaml` で `.github/workflows/ci.yml` 警告を確認した。
+Output: 警告内容の整理と必要修正の一覧。

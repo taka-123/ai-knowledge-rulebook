@@ -1,72 +1,68 @@
 ---
 name: content-scaffold
-description: Use when new repository documents or rule files must be scaffolded from standardized structures with validation commands; When NOT to use: when existing files only need small edits without structural scaffolding; Trigger Keywords: [新規ファイル, scaffold, テンプレート, 雛形, 初期化].
+description: Use when new repository documents, skills, or agent files must be scaffolded with required sections and validation steps; When NOT to use: when the task is a minor edit to existing files without scaffolding; Trigger Keywords: [新規ファイル, scaffold, テンプレート, 雛形, 初期化].
 ---
 
 # content-scaffold
 
 ## When to use
 
-- 新しいスキル（SKILL.md）を規約準拠の構造で作成したい場合。
-- `ai/` や `notes/` 配下に新しい JSON ファイルをスキーマ準拠で作成したい場合。
+- `.claude/skills/skill-discoverer/SKILL.md` のような新規 SKILL.md を規約準拠で追加するとき。
+- `.claude/agents/*.md` と `.cursor/agents/*.md` を同じ設計で新規作成するとき。
+- `.codex/agents/*.toml` を Markdown agent から変換して新規作成するとき。
 
 ## When NOT to use
 
-- 既存ファイルへ数行追記するだけで完了する場合。
-- ファイル種別が不明で適用テンプレートを特定できない場合。
+- 既存ファイルへ 1〜2 行追記するだけで済むとき。
+- 配置先や命名が未確定で雛形の責務が定義できないとき。
+- 実体パス確認なしに大量生成を行うとき。
 
 ## Trigger Keywords
 
-- 新規ファイル
 - scaffold
+- 新規ファイル
 - テンプレート
 - 雛形
 - 初期化
 
 ## Procedure
 
-### SKILL.md を作成する場合
-
-1. `ls .claude/skills/` または `ls ai/claude_code/global/skills/` で既存スキルを一覧して命名衝突がないか確認する。
-2. 配置先ディレクトリを決定する（プロジェクト固有 → `.claude/skills/<name>/`、グローバル → `ai/claude_code/global/skills/<name>/`）。
-3. 以下の必須セクションを含む `SKILL.md` を生成する：frontmatter（name・description）、When to use、When NOT to use、Trigger Keywords、Procedure、Output Contract、Examples（3件）。
-4. `npm run agent:check` を実行してフロントマター・構造・ルーティング整合性を確認する。
-
-### JSON ファイルを作成する場合
-
-1. `schemas/` 配下の該当スキーマ（`ai_profile.schema.json` または `notes.schema.json`）を読んで必須フィールドを把握する。
-2. 既存の同種 JSON を 1 件読んで形式を確認する。
-3. 必須フィールドを全て含む最小構成の JSON を生成する。
-4. `npm run schema:check` を実行してゼロエラーを確認する。
+1. `find .claude/skills .claude/agents .cursor/agents .codex/agents -maxdepth 2 -type f` で既存実体を確認する。完了条件: 重複名がない。
+2. 生成対象のファイル種別を決め、必須セクション（Skill:8 / Agent:4）を定義する。完了条件: セクション仕様が確定。
+3. 実在コマンド（`npm run agent:check`, `npm run format:check` など）を組み込んだ本文を作成する。完了条件: 架空コマンドがない。
+4. 生成後に `npm run agent:check` を実行して整合性を確認する。完了条件: exit 0。
+5. 生成ファイル一覧と検証結果を報告する。完了条件: すべての生成物に結果が付く。
 
 ## Output Contract
 
-- 生成ファイルのパスを先頭に明示する（例: `.claude/skills/ci-runner/SKILL.md`）。
-- 検証コマンドの実行結果（exit code）を必ず添える。
-- 検証が通らない場合は完了扱いにしない。
+| 項目 | 形式 |
+| --- | --- |
+| Generated Files | `- path` 箇条書き |
+| Applied Template | Skill / Agent / TOML の別 |
+| Validation | `npm run agent:check: PASS/FAIL` |
+| Follow-up | 必要な追補タスク |
 
 ### NG例
 
-```
-❌ frontmatter なしで SKILL.md を作成する（agent:check に失敗する）
-❌ JSON の必須フィールドを省略する（schema:check に失敗する）
-❌ 既存スキルと同名のディレクトリを作成する（ルーティング衝突）
-❌ 検証コマンドを実行せずに完了報告する
-```
+❌ 仮置き文字列や未確定メモを残して生成する（未完成物の混入）。
+
+❌ 既存と同名パスへ意図不明の上書きを行う（衝突）。
+
+❌ 検証を省略して生成完了とする（品質保証不足）。
 
 ## Examples
 
 ### Example 1
 
-Input: プロジェクト用に `ci-runner` スキルを新規作成したい。
-Output: `.claude/skills/ci-runner/SKILL.md` を標準テンプレートで生成し、`npm run agent:check` が exit 0 であることを確認して報告する。
+Input: `.claude/skills/skill-discoverer/SKILL.md` を新規追加したい。
+Output: 8セクション実装済み SKILL.md と `npm run agent:check` 結果。
 
 ### Example 2
 
-Input: `ai/` 配下に新しい AI プロファイル JSON を追加したい。
-Output: `schemas/ai_profile.schema.json` の必須フィールドを確認し、最小構成の JSON を生成後、`npm run schema:check` が exit 0 であることを確認する。
+Input: `.claude/agents/repo-scaffolder.md` と `.cursor/agents/repo-scaffolder.md` を同仕様で再生成したい。
+Output: 4セクション統一済み 2 ファイルと差分一覧。
 
 ### Example 3
 
-Input: グローバルスキルとして `deploy-guard` を追加したい。
-Output: `ai/claude_code/global/skills/deploy-guard/SKILL.md` を標準テンプレートで生成し、`npm run agent:check` が exit 0 であることを確認する。
+Input: `.codex/agents/doc-validator.toml` を Markdown agent 仕様から再構成したい。
+Output: `description` と `developer_instructions` を反映した TOML と検証結果。
