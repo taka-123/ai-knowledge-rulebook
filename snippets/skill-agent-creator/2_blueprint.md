@@ -4,7 +4,7 @@
 `.work/AI_SCAN.md` に基づき、過不足のない実装設計書 `.work/AI_BLUEPRINT.md` を作成せよ。
 </objective>
 
-<non*negotiables_2026*黄金律>
+<non_negotiables_2026_golden_rules>
 
 1. **Canonical Source**: Skill 実体は `.claude/skills/<name>/SKILL.md` 固定。
 2. **Sub-agent Description**: `Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...].` の3要素形式。XML禁止、第一人称厳禁、1024字以内。
@@ -14,22 +14,87 @@
    - **共通**: `memory: project`
 4. **Sub-agent Body (4-Section)**:
    - Workflow / Checklist / Output Format / Memory Strategy を必須。
-5. **生成対象**:
+5. **Skill Body (8-Section)** — 全セクション必須、1つでも欠落したら不合格:
+   - frontmatter（name + description 3要素形式）
+   - `# <name>` 見出し
+   - `## When to use` — 2〜3項目、実在パスに基づく具体場面
+   - `## When NOT to use` — 2〜3項目、誤発火防止の除外条件
+   - `## Trigger Keywords` — 3〜5個
+   - `## Procedure` — 4〜6手順、各手順は実行可能コマンドまたは明確アクション。汎用テンプレ禁止
+   - `## Output Contract` — 出力フォーマットサンプル + NG例（❌付き3〜5件）
+   - `## Examples` — 3件の Input/Output。実在パス・コマンド使用
+6. **生成対象**:
    - `.claude/agents/*.md` — Claude Code 用エージェント（YAML frontmatter + Markdown）
    - `.cursor/agents/*.md` — Cursor 用エージェント（同一書式、探索パスが異なるため別途生成）
    - `.codex/agents/*.toml` — Codex 用エージェント（TOML 形式。`description` + `developer_instructions` + パラメータ）
    - `.claude/skills/*/SKILL.md` — スキル（全ツール共通、Cursor/Codex は互換探索で自動発見）
    - メタスキル `skill-discoverer`
    - `.claude/rules`: 任意（`CLAUDE.md` 分割時のみ）
-6. **マルチプラットフォームエージェント設計原則**:
+7. **マルチプラットフォームエージェント設計原則**:
    - 各エージェントの「役割・判断基準・ワークフロー」は共通。プラットフォームごとに書式を変換して生成する。
    - Claude Code / Cursor: YAML frontmatter（`name`, `description`, `tools`, `disallowedTools`, `model`, `memory`）+ Markdown body
    - Codex: TOML（`description`, `developer_instructions`, `model`, `sandbox_mode`, `approval_policy`）。body の内容は `developer_instructions` に集約する。
-7. **Model Selection Policy (必須)**:
+8. **Model Selection Policy (必須)**:
    - `model` は固定値を前提にせず、実装時点で公式ドキュメントの最新推奨を確認して選定する。
    - 公式ドキュメントの古いサンプル値を流用しない。選定理由と確認日を設計書に明記する。
 
-</non*negotiables_2026*黄金律>
+</non_negotiables_2026_golden_rules>
+
+<skill_quality_spec>
+
+設計書の SKILL.md 雛形には以下を含めること:
+
+```markdown
+---
+name: <name>
+description: Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...].
+---
+
+# <name>
+
+## When to use
+
+- [実在パス・コマンドを使った具体的な発動場面 2〜3項目]
+
+## When NOT to use
+
+- [誤発火を防ぐ除外条件 2〜3項目]
+
+## Trigger Keywords
+
+- [3〜5個]
+
+## Procedure
+
+1. [実行可能なアクション。プロジェクトの実在コマンド・パスを使用]
+2. [各手順に完了条件を付ける]
+3. [...4〜6手順]
+
+## Output Contract
+
+[出力フォーマットのサンプル（表形式またはテンプレート）]
+
+### NG例
+
+❌ [やってはいけないこと（理由）] × 3〜5件
+
+## Examples
+
+### Example 1
+
+Input: [実在パス・コマンドを使った具体シナリオ]
+Output: [成果物の形式を明記]
+
+[3件必須]
+```
+
+**品質NG基準**（以下に該当するスキル設計は差し戻し）:
+- Procedure が全スキルでコピペ同一文（「依頼文を読み〜」「関連ファイルと既存規約を確認し〜」）
+- Output Contract が「〜を報告する」のみで出力フォーマットサンプルがない
+- Examples の Input に Step 1 で棚卸ししたパスに存在しない架空パスを使用
+- NG例がない
+
+</skill_quality_spec>
 
 <language_policy>
 
@@ -40,9 +105,11 @@
 
 <output_sections>
 
+- **実在パス・コマンド一覧**（Step 1 で棚卸しした技術スタック・パス・スクリプトを転記。Step 3 はこの一覧のみを参照する）
 - 全生成パスリスト（必須・任意を明示）
 - 生成対象パスと非生成パスの明示
-- SKILL.md と Sub-agent.md の高解像度雛形
+- SKILL.md の高解像度雛形（上記8セクション全て含む）
+- Sub-agent.md の高解像度雛形（4セクション全て含む）
 - 権限分離を適用したサブエージェント体系
 - **非生成パス宣言**（今回は `.windsurf/rules/*` を生成しないこと）
 
