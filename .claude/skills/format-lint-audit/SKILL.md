@@ -25,9 +25,17 @@ description: Use when final quality gates must confirm format and lint checks wi
 
 ## Procedure
 
-1. 依頼文を読み、対象範囲と期待成果を明確化する。
-2. 関連ファイルと既存規約を確認し、最小差分で実行する。
-3. 検証コマンドの結果を記録し、結論と残課題を報告する。
+1. 監査対象を確定する（今回変更したファイル一覧）。
+2. `npm run format:check` を実行し、終了コードを記録する。
+3. JSON 変更がある場合は `npm run schema:check` を追加実行する。
+4. 必要時のみ個別 lint（`npm run lint:md` など）を実行して失敗箇所を特定する。
+5. 結果を PASS/FAIL で表形式化し、失敗時は再現コマンドを添える。
+
+## Output Contract
+
+- 「コマンド / 終了コード / 結果 / 補足」を最低1表で提示する。
+- FAIL が1件でもあれば完了扱いにしない。
+- 監査対象外の既知警告は「対象外」と明記して混在させない。
 
 ## Examples
 
