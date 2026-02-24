@@ -64,8 +64,7 @@
       "Write(~/.gcp/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
-      "Bash(curl *)",
-      "Bash(wget *)",
+      "Bash(rm)",
       "Bash(rm *)",
       "Bash(sudo *)",
       "Bash(ssh *)",
@@ -73,19 +72,14 @@
       "Bash(aws *)",
       "Bash(terraform *)",
       "Bash(kubectl *)",
+      "Bash(git push --force)",
       "Bash(git push --force *)",
+      "Bash(git push -f)",
       "Bash(git push -f *)",
+      "Bash(git reset --hard)",
       "Bash(git reset --hard *)",
+      "Bash(git clean -fdx)",
       "Bash(git clean -fdx *)"
-    ],
-    "ask": [
-      "Bash(git push *)",
-      "Bash(git checkout *)",
-      "Bash(git merge *)",
-      "Bash(psql *)",
-      "Bash(mysql *)",
-      "Bash(docker compose *)",
-      "Bash(docker-compose *)"
     ],
     "allow": [
       "WebSearch",
@@ -129,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r 'if .tool_input.command | test(\"rm -rf|dd if=|:(\\\\)\\\\{ :\\\\|:& \\\\};:\") then {\"decision\": \"block\", \"reason\": \"危険なコマンドは実行できません\"} else empty end'"
+            "command": "bash $HOME/.claude/hooks/pretooluse_guard.sh"
           }
         ]
       },
