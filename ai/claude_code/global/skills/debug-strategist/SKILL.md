@@ -38,6 +38,14 @@ description: Use when runtime failures require hypothesis-driven debugging with 
 - 仮説は断定口調で書かず、検証結果とセットで確度を示す。
 - 修正案が複数ある場合は、最小差分案を推奨として先頭に置く。
 
+### NG例
+
+❌ 再現手順なしに断定する（証跡不足）。
+
+❌ 仮説を検証せずに修正を適用する（根拠なき変更）。
+
+❌ 推測で処理を続行する（失敗時は Status で停止する）。
+
 ## Examples
 
 ### Example 1

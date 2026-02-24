@@ -50,6 +50,10 @@
     - **`scripts/<name>`**: 再現性が必要な実行スクリプト。エラーハンドリングを明示的に実装し、マジックナンバーを避ける（定数名と理由をコメントで明記）。SKILL.md の Procedure から「`scripts/validate.sh` を Bash ツールで実行」と明示する。
     - **サイズ上限**: SKILL.md 本文は **500 行以内**。超過する場合は最もアクセス頻度の低いコンテンツを `docs/` に移動する。
     - **参照深さ**: 1 段階まで（SKILL.md → docs/*.md または scripts/*。それ以上の入れ子禁止）。
+  - **既存スキルの再構成**（Phase 形式・詳細仕様を持つスキルを 8 セクション形式へ移行する場合）:
+    - SKILL.md を 500 行以内に収める。超過分は `docs/<topic>.md` に分割する（例: `docs/layout-spec.md`, `docs/workflow.md`）。
+    - Procedure の該当手順で「`docs/<topic>.md` を Read で参照する」と明示する。
+    - 既存のエージェント同時生成・output_sections・その他仕様は変更しない（デグレ禁止）。
 
 - **メタスキル `skill-discoverer` の生成（必須）**:
   - `.claude/skills/skill-discoverer/SKILL.md` を生成する。
