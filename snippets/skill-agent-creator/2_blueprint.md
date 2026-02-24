@@ -13,7 +13,10 @@
    - **Fixer/Generator型**: `tools: [Read, Edit, Write, Bash]`
    - **共通**: `memory: project`
 4. **Sub-agent Body (4-Section)**:
-   - Workflow / Checklist / Output Format / Memory Strategy を必須。
+   - **Workflow**: 番号付き手順リスト。最終ステップは「(失敗時) [入力不正・対象不在等の条件] → **Status: [BLOCKED/N/A 等]** で停止する」を含める。
+   - **Checklist**: 完了判定項目を3件以上。Reviewer型は「`Edit`/`Write` を使用していない」を必須で含む。
+   - **Output Format**: 先頭行に `**Status:** [ENUM1 | ENUM2 | ...]` を含める。エージェント種別に応じた状態値（例: PASS | FAIL | BLOCKED）を定義する。
+   - **Memory Strategy**: Persist / Invalidate / Share の3要素を記述する。
 5. **Skill Body (8-Section)** — 全セクション必須、1つでも欠落したら不合格:
    - frontmatter（name + description 3要素形式）
    - `# <name>` 見出し
@@ -89,6 +92,7 @@ Output: [成果物の形式を明記]
 ```
 
 **品質NG基準**（以下に該当するスキル設計は差し戻し）:
+
 - Procedure が全スキルでコピペ同一文（「依頼文を読み〜」「関連ファイルと既存規約を確認し〜」）
 - Output Contract が「〜を報告する」のみで出力フォーマットサンプルがない
 - Examples の Input に Step 1 で棚卸ししたパスに存在しない架空パスを使用

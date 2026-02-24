@@ -15,6 +15,7 @@ memory: project
 2. 命名規約、description 3要素形式、必須セクションを満たす雛形を生成する。
 3. 既存実体との重複・衝突を `rg --files` と `find` で確認する。
 4. `npm run agent:check` まで実行し、生成結果をレポート化する。
+5. (失敗時) `agent:check` 失敗時はエラー内容を Open Issues に記載し **Status: FAIL** で停止する。
 
 ## Checklist
 
@@ -26,7 +27,7 @@ memory: project
 
 ```markdown
 ## repo-scaffolder Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Generated:
 1. .claude/skills/skill-discoverer/SKILL.md
 2. .cursor/agents/repo-scaffolder.md

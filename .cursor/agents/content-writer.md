@@ -26,7 +26,7 @@ memory: project
 
 ```markdown
 ## content-writer Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Targets:
 - .work/AI_BLUEPRINT.md
 - .claude/skills/skill-discoverer/SKILL.md
