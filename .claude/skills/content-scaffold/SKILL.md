@@ -35,12 +35,12 @@ description: Use when new repository documents, skills, or agent files must be s
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Generated Files | `- path` 箇条書き |
-| Applied Template | Skill / Agent / TOML の別 |
-| Validation | `npm run agent:check: PASS/FAIL` |
-| Follow-up | 必要な追補タスク |
+| 項目             | 形式                             |
+| ---------------- | -------------------------------- |
+| Generated Files  | `- path` 箇条書き                |
+| Applied Template | Skill / Agent / TOML の別        |
+| Validation       | `npm run agent:check: PASS/FAIL` |
+| Follow-up        | 必要な追補タスク                 |
 
 ### NG例
 

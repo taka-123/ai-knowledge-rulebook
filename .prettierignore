@@ -28,3 +28,10 @@ __pycache__/
 
 # ログファイル
 *.log
+
+# Agent Output Format テンプレート（構造保持のため Prettier 除外）
+.claude/agents/
+.cursor/agents/
+
+# スニペット（* 等の glob 表記が Prettier で破壊されるため除外）
+snippets/skill-agent-creator/

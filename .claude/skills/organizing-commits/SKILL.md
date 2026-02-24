@@ -1,9 +1,9 @@
 ---
-name: git-helper
-description: Use when repository changes must be organized into reviewable diffs and commit units with rollback awareness; When NOT to use: when no file changes exist or git operations are outside scope; Trigger Keywords: [commit, branch, diff, PR, rollback].
+name: organizing-commits
+description: Use when repository changes must be organized into reviewable diffs and commit units with rollback awareness; When NOT to use: when no file changes exist or git operations are outside scope; Trigger Keywords: [organizing commits, commit, branch, diff, PR, rollback].
 ---
 
-# git-helper
+# organizing-commits
 
 ## When to use
 
@@ -19,6 +19,7 @@ description: Use when repository changes must be organized into reviewable diffs
 
 ## Trigger Keywords
 
+- organizing commits
 - commit
 - branch
 - diff
@@ -35,12 +36,12 @@ description: Use when repository changes must be organized into reviewable diffs
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
+| 項目          | 形式                                                |
+| ------------- | --------------------------------------------------- |
 | Change Groups | `1. skill-update: .claude/skills/lint-fix/SKILL.md` |
-| Commit Plan | `feat/docs/chore` などの候補 |
-| Rollback Unit | コミット単位の戻し方 |
-| Review Notes | リスクと確認ポイント |
+| Commit Plan   | `feat/docs/chore` などの候補                        |
+| Rollback Unit | コミット単位の戻し方                                |
+| Review Notes  | リスクと確認ポイント                                |
 
 ### NG例
 

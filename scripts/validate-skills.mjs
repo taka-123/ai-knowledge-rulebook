@@ -50,6 +50,12 @@ for (const file of files) {
   if (!fm.description.startsWith('Use when')) {
     errors.push(`${rel}: description must start with 'Use when'`)
   }
+  if (!fm.description.includes('When NOT to use')) {
+    errors.push(`${rel}: description must contain 'When NOT to use' (3-element format)`)
+  }
+  if (!fm.description.includes('Trigger Keywords')) {
+    errors.push(`${rel}: description must contain 'Trigger Keywords' (3-element format)`)
+  }
   if (fm.description.length > 1024) {
     errors.push(`${rel}: description exceeds 1024 chars`)
   }

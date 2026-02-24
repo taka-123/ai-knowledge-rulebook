@@ -35,12 +35,12 @@ description: Use when README or operational documents must be synchronized with 
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Updated Docs | `- path` 箇条書き |
-| Source of Truth | 参照したコマンド/ファイル |
-| Diff Summary | `1. before -> after` |
-| Verification | `npx markdownlint-cli2 ...` 結果 |
+| 項目            | 形式                             |
+| --------------- | -------------------------------- |
+| Updated Docs    | `- path` 箇条書き                |
+| Source of Truth | 参照したコマンド/ファイル        |
+| Diff Summary    | `1. before -> after`             |
+| Verification    | `npx markdownlint-cli2 ...` 結果 |
 
 ### NG例
 

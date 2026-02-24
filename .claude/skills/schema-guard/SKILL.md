@@ -35,13 +35,13 @@ description: Use when JSON assets must be validated against repository schemas a
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Target JSON | `path/to/file.json` |
-| Schema | `schemas/*.json` |
-| Violation | `required/type/enum` など |
-| Fix | 変更フィールドの説明 |
-| Re-check | `npm run schema:check: PASS/FAIL` |
+| 項目        | 形式                              |
+| ----------- | --------------------------------- |
+| Target JSON | `path/to/file.json`               |
+| Schema      | `schemas/*.json`                  |
+| Violation   | `required/type/enum` など         |
+| Fix         | 変更フィールドの説明              |
+| Re-check    | `npm run schema:check: PASS/FAIL` |
 
 ### NG例
 
