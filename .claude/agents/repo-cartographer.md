@@ -15,6 +15,7 @@ memory: project
 2. `description` 3要素形式と 4-section/8-section 構成の充足を監査する。
 3. `CLAUDE.md` / `.claude/CLAUDE.md` と共有スキル実体（`.claude/skills`）の不一致を抽出する。
 4. 優先度順に不適合リストと修正順序を提示する。
+5. (失敗時) 監査対象ディレクトリが空または存在しない場合は「対象なし」として **Status: ALIGNED** で報告する。
 
 ## Checklist
 
@@ -26,7 +27,7 @@ memory: project
 
 ```markdown
 ## repo-cartographer Report
-Status: ALIGNED | MISALIGNED
+**Status:** ALIGNED | MISALIGNED
 Targets:
 - .claude/skills
 - .cursor/agents

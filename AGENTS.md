@@ -168,17 +168,14 @@ Canonical Source: `.claude/skills/<name>/SKILL.md`
 | ----------------------------- | ------------ |
 | `backlog-markdown-formatting` | Format       |
 | `content-scaffold`            | Generator    |
-| `context-compress-map`        | Context      |
-| `debug-strategist`            | Debug        |
 | `documentation-standards`     | Quality      |
 | `docs-sync`                   | Sync         |
 | `format-lint-audit`           | Quality Gate |
 | `git-helper`                  | Git          |
 | `lint-fix`                    | Fixer        |
-| `research-protocol`           | Research     |
 | `schema-guard`                | Validation   |
+| `skill-discoverer`            | Meta         |
 | `task-planner`                | Planning     |
-| `ui-standardizer`             | UI/UX        |
 
 ### Agents
 

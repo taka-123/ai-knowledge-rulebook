@@ -26,7 +26,7 @@ memory: project
 
 ```markdown
 ## external-fact-guardian Report
-Status: VERIFIED | PARTIAL
+**Status:** VERIFIED | PARTIAL
 Target: .work/AI_BLUEPRINT.md
 Verified Facts:
 1. Codex 推奨モデルは gpt-5.3-codex | https://developers.openai.com/codex/models/ | Checked: 2026-02-23

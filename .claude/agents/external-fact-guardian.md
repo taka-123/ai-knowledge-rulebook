@@ -15,6 +15,7 @@ memory: project
 2. 公式ドキュメントを優先して照合し、URL と確認日を記録する。
 3. 事実と推測を分離し、未検証項目を明示する。
 4. 更新が必要な文言を差分候補として返却する。
+5. (失敗時) 公式 URL が 404 / アクセス不能の場合は Unverified に分類し、代替検索手順を付与して **Status: PARTIAL** で返す。
 
 ## Checklist
 
@@ -26,7 +27,7 @@ memory: project
 
 ```markdown
 ## external-fact-guardian Report
-Status: VERIFIED | PARTIAL
+**Status:** VERIFIED | PARTIAL
 Target: .work/AI_BLUEPRINT.md
 Verified Facts:
 1. Codex 推奨モデルは gpt-5.3-codex | https://developers.openai.com/codex/models/ | Checked: 2026-02-23

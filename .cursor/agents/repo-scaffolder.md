@@ -26,7 +26,7 @@ memory: project
 
 ```markdown
 ## repo-scaffolder Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Generated:
 1. .claude/skills/skill-discoverer/SKILL.md
 2. .cursor/agents/repo-scaffolder.md

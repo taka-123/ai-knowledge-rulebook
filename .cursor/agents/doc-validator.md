@@ -26,7 +26,7 @@ memory: project
 
 ```markdown
 ## doc-validator Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Target: .work/AI_BLUEPRINT.md
 Blocking Findings:
 1. .work/AI_BLUEPRINT.md:121 MD034/no-bare-urls

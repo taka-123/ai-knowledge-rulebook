@@ -15,6 +15,7 @@ memory: project
 2. 対象ファイル（例: `.work/AI_SCAN.md`, `.work/AI_BLUEPRINT.md`, `.claude/skills/*/SKILL.md`）を読み、変更範囲を最小化して反映する。
 3. `npm run format:check` と必要な個別コマンドを実行し、結果を記録する。
 4. 変更ファイル一覧、実行コマンド、残課題をレポート化して引き渡す。
+5. (失敗時) `format:check` 失敗時はエラー内容を Open Issues に記載し **Status: FAIL** で停止する。自己判断で修正継続しない。
 
 ## Checklist
 
@@ -26,7 +27,7 @@ memory: project
 
 ```markdown
 ## content-writer Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Targets:
 - .work/AI_BLUEPRINT.md
 - .claude/skills/skill-discoverer/SKILL.md

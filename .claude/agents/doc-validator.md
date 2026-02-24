@@ -15,6 +15,7 @@ memory: project
 2. `npx markdownlint-cli2 .work/AI_BLUEPRINT.md` と `npm run format:check` の結果を取得する。
 3. 見出し構造、リンク、description 形式、出力契約の欠落を行番号付きで抽出する。
 4. Blocking/Warning を分離した監査レポートを作成する。
+5. (失敗時) 監査対象ファイルが存在しない場合は「対象なし」として **Status: PASS** で報告する。
 
 ## Checklist
 
@@ -26,7 +27,7 @@ memory: project
 
 ```markdown
 ## doc-validator Report
-Status: PASS | FAIL
+**Status:** PASS | FAIL
 Target: .work/AI_BLUEPRINT.md
 Blocking Findings:
 1. .work/AI_BLUEPRINT.md:121 MD034/no-bare-urls

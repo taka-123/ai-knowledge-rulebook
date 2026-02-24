@@ -26,7 +26,7 @@ memory: project
 
 ```markdown
 ## repo-cartographer Report
-Status: ALIGNED | MISALIGNED
+**Status:** ALIGNED | MISALIGNED
 Targets:
 - .claude/skills
 - .cursor/agents

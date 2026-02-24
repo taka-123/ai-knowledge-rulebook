@@ -7,7 +7,11 @@
 <generation_directives_hard_constraints>
 
 - **Sub-agent 実装（マルチプラットフォーム）**:
-  - **Claude Code** (`.claude/agents/*.md`): YAML frontmatter（`name`, `description`, `tools`, `disallowedTools`, `model`, `memory: project`）+ Markdown body。Reviewer/Fixer/Generator の権限分離を厳格適用。Body は Workflow / Checklist / Output Format / Memory Strategy の4セクションを必須実装。
+  - **Claude Code** (`.claude/agents/*.md`): YAML frontmatter（`name`, `description`, `tools`, `disallowedTools`, `model`, `memory: project`）+ Markdown body。Reviewer/Fixer/Generator の権限分離を厳格適用。Body は Workflow / Checklist / Output Format / Memory Strategy の4セクションを必須実装。各セクションの要件:
+    - **Workflow**: 最終ステップに「(失敗時) [条件] → **Status: XX** で停止する」を含める。推測で処理続行しない。
+    - **Checklist**: 完了判定項目を3件以上。Reviewer型は `Edit`/`Write` 未使用確認を必須で含む。
+    - **Output Format**: 先頭行に `**Status:** ENUM1 | ENUM2 | ...` を含める。
+    - **Memory Strategy**: Persist / Invalidate / Share の3要素を記述する。
   - **Cursor** (`.cursor/agents/*.md`): Claude Code と同一書式で生成。内容は同じだが探索パスが異なるため別ファイルとして配置する。
   - **Codex** (`.codex/agents/*.toml`): TOML 形式で生成。Claude Code 版と同一の役割・判断基準を以下のキーに変換する:
     - `description` = 3要素形式の description をそのまま使用
@@ -17,7 +21,6 @@
     - 実装当日に推奨がある場合はそれを使う。別モデルを使う場合は、速度・コスト・可用性の具体理由を必須で記載する。
 - **SKILL.md 実装（品質基準: 必須）**:
   - 各 SKILL.md は以下の全セクションを必須実装する。1つでも欠落したら不合格:
-
     1. **frontmatter**: `name`（ディレクトリ名と一致）, `description`（3要素形式: `Use when ...; When NOT to use: ...; Trigger Keywords: [...].`）
     2. **`# <name>`**: スキル名の見出し
     3. **`## When to use`**: 2〜3 項目。このリポジトリの実在パス・コマンドを使った具体的な発動場面
