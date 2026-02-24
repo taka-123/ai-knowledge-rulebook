@@ -9,7 +9,7 @@
 - `docs-sync`
 - `documentation-standards`
 - `format-lint-audit`
-- `git-helper`
+- `organizing-commits`
 - `lint-fix`
 - `schema-guard`
 - `skill-discoverer`

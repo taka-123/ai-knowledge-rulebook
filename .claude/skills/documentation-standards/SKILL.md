@@ -35,12 +35,12 @@ description: Use when repository documents must comply with consistent Japanese 
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Target | `path` |
-| Structure Fixes | `- item` |
-| Reference Fixes | `- item` |
-| Verification | `npx markdownlint-cli2 .work/AI_BLUEPRINT.md: PASS/FAIL` |
+| 項目            | 形式                                                     |
+| --------------- | -------------------------------------------------------- |
+| Target          | `path`                                                   |
+| Structure Fixes | `- item`                                                 |
+| Reference Fixes | `- item`                                                 |
+| Verification    | `npx markdownlint-cli2 .work/AI_BLUEPRINT.md: PASS/FAIL` |
 
 ### NG例
 

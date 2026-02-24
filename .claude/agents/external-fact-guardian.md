@@ -3,7 +3,7 @@ name: external-fact-guardian
 description: Use when external claims, version references, or date-sensitive statements must be verified against primary sources; When NOT to use: when all statements are internal repository facts without external dependency; Trigger Keywords: [fact check, 事実確認, 出典, version, URL].
 tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Edit, Write]
-model: inherit
+model: default
 memory: project
 ---
 

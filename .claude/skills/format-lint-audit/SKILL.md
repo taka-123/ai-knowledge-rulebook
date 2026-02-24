@@ -35,11 +35,11 @@ description: Use when final quality gates must be executed to confirm formatting
 
 ## Output Contract
 
-| Check | Command | Result |
-| --- | --- | --- |
-| Format | `npm run format:check` | PASS / FAIL |
-| Agent | `npm run agent:check` | PASS / FAIL |
-| Markdown | `npm run lint:md` | PASS / FAIL / SKIP |
+| Check    | Command                | Result             |
+| -------- | ---------------------- | ------------------ |
+| Format   | `npm run format:check` | PASS / FAIL        |
+| Agent    | `npm run agent:check`  | PASS / FAIL        |
+| Markdown | `npm run lint:md`      | PASS / FAIL / SKIP |
 
 ### NG例
 

@@ -152,31 +152,8 @@
 - **タスク分類**: タスクの種別（🟢 軽量 / 🟡 標準 / 🔴 重要）は、上位階層のルール（グローバルルールや親ディレクトリの `AGENTS.md`）で定義された方針を前提とし、このプロジェクト固有の例外や補足がある場合のみ本ファイルに明記する。
 - **スラッシュコマンド**: スラッシュコマンド（例: `/review`, `/plan` 等）は、このプロジェクトで明示的に定義されたものだけを使用し、定義が見当たらないコマンド文字列は通常のテキストとして扱うか、ユーザーに意味を確認する。
 
-## プロジェクト共通 Skill / Agent 一覧
+## プロジェクト共通 Skill / Agent
 
-Canonical Source: `.claude/skills/<name>/SKILL.md`
+Canonical Source: `.claude/skills/<name>/SKILL.md` および `.claude/agents/<name>.md`
 
-### Skills
-
-| Skill                         | Category     |
-| ----------------------------- | ------------ |
-| `backlog-markdown-formatting` | Format       |
-| `content-scaffold`            | Generator    |
-| `documentation-standards`     | Quality      |
-| `docs-sync`                   | Sync         |
-| `format-lint-audit`           | Quality Gate |
-| `git-helper`                  | Git          |
-| `lint-fix`                    | Fixer        |
-| `schema-guard`                | Validation   |
-| `skill-discoverer`            | Meta         |
-| `task-planner`                | Planning     |
-
-### Agents
-
-| Agent                    | Category | Read-only |
-| ------------------------ | -------- | --------- |
-| `content-writer`         | Fixer    | No        |
-| `doc-validator`          | Reviewer | Yes       |
-| `external-fact-guardian` | Reviewer | Yes       |
-| `repo-cartographer`      | Explorer | Yes       |
-| `repo-scaffolder`        | Fixer    | No        |
+発動条件は各 SKILL.md / agent の `description`（3要素形式）に定義されている。一覧は `skill-discoverer` で動的取得する。

@@ -35,12 +35,12 @@ description: Use when markdown text must be reformatted for Backlog-compatible r
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Target | `path/to/file.md` |
-| Reformatted Sections | `1. ...` の番号リスト |
-| Verification | `npx markdownlint-cli2 .work/AI_SCAN.md: PASS/FAIL` |
-| Notes | 変換時の注意点（任意） |
+| 項目                 | 形式                                                |
+| -------------------- | --------------------------------------------------- |
+| Target               | `path/to/file.md`                                   |
+| Reformatted Sections | `1. ...` の番号リスト                               |
+| Verification         | `npx markdownlint-cli2 .work/AI_SCAN.md: PASS/FAIL` |
+| Notes                | 変換時の注意点（任意）                              |
 
 ### NG例
 

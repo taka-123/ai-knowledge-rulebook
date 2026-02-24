@@ -35,9 +35,9 @@ description: Use when implementation work needs stepwise planning with explicit 
 
 ## Output Contract
 
-| Step | Target Files | Action | Completion Criteria | Verification |
-| --- | --- | --- | --- | --- |
-| 1 | `.claude/skills/skill-discoverer/SKILL.md` | 新規追加 | 8セクション実装済み | `npm run agent:check` |
+| Step | Target Files                               | Action   | Completion Criteria | Verification          |
+| ---- | ------------------------------------------ | -------- | ------------------- | --------------------- |
+| 1    | `.claude/skills/skill-discoverer/SKILL.md` | 新規追加 | 8セクション実装済み | `npm run agent:check` |
 
 ### NG例
 

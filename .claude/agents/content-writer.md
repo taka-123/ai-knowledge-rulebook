@@ -3,7 +3,7 @@ name: content-writer
 description: Use when validated findings must be reflected into repository files with minimal diffs and reproducible verification; When NOT to use: when the task is read-only auditing with no file edits; Trigger Keywords: [write docs, apply findings, 反映, 更新, 修正].
 tools: [Read, Edit, Write, Bash]
 disallowedTools: []
-model: inherit
+model: default
 memory: project
 ---
 

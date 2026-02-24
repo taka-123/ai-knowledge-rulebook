@@ -35,11 +35,11 @@ description: Use when lint or format checks fail and deterministic repository co
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Failed Command | `npm run ...` |
-| Fixed Files | `- path` 箇条書き |
-| Re-run Result | PASS / FAIL |
+| 項目             | 形式                  |
+| ---------------- | --------------------- |
+| Failed Command   | `npm run ...`         |
+| Fixed Files      | `- path` 箇条書き     |
+| Re-run Result    | PASS / FAIL           |
 | Remaining Issues | `None` または番号付き |
 
 ### NG例

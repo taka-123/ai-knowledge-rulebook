@@ -35,12 +35,12 @@ description: Use when the user asks what skills or agents are available, or when
 
 ## Output Contract
 
-| セクション | 形式 |
-| --- | --- |
-| Available Skills | `- lint-fix: Use when lint or format checks fail ...` |
+| セクション       | 形式                                                               |
+| ---------------- | ------------------------------------------------------------------ |
+| Available Skills | `- lint-fix: Use when lint or format checks fail ...`              |
 | Available Agents | `- doc-validator: Use when markdown or rule documents require ...` |
-| Recommended | `1. repo-cartographer - 配線監査に最適` |
-| Alternatives | `- doc-validator - 文書監査向け`（最大2件） |
+| Recommended      | `1. repo-cartographer - 配線監査に最適`                            |
+| Alternatives     | `- doc-validator - 文書監査向け`（最大2件）                        |
 
 ### NG例
 
