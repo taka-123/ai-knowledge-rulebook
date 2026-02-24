@@ -1,6 +1,6 @@
 ---
 name: backlog-markdown-formatting
-description: Backlog向けMarkdown整形ルールを適用する。ユーザーが「バックログ用のmd記法で」「Backlog記法で整形して」と依頼したときに使用。
+description: Reformats Markdown text to comply with Backlog rendering rules. Use when the user requests Backlog-compatible formatting or mentions "バックログ用", "Backlog記法", or pasting content into Backlog.
 ---
 
 # Skill: Backlog Markdown Formatting

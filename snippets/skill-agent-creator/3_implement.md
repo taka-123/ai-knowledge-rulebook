@@ -21,7 +21,7 @@
     - 実装当日に推奨がある場合はそれを使う。別モデルを使う場合は、速度・コスト・可用性の具体理由を必須で記載する。
 - **SKILL.md 実装（品質基準: 必須）**:
   - 各 SKILL.md は以下の全セクションを必須実装する。1つでも欠落したら不合格:
-    1. **frontmatter**: `name`（ディレクトリ名と一致）, `description`（3要素形式: `Use when ...; When NOT to use: ...; Trigger Keywords: [...].`）
+    1. **frontmatter**: `name`（ディレクトリ名と一致。gerund 形推奨: `processing-pdfs`, `reviewing-code` 等。`helper`/`utils`/`tools`/`documents` は使用禁止。フィールドは `name` と `description` のみ — それ以外は非標準フィールドとして禁止）, `description`（3要素形式: `Use when ...; When NOT to use: ...; Trigger Keywords: [...].`。英語三人称、1024 字以内）
     2. **`# <name>`**: スキル名の見出し
     3. **`## When to use`**: 2〜3 項目。このリポジトリの実在パス・コマンドを使った具体的な発動場面
     4. **`## When NOT to use`**: 2〜3 項目。誤発火を防ぐ除外条件
@@ -43,6 +43,13 @@
   - **Examples の具体性ルール**:
     - Input にはリポジトリの実在パス・ファイル名・コマンド名を使う。
     - Output は「〜を提示する」ではなく、出力物の形式（表・チェックリスト・修正済みファイル等）を明記する。
+
+  - **プログレッシブディスクロージャー設計**（バンドル実装）:
+    - `.work/AI_BLUEPRINT.md` のバンドル設計に従い `docs/` と `scripts/` のファイルを実際に生成する。
+    - **`docs/<topic>.md`**: 特定サブタスクでのみ必要な参照データ。SKILL.md の Procedure から「`docs/topic.md` を Read ツールで読み込む」と明示する。100 行超のファイルには冒頭に目次を設ける。
+    - **`scripts/<name>`**: 再現性が必要な実行スクリプト。エラーハンドリングを明示的に実装し、マジックナンバーを避ける（定数名と理由をコメントで明記）。SKILL.md の Procedure から「`scripts/validate.sh` を Bash ツールで実行」と明示する。
+    - **サイズ上限**: SKILL.md 本文は **500 行以内**。超過する場合は最もアクセス頻度の低いコンテンツを `docs/` に移動する。
+    - **参照深さ**: 1 段階まで（SKILL.md → docs/*.md または scripts/*。それ以上の入れ子禁止）。
 
 - **メタスキル `skill-discoverer` の生成（必須）**:
   - `.claude/skills/skill-discoverer/SKILL.md` を生成する。
@@ -75,7 +82,7 @@
    - 任意の SKILL.md から Description 抜粋を表示（3要素形式 / XMLなし）。
 3. メタスキル `skill-discoverer` の SKILL.md 全文表示。
 4. Codex TOML エージェントの1ファイル全文表示（変換が正しいことの証明）。
-5. 非生成/削除したパスの明示（`.windsurf/rules/*` など）。
+5. 非生成/削除したパスの明示。
 6. **SKILL.md 品質チェックリスト**（全スキルについて以下を表で報告）:
    | スキル名 | Procedure 手順数 | Output Contract | NG例 | Examples | 実在パス使用 |
    各列は ✅/❌ で判定。❌ が1件でもあれば修正してから完了報告する。
