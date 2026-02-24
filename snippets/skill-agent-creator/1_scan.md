@@ -31,6 +31,9 @@
      - Output Contract が欠落、または「〜を報告する」のみで出力フォーマットがない
      - Examples の Input に Step 1 で棚卸ししたパスに存在しない架空パスを使用
      - NG例がない
+     - SKILL.md の frontmatter に `name` / `description` 以外の非標準フィールドが存在する（例: `disable-model-invocation`）
+     - `name` が `helper` / `utils` / `tools` / `documents` 等の汎用語を使っている（gerund 形推奨: `processing-pdfs`, `reviewing-code` 等）
+     - SKILL.md 本文が 500 行を超えている（`docs/` サブディレクトリへの分割未実施）
 3. マルチプラットフォーム配線監査:
    - `.claude/skills` への実体集約
    - `.claude/agents/`, `.cursor/agents/`, `.codex/agents/` の存在と整合性
@@ -47,5 +50,5 @@
 
 <output_format>
 `.work/AI_SCAN.md` を出力。
-最優先で「過剰配線（不要ファイル）」「description 3要素欠落」「メタスキル未設置」「Skill Body 品質不足（Procedure 汎用テンプレ / Output Contract 欠落 / 架空パス混入）」を指摘せよ。
+最優先で「過剰配線（不要ファイル）」「description 3要素欠落」「メタスキル未設置」「Skill Body 品質不足（Procedure 汎用テンプレ / Output Contract 欠落 / 架空パス混入）」「非標準 frontmatter フィールド混入」「命名規則違反（gerund 形未使用）」「SKILL.md 500行超」を指摘せよ。
 </output_format>

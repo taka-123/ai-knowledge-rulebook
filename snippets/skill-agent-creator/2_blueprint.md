@@ -30,7 +30,8 @@
    - `.claude/agents/*.md` — Claude Code 用エージェント（YAML frontmatter + Markdown）
    - `.cursor/agents/*.md` — Cursor 用エージェント（同一書式、探索パスが異なるため別途生成）
    - `.codex/agents/*.toml` — Codex 用エージェント（TOML 形式。`description` + `developer_instructions` + パラメータ）
-   - `.claude/skills/*/SKILL.md` — スキル（全ツール共通、Cursor/Codex は互換探索で自動発見）
+   - `.claude/skills/*/SKILL.md` — スキル（全ツール共通）
+   - `.claude/skills/*/{docs,scripts}/` — スキル別バンドルファイル（ルール 9 の基準で任意生成）
    - メタスキル `skill-discoverer`
    - `.claude/rules`: 任意（`CLAUDE.md` 分割時のみ）
 7. **マルチプラットフォームエージェント設計原則**:
@@ -40,6 +41,11 @@
 8. **Model Selection Policy (必須)**:
    - `model` は固定値を前提にせず、実装時点で公式ドキュメントの最新推奨を確認して選定する。
    - 公式ドキュメントの古いサンプル値を流用しない。選定理由と確認日を設計書に明記する。
+9. **プログレッシブディスクロージャー設計**（バンドル判断基準）:
+   各スキルについてバンドルの要否を評価し、必要なファイルを設計書に記載する。
+   - **`docs/<topic>.md`**: 特定サブタスクでのみ参照が必要な詳細仕様・参照データ。全呼び出しでロードするとコンテキストを無駄に消費するもの（ドメイン別ルール、大型ルックアップテーブル、エッジケース手順等）。
+   - **`scripts/<name>`**: 再現性・一貫性が必要な実行スクリプト（バリデーション、フォーマット、マイグレーション等）。エラーを明示的にハンドルし Claude に丸投げしない。
+   - **上限**: SKILL.md 本文は 500 行以内。超過する場合は最もアクセス頻度の低いコンテンツを `docs/` に移動する。
 
 </non_negotiables_2026_golden_rules>
 
@@ -97,6 +103,9 @@ Output: [成果物の形式を明記]
 - Output Contract が「〜を報告する」のみで出力フォーマットサンプルがない
 - Examples の Input に Step 1 で棚卸ししたパスに存在しない架空パスを使用
 - NG例がない
+- `name` に `helper`/`utils`/`tools`/`documents` 等の汎用語を使っている（gerund 形推奨: `processing-pdfs`, `reviewing-code` 等）
+- SKILL.md 本文が 500 行を超えている（詳細は `docs/` サブディレクトリに分割してプログレッシブディスクロージャーパターンを適用すること）
+- SKILL.md の frontmatter に `name`/`description` 以外の非標準フィールドを含んでいる
 
 </skill_quality_spec>
 
@@ -115,6 +124,6 @@ Output: [成果物の形式を明記]
 - SKILL.md の高解像度雛形（上記8セクション全て含む）
 - Sub-agent.md の高解像度雛形（4セクション全て含む）
 - 権限分離を適用したサブエージェント体系
-- **非生成パス宣言**（今回は `.windsurf/rules/*` を生成しないこと）
+- **バンドル設計**（各スキルのバンドル要否を判定。バンドルが必要なスキルについて: ファイル名・内容概要・SKILL.md からの参照形式を記載）
 
 </output_sections>

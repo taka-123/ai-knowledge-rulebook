@@ -156,12 +156,6 @@
 
 Canonical Source: `.claude/skills/<name>/SKILL.md`
 
-各ツール固有のルーティング設定は以下を参照：
-
-- Claude Code: `CLAUDE.md` + `.claude/CLAUDE.md`
-- Cursor: `.cursor/rules/*.mdc` + `.cursor/agents/*.md`
-- Windsurf: `.windsurf/rules/*.md`
-
 ### Skills
 
 | Skill                         | Category     |
