@@ -1,5 +1,6 @@
 ---
 name: test-runner
+color: green
 description: >
   テスト実行→失敗原因の切り分け→最小修正 / Run tests, triage failures, minimal fixes.
   Trigger: test, failing, flaky, CI, coverage, regression

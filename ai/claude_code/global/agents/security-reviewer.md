@@ -1,5 +1,6 @@
 ---
 name: security-reviewer
+color: red
 description: >
   セキュリティ観点で設計/実装/設定を監査 / Security review for design, code, config.
   Trigger: auth, permission, injection, XSS, CSRF, SSRF, secrets, CVE

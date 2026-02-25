@@ -1,5 +1,6 @@
 ---
 name: task-reviewer
+color: blue
 description: >
   変更の品質/安全性/完遂をレビューする / Review for quality, safety, completeness.
   Trigger: review, PR, diff, セキュリティ, テスト, リスク, 回帰
