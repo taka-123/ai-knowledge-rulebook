@@ -1,5 +1,6 @@
 ---
 name: tech-researcher
+color: cyan
 description: >
   技術仕様の一次情報を確認して根拠付きで回答する / Grounded tech research with primary sources.
   Trigger: spec, docs, 最新, current version, release notes, RFC, CVE

@@ -1,6 +1,7 @@
 ---
 name: repo-cartographer
 description: Use when skill and agent wiring must be audited for drift, orphan entries, and cross-platform mismatch; When NOT to use: when the task is isolated feature implementation without routing impact; Trigger Keywords: [routing audit, 配線監査, skill inventory, agents, 整合性].
+color: blue
 tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Edit, Write]
 model: default

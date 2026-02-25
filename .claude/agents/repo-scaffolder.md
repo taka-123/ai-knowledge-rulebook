@@ -1,6 +1,7 @@
 ---
 name: repo-scaffolder
 description: Use when new skills, agents, or operational documents must be generated in repository-compliant structure and naming; When NOT to use: when existing files only require minor edits without scaffolding; Trigger Keywords: [scaffold, 雛形生成, 新規作成, 初期化, テンプレート].
+color: magenta
 tools: [Read, Edit, Write, Bash]
 disallowedTools: []
 model: default

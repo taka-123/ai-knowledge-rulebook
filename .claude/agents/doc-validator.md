@@ -1,6 +1,7 @@
 ---
 name: doc-validator
 description: Use when markdown or rule documents require structural validation with file-level findings before merge; When NOT to use: when the task is authoring new content without audit requirements; Trigger Keywords: [doc review, markdownlint, 構造検証, 見出し, 参照確認].
+color: yellow
 tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Edit, Write]
 model: default

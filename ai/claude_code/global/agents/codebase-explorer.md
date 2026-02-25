@@ -1,5 +1,6 @@
 ---
 name: codebase-explorer
+color: blue
 description: >
   大規模コードベースを探索して地図を作る / Build a codebase map quickly.
   Trigger: 全体像, どこにある, 影響範囲, entrypoint, routing, DB schema
