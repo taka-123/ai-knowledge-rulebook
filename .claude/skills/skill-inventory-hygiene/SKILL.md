@@ -35,12 +35,12 @@ description: Use proactively when editing any file under .claude/skills/ to remo
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Removed Artifacts | `- path` |
-| Remaining Skill Dirs | `- .claude/skills/<name>` |
-| Verification | `node scripts/validate-skills.mjs` |
+| 項目                 | 形式                               |
+| -------------------- | ---------------------------------- |
+| Status               | `PASS / FAIL / BLOCKED`            |
+| Removed Artifacts    | `- path`                           |
+| Remaining Skill Dirs | `- .claude/skills/<name>`          |
+| Verification         | `node scripts/validate-skills.mjs` |
 
 ### NG例
 

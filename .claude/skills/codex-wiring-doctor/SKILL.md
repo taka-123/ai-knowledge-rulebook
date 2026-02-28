@@ -35,12 +35,12 @@ description: Use proactively when editing any file under .codex/agents/ or .code
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Agent Files | `- ./.codex/agents/<name>.toml` |
-| Orphan | `None` または箇条書き |
-| Dangling | `None` または箇条書き |
+| 項目         | 形式                                                                     |
+| ------------ | ------------------------------------------------------------------------ |
+| Status       | `PASS / FAIL / BLOCKED`                                                  |
+| Agent Files  | `- ./.codex/agents/<name>.toml`                                          |
+| Orphan       | `None` または箇条書き                                                    |
+| Dangling     | `None` または箇条書き                                                    |
 | Verification | `node .claude/skills/codex-wiring-doctor/scripts/check-codex-wiring.mjs` |
 
 ### NG例

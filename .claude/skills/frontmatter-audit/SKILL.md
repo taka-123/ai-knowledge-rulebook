@@ -35,12 +35,12 @@ description: Use proactively when editing any note under notes/ and verifying Fr
 
 ## Output Contract
 
-| 項目           | 形式                                                      |
-| -------------- | --------------------------------------------------------- |
-| 対象ファイル数 | 数値                                                      |
-| 違反ファイル   | `path/to/file.md: missing field 'updated'` 形式           |
-| 修正内容       | 変更フィールドの一覧                                      |
-| Lint 結果      | `npm run lint:md: PASS/FAIL`                             |
+| 項目           | 形式                                            |
+| -------------- | ----------------------------------------------- |
+| 対象ファイル数 | 数値                                            |
+| 違反ファイル   | `path/to/file.md: missing field 'updated'` 形式 |
+| 修正内容       | 変更フィールドの一覧                            |
+| Lint 結果      | `npm run lint:md: PASS/FAIL`                    |
 
 ### NG例
 

@@ -35,13 +35,13 @@ description: Use proactively when editing CLAUDE.local.md, .claude/commands/, .c
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Updated Routing Files | `- path` |
-| Trigger Coverage | `自然文トリガー -> agent` の対応表 |
-| Fallback Rule | `失敗agent` と `親の代替観点` |
-| Verification | `rg -n ...` の結果要約 |
+| 項目                  | 形式                               |
+| --------------------- | ---------------------------------- |
+| Status                | `PASS / FAIL / BLOCKED`            |
+| Updated Routing Files | `- path`                           |
+| Trigger Coverage      | `自然文トリガー -> agent` の対応表 |
+| Fallback Rule         | `失敗agent` と `親の代替観点`      |
+| Verification          | `rg -n ...` の結果要約             |
 
 ### NG例
 
