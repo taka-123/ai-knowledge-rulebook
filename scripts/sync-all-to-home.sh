@@ -27,27 +27,27 @@ echo "sync-all-to-home"
 echo "=========================================="
 echo ""
 
-"${SCRIPT_DIR}/sync-claude-to-home.sh" "${EXTRA_ARGS[@]}"
+"${SCRIPT_DIR}/sync-claude-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 echo ""
 echo "---"
 echo ""
 
-"${SCRIPT_DIR}/sync-cursor-to-home.sh" "${EXTRA_ARGS[@]}"
+"${SCRIPT_DIR}/sync-cursor-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 echo ""
 echo "---"
 echo ""
 
-"${SCRIPT_DIR}/sync-codex-to-home.sh" "${EXTRA_ARGS[@]}"
+"${SCRIPT_DIR}/sync-codex-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 echo ""
 echo "---"
 echo ""
 
-"${SCRIPT_DIR}/sync-windsurf-to-home.sh" "${EXTRA_ARGS[@]}"
+"${SCRIPT_DIR}/sync-windsurf-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 echo ""
 echo "---"
 echo ""
 
-"${SCRIPT_DIR}/sync-gemini-to-home.sh" "${EXTRA_ARGS[@]}"
+"${SCRIPT_DIR}/sync-gemini-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 
 echo ""
 echo "=========================================="
