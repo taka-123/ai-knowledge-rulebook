@@ -9,8 +9,10 @@
 - `docs-sync`
 - `documentation-standards`
 - `format-lint-audit`
-- `organizing-commits`
+- `frontmatter-audit`
 - `lint-fix`
+- `note-add`
+- `organizing-commits`
 - `schema-guard`
 - `skill-discoverer`
 - `task-planner`
