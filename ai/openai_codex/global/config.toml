@@ -1,19 +1,16 @@
-<!-- ~/.codex/config.toml に記載 -->
-
-```toml
-## デフォルトモデル
+# デフォルトモデル
 model = "gpt-5.3-codex"
 model_reasoning_effort = "high"
 
-## 安全寄りのデフォルト
+# 安全寄りのデフォルト
 approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 web_search = "cached"
 
-## 通知音
+# 通知音
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Glass.aiff"]
 
-## MCPサーバー
+# MCPサーバー
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"
 
@@ -59,7 +56,3 @@ config_file = "agents/test_runner.toml"
 [agents.security_reviewer]
 description = "セキュリティ監査 / Security review for code and config."
 config_file = "agents/security_reviewer.toml"
-
-[sandbox_workspace_write]
-network_access = true
-```
