@@ -15,13 +15,23 @@
   "cleanupPeriodDays": 30,
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
-    "DISABLE_TELEMETRY": "1"
+    "DISABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
   },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": false,
     "excludedCommands": ["docker", "docker-compose", "docker compose"],
+    "filesystem": {
+      "allowWrite": [
+        "~/.Trash",
+        "~/.config",
+        "~/.local/share/gomi",
+        "~/.local/share/Trash",
+        "/tmp"
+      ]
+    },
     "network": {
       "allowedDomains": [
         "github.com",
@@ -31,7 +41,10 @@
         "pypi.org",
         "files.pythonhosted.org",
         "*.rds.amazonaws.com",
-        "*.bing.com"
+        "*.bing.com",
+        "playwright.azureedge.net",
+        "playwright.download.prss.microsoft.com",
+        "cdn.playwright.dev"
       ]
     }
   },
@@ -64,8 +77,9 @@
       "Write(~/.gcp/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
-      "Bash(rm)",
-      "Bash(rm *)",
+      "Bash(rm -rf /)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf /*)",
       "Bash(sudo *)",
       "Bash(ssh *)",
       "Bash(scp *)",
@@ -78,8 +92,25 @@
       "Bash(git push -f *)",
       "Bash(git reset --hard)",
       "Bash(git reset --hard *)",
-      "Bash(git clean -fdx)",
-      "Bash(git clean -fdx *)"
+      "Bash(nc *)",
+      "Bash(env)",
+      "Bash(printenv)",
+      "Bash(export *)",
+      "Bash(bash -c *)",
+      "Bash(sh -c *)",
+      "Bash(ping *)",
+      "Bash(dig *)",
+      "Bash(nslookup *)",
+      "Bash(base64 *)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(psql *)",
+      "Bash(mysql *)",
+      "Bash(docker compose *)",
+      "Bash(docker-compose *)"
     ],
     "allow": [
       "WebSearch",
@@ -100,6 +131,7 @@
       "Bash(which *)",
       "Bash(node *)",
       "Bash(npm *)",
+      "Bash(npx *)",
       "Bash(yarn *)",
       "Bash(pnpm *)",
       "Bash(python *)",
@@ -112,7 +144,6 @@
       "Bash(git commit *)",
       "Bash(git pull)",
       "Bash(git branch *)",
-      "Bash(trash *)",
       "Bash(gomi *)"
     ]
   },
@@ -133,6 +164,15 @@
           {
             "type": "command",
             "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if echo \"$1\" | grep -q \"rm -rf\"; then echo \"rm -rf禁止。gomiを使え\"; exit 2; fi' _ \"$(jq -r .tool_input.command)\""
           }
         ]
       }
