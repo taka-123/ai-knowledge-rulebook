@@ -27,10 +27,7 @@ function writeDescriptionMd(file, desc) {
 
 function writeDescriptionToml(file, desc) {
   const text = fs.readFileSync(file, 'utf8')
-  const updated = text.replace(
-    /^description\s*=\s*"[\s\S]*?"$/m,
-    `description = "${desc}"`,
-  )
+  const updated = text.replace(/^description\s*=\s*"[\s\S]*?"$/m, `description = "${desc}"`)
   fs.writeFileSync(file, updated)
 }
 
