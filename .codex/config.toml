@@ -1,0 +1,46 @@
+model = "gpt-5.3-codex"
+review_model = "gpt-5.3-codex"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+developer_instructions = """
+Use description-first routing for all agent delegation.
+If user input includes natural-language review requests such as "この修正でOKかレビューしてください", route to cross-service-reviewer.
+If the request includes both "requirements.md" and "直近コミット", execute this pipeline:
+cross-service-reviewer -> code-reviewer -> security-reviewer (when risk is present) -> verifier.
+If a reviewer agent fails or times out, the parent cross-service-reviewer must cover the missing viewpoint and explicitly report:
+1) failed sub-agent names
+2) viewpoints covered by the parent fallback
+Static mapping should only be used to resolve ambiguous collisions.
+"""
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+
+[agents.default]
+description = "汎用実装・修正 / General purpose coding helper."
+config_file = "./.codex/agents/content-writer.toml"
+
+[agents.explorer]
+description = "探索・読解特化 / Fast read-heavy exploration."
+config_file = "./.codex/agents/knowledge-search.toml"
+
+[agents.reviewer]
+description = "品質レビュー（安全性・正しさ・保守性） / Review for correctness & maintainability."
+config_file = "./.codex/agents/code-reviewer.toml"
+
+[agents.security_reviewer]
+description = "セキュリティ監査 / Security review for code and config."
+config_file = "./.codex/agents/security-reviewer.toml"
+
+[agents.test_runner]
+description = "テスト実行と失敗収束 / Run tests and fix failures."
+config_file = "./.codex/agents/verifier.toml"
+
+[agents.worker]
+description = "Use for execution and production work."
+config_file = "./.codex/agents/repo-scaffolder.toml"

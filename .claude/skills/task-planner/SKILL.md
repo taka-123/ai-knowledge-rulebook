@@ -1,6 +1,6 @@
 ---
 name: task-planner
-description: Use when implementation work needs stepwise planning with explicit targets, commands, and completion criteria; When NOT to use: when a tiny one-file change can be completed safely without decomposition; Trigger Keywords: [計画, 分解, roadmap, milestone, 実装手順].
+description: Use when the user explicitly asks for a stepwise implementation plan covering files under .claude/, .cursor/, .codex/, scripts/, or .work/; When NOT to use: when a tiny single-file change can be completed safely without decomposition; Trigger Keywords: [計画, 分解, roadmap, milestone, 実装手順].
 ---
 
 # task-planner

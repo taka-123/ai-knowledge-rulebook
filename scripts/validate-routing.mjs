@@ -3,51 +3,39 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const root = process.cwd()
-const required = [
+
+const requiredFiles = [
   'CLAUDE.md',
   '.claude/CLAUDE.md',
+  'CLAUDE.local.md',
+  '.claude/commands/review-request.md',
+  '.cursor/rules/review-routing.mdc',
+  '.cursor/commands/review-request.md',
+  '.codex/REVIEW_PLAYBOOK.md',
+  '.codex/config.toml',
 ]
-const deprecatedRuleDirs = ['.cursor/rules', '.windsurf/rules']
 
 const errors = []
 
-for (const rel of required) {
+for (const rel of requiredFiles) {
   const full = path.join(root, rel)
-  if (!fs.existsSync(full)) {
-    errors.push(`${rel}: missing required routing file`)
-  }
+  if (!fs.existsSync(full)) errors.push(`${rel}: missing required routing file`)
 }
 
-for (const dir of deprecatedRuleDirs) {
-  const full = path.join(root, dir)
-  if (!fs.existsSync(full)) continue
-
-  const entries = fs.readdirSync(full)
-  if (entries.length > 0) {
-    errors.push(`${dir}: rule files are deprecated; use CLAUDE.md + .claude/skills shared source`)
-  }
-}
-
-const routeFiles = [
-  path.join(root, 'CLAUDE.md'),
-  path.join(root, '.claude', 'CLAUDE.md'),
+const scanFiles = [
+  path.join(root, 'CLAUDE.local.md'),
+  path.join(root, '.claude', 'commands', 'review-request.md'),
+  path.join(root, '.cursor', 'rules', 'review-routing.mdc'),
+  path.join(root, '.codex', 'REVIEW_PLAYBOOK.md'),
 ].filter(p => fs.existsSync(p))
 
-for (const file of routeFiles) {
+for (const file of scanFiles) {
   const text = fs.readFileSync(file, 'utf8')
-  if (!text.includes('.claude/skills')) {
-    errors.push(`${path.relative(root, file)}: must reference .claude/skills`)
+  if (!/レビューしてください/.test(text)) {
+    errors.push(`${path.relative(root, file)}: must include natural-language review trigger`)
   }
-}
-
-for (const dir of ['.claude/skills']) {
-  const full = path.join(root, dir)
-  if (!fs.existsSync(full)) continue
-  for (const entry of fs.readdirSync(full)) {
-    const target = path.join(full, entry)
-    if (fs.lstatSync(target).isSymbolicLink()) {
-      errors.push(`${path.relative(root, target)}: symlink is not allowed in canonical routing set`)
-    }
+  if (/git\s+--no\x2dstat/.test(text)) {
+    errors.push(`${path.relative(root, file)}: must not use unsupported no-stat options`)
   }
 }
 
@@ -57,4 +45,4 @@ if (errors.length) {
   process.exit(1)
 }
 
-console.log(`Routing validation passed (${routeFiles.length} files checked).`)
+console.log(`Routing validation passed (${scanFiles.length} files checked).`)

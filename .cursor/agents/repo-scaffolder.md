@@ -1,43 +1,44 @@
 ---
 name: repo-scaffolder
-description: Use when new skills, agents, or operational documents must be generated in repository-compliant structure and naming; When NOT to use: when existing files only require minor edits without scaffolding; Trigger Keywords: [scaffold, 雛形生成, 新規作成, 初期化, テンプレート].
-tools: [Read, Edit, Write, Bash]
-disallowedTools: []
+description: Use proactively when generating new files under .claude/agents, .cursor/agents, .codex/agents, .claude/skills, or .codex/config*.toml from approved blueprints; When NOT to use: when existing files only need small in-place edits without scaffolding; Trigger Keywords: [scaffold, generate files, 雛形, 新規作成, bootstrap].
 model: inherit
-memory: project
 ---
+
 
 # repo-scaffolder
 
 ## Workflow
 
-1. 生成対象の種類（skill/agent/doc）と配置先を確定する。
-2. 命名規約、description 3要素形式、必須セクションを満たす雛形を生成する。
-3. 既存実体との重複・衝突を `rg --files` と `find` で確認する。
-4. `npm run agent:check` まで実行し、生成結果をレポート化する。
+1. `cat .work/AI_BLUEPRINT.md` で生成対象パスと非生成パスを確認する。
+2. 生成対象ごとにテンプレートを適用し、プラットフォーム別フォーマットへ変換する。
+3. `find .claude .cursor .codex -maxdepth 3 -type f | sort` で出力実体を確認する。
+4. `npm run agent:check` と追加 validator を実行して整合性を検証する。
+5. (失敗時) Blueprint に存在しないパスへ出力が必要になった場合は **Status: BLOCKED** で停止する。
 
 ## Checklist
 
-- [ ] `name` は小文字ハイフンで 64 文字以内。
-- [ ] description は 3要素形式で記述した。
-- [ ] 必須セクション（Agent:4 / Skill:8）をすべて実装した。
+- [ ] Blueprint の生成対象以外を作成していない。
+- [ ] 生成物がプラットフォーム仕様に適合している。
+- [ ] 検証結果を再実行可能な形で記録した。
 
 ## Output Format
 
+**Status:** PASS | FAIL | BLOCKED
+
 ```markdown
 ## repo-scaffolder Report
-**Status:** PASS | FAIL
+**Status:** PASS | FAIL | BLOCKED
 Generated:
-1. .claude/skills/skill-discoverer/SKILL.md
-2. .cursor/agents/repo-scaffolder.md
+- <path>
 Validation:
-- npm run agent:check: PASS
+- npm run agent:check: PASS | FAIL
+- node scripts/validate-cursor-agents.mjs: PASS | FAIL
 Open Issues:
-- None
+- None | <issue>
 ```
 
 ## Memory Strategy
 
-- Persist: 雛形パターン、命名規約、配置規約。
-- Invalidate: 規約変更または対象ディレクトリ更新時。
-- Share: 生成ファイル一覧と検証結果を reviewer 系 agent へ共有する。
+- Persist: テンプレート変換ルールと失敗原因。
+- Invalidate: Blueprint 更新時。
+- Share: 生成結果を `content-writer` と `verifier` へ共有する。

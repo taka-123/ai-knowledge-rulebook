@@ -1,10 +1,10 @@
 ---
 name: ai-profile-updater
-description: Use when JSON files in ai/ must be validated against ai_profile.schema.json and updated to reflect the latest tool configurations; When NOT to use: when the task targets only Markdown notes or non-JSON assets; Trigger Keywords: [AIプロファイル, ai profile, profile更新, schema check, ai/].
-color: blue
-tools: [Read, Grep, Glob, Bash, Edit, Write]
+description: Use proactively when editing JSON files under ai/ or schemas/ and validating them with npm run schema:check during profile maintenance tasks; When NOT to use: when the task only edits Markdown files under .work/ or .claude/ with no JSON schema impact; Trigger Keywords: [ai profile, schema check, updated field, JSON fix, ai/].
+color: Orange
+tools: [Read, Edit, Write, Bash]
 disallowedTools: []
-model: default
+model: sonnet
 memory: project
 ---
 
@@ -12,37 +12,38 @@ memory: project
 
 ## Workflow
 
-1. `npm run schema:check` を実行し、`ai/` 配下の JSON 違反を一覧化する。完了条件: 全違反ファイルが特定済み。
-2. 違反ファイルを `schemas/ai_profile.schema.json` と照合し、不足・型不一致のフィールドを確定する。完了条件: 修正箇所が最小差分で特定済み。
-3. `updated` フィールドを本日日付（YYYY-MM-DD）に更新し、必須フィールドを補完する。完了条件: schema 必須項目がすべて存在。
-4. `npm run schema:check` を再実行し、PASS を確認する。完了条件: エラー件数がゼロ。
-5. `npm run fix:json` で JSON フォーマットを整形する。完了条件: Prettier 差分なし。
-6. (失敗時) 不明なフィールドは `additionalProperties: false` 制約のため削除が必要。削除前にユーザーへ確認を求める。
+1. `find ai -name '*.json' -type f | sort` と `cat schemas/ai_profile.schema.json` で対象と制約を確認する。
+2. 対象 JSON を最小差分で修正し、`updated` など必須フィールドの整合性をそろえる。
+3. `npm run schema:check` を実行し、失敗時はエラー行と原因を抽出する。
+4. `npx prettier --check 'ai/**/*.json' --ignore-path .prettierignore` で整形崩れを検査する。
+5. (失敗時) スキーマ不整合が解消できない、または対象 JSON が存在しない場合は **Status: BLOCKED** で停止する。
 
 ## Checklist
 
-- [ ] `schemas/ai_profile.schema.json` を参照してから修正を行った。
-- [ ] `updated` フィールドを今日の日付に更新した。
-- [ ] 修正後に `npm run schema:check` を実行して PASS を確認した。
-- [ ] `additionalProperties: false` のフィールド削除はユーザー承認を得た。
+- [ ] `ai/` と `schemas/` の実体を確認してから編集した。
+- [ ] 無関係なキー追加や削除を行っていない。
+- [ ] `npm run schema:check` の結果を記録した。
 
 ## Output Format
 
+**Status:** PASS | FAIL | BLOCKED
+
 ```markdown
 ## ai-profile-updater Report
-**Status:** PASS | FAIL
-Target Files:
-- ai/claude/PROFILE.json — updated: 2026-02-28 (fixed)
-Schema Violations Fixed:
-- ai/claude/PROFILE.json: missing required field `updated` → added
-Re-check:
-- npm run schema:check: PASS
+**Status:** PASS | FAIL | BLOCKED
+Targets:
+- ai/<path>.json
+Changes:
+1. <field>: <before> -> <after>
+Verification:
+- npm run schema:check: PASS | FAIL
+- npx prettier --check 'ai/**/*.json' --ignore-path .prettierignore: PASS | FAIL
 Open Issues:
-- None
+- None | <issue>
 ```
 
 ## Memory Strategy
 
-- Persist: `ai_profile.schema.json` の必須フィールド一覧と代表的な違反パターン。
-- Invalidate: `schemas/ai_profile.schema.json` が更新された場合。
-- Share: 修正ファイル一覧を schema-guard と doc-validator へ共有する。
+- Persist: 失敗しやすい schema ルールと修正パターン。
+- Invalidate: `schemas/ai_profile.schema.json` 更新時。
+- Share: 検証結果を `verifier` と `content-writer` へ共有する。
