@@ -1,6 +1,6 @@
 ---
 name: lint-fix
-description: Use when lint or format checks fail and deterministic repository commands are needed to resolve violations; When NOT to use: when no failing lint signal exists or the task is pure design discussion; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
+description: Use proactively when editing files under .claude/, .cursor/, .codex/, .work/, or .github/ and npm run format:check or lint commands report failures; When NOT to use: when no failing lint signal exists and the task is discussion-only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
 ---
 
 # lint-fix

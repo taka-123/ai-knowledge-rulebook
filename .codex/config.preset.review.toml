@@ -1,0 +1,35 @@
+model = "gpt-5.3-codex"
+review_model = "gpt-5.3-codex"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+web_search = "cached"
+
+[features]
+multi_agent = true
+
+[agents]
+max_threads = 6
+
+[agents.default]
+description = "統合レビュー統括 / Integrated review orchestrator."
+config_file = "./.codex/agents/cross-service-reviewer.toml"
+
+[agents.explorer]
+description = "配線探索 / Wiring explorer."
+config_file = "./.codex/agents/repo-cartographer.toml"
+
+[agents.reviewer]
+description = "品質レビュー / Quality reviewer."
+config_file = "./.codex/agents/code-reviewer.toml"
+
+[agents.security_reviewer]
+description = "セキュリティレビュー / Security reviewer."
+config_file = "./.codex/agents/security-reviewer.toml"
+
+[agents.test_runner]
+description = "検証実行 / Verification runner."
+config_file = "./.codex/agents/verifier.toml"
+
+[agents.worker]
+description = "実装修正 / Implementation worker."
+config_file = "./.codex/agents/content-writer.toml"

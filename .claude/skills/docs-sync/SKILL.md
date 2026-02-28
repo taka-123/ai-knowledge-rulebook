@@ -1,6 +1,6 @@
 ---
 name: docs-sync
-description: Use when README or operational documents must be synchronized with current repository structure and executable commands; When NOT to use: when changes are isolated and do not affect documented facts; Trigger Keywords: [README, directorystructure, technologystack, 同期, 実態反映].
+description: Use proactively when editing README.md, .claude/skills/README.md, .work/AI_SCAN.md, or .work/AI_BLUEPRINT.md after command or structure changes; When NOT to use: when changes do not alter documented paths, scripts, or operational facts; Trigger Keywords: [README, 同期, 実態反映, コマンド更新, docs-sync].
 ---
 
 # docs-sync

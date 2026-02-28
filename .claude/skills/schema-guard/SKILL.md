@@ -1,6 +1,6 @@
 ---
 name: schema-guard
-description: Use when JSON assets must be validated against repository schemas and corrected with minimal, schema-safe diffs; When NOT to use: when no schema boundary applies or the task does not involve JSON files; Trigger Keywords: [schema, JSON検証, check-jsonschema, ajv, 型整合].
+description: Use proactively when editing JSON files under ai/ or notes/ and validating them against schemas/ai_profile.schema.json or schemas/notes.schema.json; When NOT to use: when the task only touches non-JSON files with no schema boundary; Trigger Keywords: [schema, JSON検証, check-jsonschema, ajv, 型整合].
 ---
 
 # schema-guard

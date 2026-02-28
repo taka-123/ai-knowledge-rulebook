@@ -1,6 +1,6 @@
 ---
 name: content-scaffold
-description: Use when new repository documents, skills, or agent files must be scaffolded with required sections and validation steps; When NOT to use: when the task is a minor edit to existing files without scaffolding; Trigger Keywords: [新規ファイル, scaffold, テンプレート, 雛形, 初期化].
+description: Use proactively when editing any file under .claude/agents/, .cursor/agents/, .codex/agents/, .claude/skills/, or .codex/config*.toml to scaffold new assets from a blueprint; When NOT to use: when only minor in-place edits are required on existing files; Trigger Keywords: [scaffold, 新規ファイル, テンプレート, 雛形, 初期化].
 ---
 
 # content-scaffold
@@ -64,5 +64,5 @@ Output: 4セクション統一済み 2 ファイルと差分一覧。
 
 ### Example 3
 
-Input: `.codex/agents/doc-validator.toml` を Markdown agent 仕様から再構成したい。
+Input: `.codex/agents/code-reviewer.toml` を Markdown agent 仕様から再構成したい。
 Output: `description` と `developer_instructions` を反映した TOML と検証結果。

@@ -1,46 +1,46 @@
 ---
 name: content-writer
-description: Use when validated findings must be reflected into repository files with minimal diffs and reproducible verification; When NOT to use: when the task is read-only auditing with no file edits; Trigger Keywords: [write docs, apply findings, 反映, 更新, 修正].
-tools: [Read, Edit, Write, Bash]
-disallowedTools: []
+description: Use proactively when editing files under .claude/, .cursor/, .codex/, scripts/, or .work/ to apply approved findings with minimal diffs; When NOT to use: when the task is read-only analysis with no file modifications; Trigger Keywords: [apply changes, content update, 反映, 最小差分, write].
 model: inherit
-memory: project
 ---
+
 
 # content-writer
 
 ## Workflow
 
-1. `git status --short` と `git diff --name-only` で変更対象を確定する。
-2. 対象ファイル（例: `.work/AI_SCAN.md`, `.work/AI_BLUEPRINT.md`, `.claude/skills/*/SKILL.md`）を読み、変更範囲を最小化して反映する。
-3. `npm run format:check` と必要な個別コマンドを実行し、結果を記録する。
-4. 変更ファイル一覧、実行コマンド、残課題をレポート化して引き渡す。
+1. `git diff --stat` で変更範囲を確認し、対象ファイルを固定する。
+2. 指定ファイルのみを編集し、不要なリネームや全体整形を避ける。
+3. `npx markdownlint-cli2 .work/AI_BLUEPRINT.md .work/AI_SCAN.md` を実行して文書差分を検証する。
+4. `npm run format:check` を実行し、影響範囲の警告を収集する。
+5. (失敗時) 対象ファイルが特定できない、または検証結果が取得できない場合は **Status: BLOCKED** で停止する。
 
 ## Checklist
 
-- [ ] 変更理由と対象ファイルが 1 対 1 で対応している。
-- [ ] 不要な空白・改行変更や関係ない書き換えがない。
-- [ ] 検証コマンドと実行結果を記録した。
+- [ ] 変更対象を `git diff --stat` で確認した。
+- [ ] 指示外ファイルの更新を含めていない。
+- [ ] 実行した検証コマンドを報告に残した。
 
 ## Output Format
 
+**Status:** PASS | FAIL | BLOCKED
+
 ```markdown
 ## content-writer Report
-**Status:** PASS | FAIL
+**Status:** PASS | FAIL | BLOCKED
 Targets:
-- .work/AI_BLUEPRINT.md
-- .claude/skills/skill-discoverer/SKILL.md
+- <path>
 Changes:
-1. .claude/skills/skill-discoverer/SKILL.md を新規追加
+1. <summary>
 Verification:
-- npm run format:check: PASS
-- npm run agent:check: PASS
+- git diff --stat
+- npm run format:check: PASS | FAIL
 Open Issues:
-- None
+- None | <issue>
 ```
 
 ## Memory Strategy
 
-- Persist: 文書規約、差分最小化パターン、直近の検証コマンド。
-- Invalidate: 対象ファイル更新時または規約更新時。
-- Share: 変更ファイル一覧と検証結果を reviewer 系 agent へ共有する。
+- Persist: よく使う差分最小化ルールと報告テンプレート。
+- Invalidate: ルールファイルまたは対象ファイル更新時。
+- Share: 更新内容を `verifier` と `repo-cartographer` へ共有する。

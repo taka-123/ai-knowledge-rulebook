@@ -1,6 +1,6 @@
 ---
 name: backlog-markdown-formatting
-description: Use when markdown text must be reformatted for Backlog-compatible readability and checklist structure; When NOT to use: when markdown already follows Backlog formatting rules; Trigger Keywords: [Backlog, markdown整形, 見出し, checklist, issue].
+description: Use when the user explicitly asks for reformatting Markdown files under .work/ or README.md for Backlog ticket readability; When NOT to use: when the target is non-Markdown files or plain typo-only edits without format conversion; Trigger Keywords: [Backlog, markdown整形, checklist, 見出し, issue].
 ---
 
 # backlog-markdown-formatting

@@ -1,0 +1,22 @@
+# Cursor Review Routing Rule
+
+When user asks in natural language such as:
+- レビューしてください
+- この修正でOKか
+- 見てほしい
+
+Then route to `cross-service-reviewer` by default.
+
+If user request contains both `requirements.md` and `直近コミット`, enforce this order:
+1. cross-service-reviewer
+2. code-reviewer
+3. security-reviewer (only when risk-relevant)
+4. verifier
+
+Fallback:
+- If a reviewer fails or times out, cross-service-reviewer must cover the missing viewpoint.
+- The final report must include failed sub-agent names and parent fallback coverage.
+
+Compatibility:
+- Do not use unsupported no-stat options.
+- Use `git diff --stat` and `git diff -p`.

@@ -1,6 +1,6 @@
 ---
 name: skill-discoverer
-description: Use when the user asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: [スキル一覧, 何ができる, available skills, help, 委任先].
+description: Use when the user explicitly asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: [スキル一覧, 何ができる, available skills, help, 委任先].
 ---
 
 # skill-discoverer
@@ -38,9 +38,9 @@ description: Use when the user asks what skills or agents are available, or when
 | セクション       | 形式                                                               |
 | ---------------- | ------------------------------------------------------------------ |
 | Available Skills | `- lint-fix: Use when lint or format checks fail ...`              |
-| Available Agents | `- doc-validator: Use when markdown or rule documents require ...` |
+| Available Agents | `- code-reviewer: Use proactively when reviewing diffs under .claude/, .cursor/, .codex/, scripts/, package.json, or .work/ ...` |
 | Recommended      | `1. repo-cartographer - 配線監査に最適`                            |
-| Alternatives     | `- doc-validator - 文書監査向け`（最大2件）                        |
+| Alternatives     | `- code-reviewer - 品質監査向け`（最大2件）                        |
 
 ### NG例
 

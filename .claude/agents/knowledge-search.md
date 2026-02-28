@@ -1,10 +1,10 @@
 ---
 name: knowledge-search
-description: Use when knowledge assets across notes, ai-profiles, clips, or snippets must be searched and relevant content retrieved with ranked results; When NOT to use: when the target file path is already known or the task requires writing/modifying content; Trigger Keywords: [search, 検索, find, 知識, ノート, 調べる, どこ].
-color: cyan
+description: Use proactively when searching across notes/, ai/, clips/, snippets/, .claude/, .cursor/, or .codex/ to locate relevant assets before implementation; When NOT to use: when the exact target file path is already known and no discovery step is needed; Trigger Keywords: [search assets, 検索, find file, knowledge search, locate].
+color: Cyan
 tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Edit, Write]
-model: default
+model: sonnet
 memory: project
 ---
 
@@ -12,33 +12,37 @@ memory: project
 
 ## Workflow
 
-1. 検索キーワードと対象ディレクトリ（`notes/`, `ai/`, `clips/`, `snippets/`）を確定する。
-2. `rg --files` で対象ファイル一覧を取得し、`rg -l <keyword>` でマッチファイルを絞り込む。
-3. マッチ箇所を `rg -n -C 2 <keyword>` で抽出し、関連度順にランク付けする。
-4. FrontMatter の `title`・`tags` を読み取り、検索結果にメタ情報を付与する。
-5. (失敗時) マッチが0件の場合は類似キーワードでリトライし、それでも0件なら「該当なし」を返す。
+1. `rg --files notes ai clips snippets .claude .cursor .codex | sort` で探索対象一覧を取得する。
+2. `rg -n -C 2 '<keyword>' notes ai clips snippets .claude .cursor .codex` で該当箇所を抽出する。
+3. 該当箇所を関連度（完全一致 > 部分一致 > 文脈一致）で並べ替える。
+4. 重複ヒットや誤検知を除外し、パス・行番号付きで要約する。
+5. (失敗時) キーワード未指定、または対象ディレクトリが存在しない場合は **Status: N/A** で停止する。
 
 ## Checklist
 
 - [ ] `Edit` / `Write` を使用していない。
-- [ ] すべての検索結果にファイルパスと行番号を付与した。
-- [ ] 結果を関連度（完全一致 > 部分一致 > タグ一致）でランク付けした。
+- [ ] すべての結果にファイルパスと行番号を付けた。
+- [ ] 検索コマンドを再実行できる形で残した。
 
 ## Output Format
 
+**Status:** FOUND | NOT_FOUND | N/A | BLOCKED
+
 ```markdown
 ## knowledge-search Report
-**Query:** <検索キーワード>
-**Status:** FOUND | NOT FOUND
-Results (ranked):
-1. notes/topics/mcp.md:12 — タグ: [mcp, tool] — "MCPはModel Context Protocolの略…"
-2. ai/claude_code/global/MEMORY.md:5 — "…MCPサーバー設定の注意点…"
-Not Found:
-- snippets/, clips/ に該当なし
+**Status:** FOUND | NOT_FOUND | N/A | BLOCKED
+Query:
+- <keyword>
+Results:
+1. <path>:<line> - <snippet>
+Related Paths:
+- <path>
+Verification:
+- rg -n -C 2 '<keyword>' notes ai clips snippets .claude .cursor .codex
 ```
 
 ## Memory Strategy
 
-- Persist: 頻繁に検索されるキーワードとそのマッチパターン。
-- Invalidate: 検索対象ディレクトリ構造の変更時。
-- Share: 検索結果を note-curator や content-writer へ共有する。
+- Persist: 頻出キーワードと対応ディレクトリ。
+- Invalidate: ディレクトリ構成変更時。
+- Share: 結果を `repo-cartographer` と `cross-service-reviewer` へ共有する。

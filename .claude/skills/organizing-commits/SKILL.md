@@ -1,6 +1,6 @@
 ---
 name: organizing-commits
-description: Use when repository changes must be organized into reviewable diffs and commit units with rollback awareness; When NOT to use: when no file changes exist or git operations are outside scope; Trigger Keywords: [organizing commits, commit, branch, diff, PR, rollback].
+description: Use when the user explicitly asks to organize git changes under .claude/, .cursor/, .codex/, scripts/, or .work/ into reviewable commit units; When NOT to use: when there are no file changes or git planning is out of scope; Trigger Keywords: [organizing commits, commit, diff, PR, rollback].
 ---
 
 # organizing-commits
@@ -21,7 +21,6 @@ description: Use when repository changes must be organized into reviewable diffs
 
 - organizing commits
 - commit
-- branch
 - diff
 - PR
 - rollback
@@ -65,5 +64,5 @@ Output: プラットフォーム整合コミット案とレビュー観点。
 
 ### Example 3
 
-Input: `.codex/agents/doc-validator.toml` のみ更新した。
+Input: `.codex/agents/code-reviewer.toml` のみ更新した。
 Output: Codex設定更新専用コミット案とロールバック単位。

@@ -1,6 +1,6 @@
 ---
 name: frontmatter-audit
-description: Use when Markdown files in notes/ must be audited for FrontMatter compliance against schemas/notes.schema.json and corrected with minimal diffs; When NOT to use: when no FrontMatter is expected or when the target file is not a note Markdown; Trigger Keywords: [frontmatter, FrontMatter, ノート検証, notes lint, メタデータ].
+description: Use proactively when editing any note under notes/ and verifying FrontMatter fields against schemas/notes.schema.json; When NOT to use: when targets are non-note Markdown files such as AGENTS.md or CLAUDE.md; Trigger Keywords: [frontmatter, ノート検証, notes lint, メタデータ, schema].
 ---
 
 # frontmatter-audit
@@ -14,7 +14,7 @@ description: Use when Markdown files in notes/ must be audited for FrontMatter c
 ## When NOT to use
 
 - FrontMatter を持たないドキュメント（README、AGENTS.md 等）を対象とするとき。
-- ノートの本文コンテンツの品質を評価するとき（`doc-validator` が適切）。
+- ノートの本文コンテンツの品質を評価するとき（`code-reviewer` が適切）。
 - JSON スキーマを変更する必要があるとき（`schema-guard` が適切）。
 
 ## Trigger Keywords
@@ -66,8 +66,3 @@ Output: `updated: 2026-02-28` を FrontMatter に追加し、`npm run lint:md` �
 
 Input: `source` フィールドの URL 形式が正しいか確認したい。
 Output: 形式違反の URL を持つファイルを抽出し、空文字または正規化済み URL へ修正。
-
-### Example 4
-
-Input: notes/ 配下の全ノートの `tags` が配列形式になっているか一括チェックしたい。
-Output: 文字列型で書かれた `tags` を持つファイルを抽出し、配列形式に変換した差分を提示。

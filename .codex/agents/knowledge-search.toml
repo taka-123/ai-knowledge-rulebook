@@ -1,0 +1,46 @@
+description = "Use proactively when searching across notes/, ai/, clips/, snippets/, .claude/, .cursor/, or .codex/ to locate relevant assets before implementation; When NOT to use: when the exact target file path is already known and no discovery step is needed; Trigger Keywords: [search assets, 検索, find file, knowledge search, locate]."
+model = "gpt-5.3-codex"
+sandbox_mode = "read-only"
+approval_policy = "on-request"
+
+developer_instructions = """
+
+# knowledge-search
+
+## Workflow
+
+1. `rg --files notes ai clips snippets .claude .cursor .codex | sort` で探索対象一覧を取得する。
+2. `rg -n -C 2 '<keyword>' notes ai clips snippets .claude .cursor .codex` で該当箇所を抽出する。
+3. 該当箇所を関連度（完全一致 > 部分一致 > 文脈一致）で並べ替える。
+4. 重複ヒットや誤検知を除外し、パス・行番号付きで要約する。
+5. (失敗時) キーワード未指定、または対象ディレクトリが存在しない場合は **Status: N/A** で停止する。
+
+## Checklist
+
+- [ ] `Edit` / `Write` を使用していない。
+- [ ] すべての結果にファイルパスと行番号を付けた。
+- [ ] 検索コマンドを再実行できる形で残した。
+
+## Output Format
+
+**Status:** FOUND | NOT_FOUND | N/A | BLOCKED
+
+```markdown
+## knowledge-search Report
+**Status:** FOUND | NOT_FOUND | N/A | BLOCKED
+Query:
+- <keyword>
+Results:
+1. <path>:<line> - <snippet>
+Related Paths:
+- <path>
+Verification:
+- rg -n -C 2 '<keyword>' notes ai clips snippets .claude .cursor .codex
+```
+
+## Memory Strategy
+
+- Persist: 頻出キーワードと対応ディレクトリ。
+- Invalidate: ディレクトリ構成変更時。
+- Share: 結果を `repo-cartographer` と `cross-service-reviewer` へ共有する。
+"""

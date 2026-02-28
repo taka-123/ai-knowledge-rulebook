@@ -1,6 +1,6 @@
 ---
 name: note-add
-description: Use when a new topic note must be created in notes/topics/ with valid FrontMatter and structured content; When NOT to use: when the note already exists and only updates are needed; Trigger Keywords: [ノート追加, note作成, トピック, notes/topics, 新規ノート].
+description: Use when the user explicitly asks to create a new Markdown note file under notes/topics/ with valid FrontMatter and tags; When NOT to use: when the task only updates an existing note file without creating a new entry; Trigger Keywords: [ノート追加, note作成, トピック, notes/topics, 新規ノート].
 ---
 
 # note-add
@@ -54,20 +54,15 @@ description: Use when a new topic note must be created in notes/topics/ with val
 
 ### Example 1
 
-Input: MCP（Model Context Protocol）についての学習メモを追加したい。タグは `[mcp, claude, tool]`。
+Input: `notes/topics/` 配下に MCP（Model Context Protocol）の学習メモを追加したい。タグは `[mcp, claude, tool]`。
 Output: `notes/topics/2026-02-28-mcp-overview.md` が FrontMatter 付きで生成され、`npm run lint:md` が PASS。
 
 ### Example 2
 
-Input: Zenn 記事を参考に Cursor のルール設定をまとめたい。出典 URL あり。
+Input: `notes/topics/` に Zenn 記事を参考にした Cursor ルール設定ノートを追加したい。出典 URL あり。
 Output: `notes/topics/2026-02-28-cursor-rules.md` に `source` フィールド付きで生成。
 
 ### Example 3
 
-Input: エージェント設計パターンについてのメモを `[agent, design-pattern]` タグで記録したい。
+Input: `notes/topics/` にエージェント設計パターンのメモを `[agent, design-pattern]` タグで記録したい。
 Output: `notes/topics/2026-02-28-agent-design-patterns.md` が作成され Lint PASS。
-
-### Example 4
-
-Input: Claude Code のフック機能についてのノートを追加したい。出典なし。
-Output: `notes/topics/2026-02-28-claude-code-hooks.md` が `source: ""` で生成される。

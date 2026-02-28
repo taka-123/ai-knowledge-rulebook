@@ -1,6 +1,6 @@
 ---
 name: format-lint-audit
-description: Use when final quality gates must be executed to confirm formatting, linting, and agent validation status; When NOT to use: when implementation is still exploratory and files are not ready for final checks; Trigger Keywords: [quality gate, format:check, lint, CI, 検証].
+description: Use proactively when editing files under .claude/, .cursor/, .codex/, scripts/, or .work/ and final quality gates must be executed before reporting; When NOT to use: when implementation is still exploratory and verification is intentionally deferred; Trigger Keywords: [quality gate, format:check, lint, CI, 検証].
 ---
 
 # format-lint-audit
