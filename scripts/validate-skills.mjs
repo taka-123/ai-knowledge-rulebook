@@ -81,12 +81,17 @@ for (const file of files) {
   if (!fm.description.includes('When NOT to use') || !fm.description.includes('Trigger Keywords')) {
     errors.push(`${rel}: description must be 3-element format`)
   }
-  if (!fm.description.startsWith('Use proactively when') && !fm.description.startsWith('Use when the user explicitly asks')) {
+  if (
+    !fm.description.startsWith('Use proactively when') &&
+    !fm.description.startsWith('Use when the user explicitly asks')
+  ) {
     errors.push(`${rel}: description must start with proactive or explicit pattern`)
   }
   if (fm.description.length > 1024) errors.push(`${rel}: description exceeds 1024 chars`)
-  if (/[<>]/.test(fm.description)) errors.push(`${rel}: description must not contain angle brackets`)
-  if (firstPerson.test(fm.description)) errors.push(`${rel}: description must not contain first-person pronouns`)
+  if (/[<>]/.test(fm.description))
+    errors.push(`${rel}: description must not contain angle brackets`)
+  if (firstPerson.test(fm.description))
+    errors.push(`${rel}: description must not contain first-person pronouns`)
 
   const sectionChecks = [
     '# ',

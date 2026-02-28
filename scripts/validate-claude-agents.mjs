@@ -16,7 +16,15 @@ for (const entry of fs.readdirSync(dir).filter(f => f.endsWith('.md'))) {
     continue
   }
 
-  const required = ['name:', 'description:', 'color:', 'tools:', 'disallowedTools:', 'model:', 'memory: project']
+  const required = [
+    'name:',
+    'description:',
+    'color:',
+    'tools:',
+    'disallowedTools:',
+    'model:',
+    'memory: project',
+  ]
   for (const req of required) {
     if (!fm[1].includes(req)) errors.push(`${entry}: missing '${req}'`)
   }

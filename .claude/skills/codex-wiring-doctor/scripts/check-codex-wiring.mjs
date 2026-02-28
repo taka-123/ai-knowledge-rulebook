@@ -49,8 +49,8 @@ console.log(
       dangling,
     },
     null,
-    2,
-  ),
+    2
+  )
 )
 
 if (status !== 'PASS') process.exit(1)

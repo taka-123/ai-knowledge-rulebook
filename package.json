@@ -38,6 +38,7 @@
     "node": ">=18.0.0"
   },
   "lint-staged": {
+    "**/*.{js,mjs,cjs,ts,tsx,jsx}": "prettier --write --ignore-path .prettierignore",
     "**/*.{md,mdx}": [
       "prettier --write --ignore-path .prettierignore",
       "markdownlint-cli2"

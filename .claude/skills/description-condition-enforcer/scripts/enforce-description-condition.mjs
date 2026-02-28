@@ -18,7 +18,10 @@ for (const name of fs.readdirSync(DIR)) {
     continue
   }
   const description = match[1]
-  const hasPath = /\.[a-zA-Z0-9_\-]+\//.test(description) || /notes\//.test(description) || /ai\//.test(description)
+  const hasPath =
+    /\.[a-zA-Z0-9_\-]+\//.test(description) ||
+    /notes\//.test(description) ||
+    /ai\//.test(description)
   const proactive = description.startsWith('Use proactively when')
   const explicit = description.startsWith('Use when the user explicitly asks')
 
