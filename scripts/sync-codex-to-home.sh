@@ -12,6 +12,7 @@ SRC_GLOBAL="${PROJECT_ROOT}/ai/openai_codex/global"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 DEST_CODEX="${HOME}/.codex"
 DEST_AGENTS="${HOME}/.codex/AGENTS.md"
+DEST_CONFIG="${HOME}/.codex/config.toml"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BAK_SUFFIX=".bak.${TIMESTAMP}"
 
@@ -60,6 +61,13 @@ main() {
 
   echo ""
   echo "完了しました。"
+  echo ""
+  if [[ -f "$DEST_CONFIG" ]] && grep -q '\[mcp_servers\.' "$DEST_CONFIG" 2>/dev/null; then
+    echo "--- 注意 ---"
+    echo "config.toml の [mcp_servers.*] にプレースホルダーや環境変数参照がある場合は、"
+    echo "認証情報を正しく書き換えてください。"
+    echo ""
+  fi
 }
 
 main "$@"
