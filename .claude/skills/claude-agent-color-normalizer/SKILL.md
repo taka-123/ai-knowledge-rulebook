@@ -35,12 +35,12 @@ description: Use proactively when editing any file under .claude/agents/ to norm
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Changed Agents | `name: before -> after` |
-| Unresolved Colors | `None` または一覧 |
-| Verification | `node scripts/validate-claude-agents.mjs` |
+| 項目              | 形式                                      |
+| ----------------- | ----------------------------------------- |
+| Status            | `PASS / FAIL / BLOCKED`                   |
+| Changed Agents    | `name: before -> after`                   |
+| Unresolved Colors | `None` または一覧                         |
+| Verification      | `node scripts/validate-claude-agents.mjs` |
 
 ### NG例
 

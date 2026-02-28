@@ -35,13 +35,13 @@ description: Use proactively when editing any file under .claude/agents/, .curso
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Compared Agents | `- name` |
-| Mismatches | `name: claude/cursor/codex` の差分一覧 |
-| Applied Updates | `- path` |
-| Verification | `node ...sync-agent-description.mjs` の結果 |
+| 項目            | 形式                                        |
+| --------------- | ------------------------------------------- |
+| Status          | `PASS / FAIL / BLOCKED`                     |
+| Compared Agents | `- name`                                    |
+| Mismatches      | `name: claude/cursor/codex` の差分一覧      |
+| Applied Updates | `- path`                                    |
+| Verification    | `node ...sync-agent-description.mjs` の結果 |
 
 ### NG例
 

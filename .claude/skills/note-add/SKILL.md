@@ -35,12 +35,12 @@ description: Use when the user explicitly asks to create a new Markdown note fil
 
 ## Output Contract
 
-| 項目           | 形式                                                 |
-| -------------- | ---------------------------------------------------- |
-| ファイルパス   | `notes/topics/YYYY-MM-DD-<slug>.md`                 |
-| FrontMatter    | `title`, `created`, `updated`, `tags` を必ず含む    |
-| 出典 URL       | `source: "https://..."` または `source: ""`         |
-| Lint 結果      | `npm run lint:md: PASS`                             |
+| 項目         | 形式                                             |
+| ------------ | ------------------------------------------------ |
+| ファイルパス | `notes/topics/YYYY-MM-DD-<slug>.md`              |
+| FrontMatter  | `title`, `created`, `updated`, `tags` を必ず含む |
+| 出典 URL     | `source: "https://..."` または `source: ""`      |
+| Lint 結果    | `npm run lint:md: PASS`                          |
 
 ### NG例
 

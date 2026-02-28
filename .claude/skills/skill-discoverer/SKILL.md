@@ -35,12 +35,12 @@ description: Use when the user explicitly asks what skills or agents are availab
 
 ## Output Contract
 
-| セクション       | 形式                                                               |
-| ---------------- | ------------------------------------------------------------------ |
-| Available Skills | `- lint-fix: Use when lint or format checks fail ...`              |
+| セクション       | 形式                                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Available Skills | `- lint-fix: Use when lint or format checks fail ...`                                                                            |
 | Available Agents | `- code-reviewer: Use proactively when reviewing diffs under .claude/, .cursor/, .codex/, scripts/, package.json, or .work/ ...` |
-| Recommended      | `1. repo-cartographer - 配線監査に最適`                            |
-| Alternatives     | `- code-reviewer - 品質監査向け`（最大2件）                        |
+| Recommended      | `1. repo-cartographer - 配線監査に最適`                                                                                          |
+| Alternatives     | `- code-reviewer - 品質監査向け`（最大2件）                                                                                      |
 
 ### NG例
 

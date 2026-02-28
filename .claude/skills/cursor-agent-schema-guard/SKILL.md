@@ -35,13 +35,13 @@ description: Use proactively when editing any file under .cursor/agents/ to enfo
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Scanned Files | `- .cursor/agents/<name>.md` |
-| Violations | `file: key` 一覧 |
-| Fixes | `- file: removed key` |
-| Verification | `node scripts/validate-cursor-agents.mjs` |
+| 項目          | 形式                                      |
+| ------------- | ----------------------------------------- |
+| Status        | `PASS / FAIL / BLOCKED`                   |
+| Scanned Files | `- .cursor/agents/<name>.md`              |
+| Violations    | `file: key` 一覧                          |
+| Fixes         | `- file: removed key`                     |
+| Verification  | `node scripts/validate-cursor-agents.mjs` |
 
 ### NG例
 

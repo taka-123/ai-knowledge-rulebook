@@ -35,13 +35,13 @@ description: Use proactively when editing any file under .claude/skills/*/SKILL.
 
 ## Output Contract
 
-| 項目 | 形式 |
-| --- | --- |
-| Status | `PASS / FAIL / BLOCKED` |
-| Checked Skills | `- .claude/skills/<name>/SKILL.md` |
-| Violations | `name: reason` |
-| Fixed Descriptions | `name: before -> after` |
-| Verification | `node scripts/validate-skills.mjs` |
+| 項目               | 形式                               |
+| ------------------ | ---------------------------------- |
+| Status             | `PASS / FAIL / BLOCKED`            |
+| Checked Skills     | `- .claude/skills/<name>/SKILL.md` |
+| Violations         | `name: reason`                     |
+| Fixed Descriptions | `name: before -> after`            |
+| Verification       | `node scripts/validate-skills.mjs` |
 
 ### NG例
 
