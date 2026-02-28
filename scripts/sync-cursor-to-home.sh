@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # sync-cursor-to-home.sh
-# ai/cursor/global/agents を ~/.cursor/ へ、
+# ai/cursor/global/agents を ~/.cursor/agents へ、
 # ai/cursor/global/mcp.json を ~/.cursor/mcp.json へコピーする。
-# 既存ファイルがある場合は日時付き .bak に退避してから上書きする。
+# 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
 
 set -euo pipefail
 
@@ -12,20 +12,22 @@ SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/agents"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/mcp.json"
 DEST_CURSOR="${HOME}/.cursor"
+DEST_AGENTS="${HOME}/.cursor/agents"
 DEST_MCP_JSON="${HOME}/.cursor/mcp.json"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+BAK_SUFFIX=".bak.${TIMESTAMP}"
 
-# 既存ファイルを日時付き .bak に退避
+# 既存のディレクトリまたはファイルを日時付き .bak に退避
 backup_if_exists() {
   local target="$1"
   if [[ -e "$target" ]]; then
-    local bak="${target}.${TIMESTAMP}.bak"
+    local bak="${target}${BAK_SUFFIX}"
     echo "退避: $target -> $bak"
     mv "$target" "$bak"
   fi
 }
 
-# agents ディレクトリを ~/.cursor へコピー（既存は退避）
+# agents ディレクトリを ~/.cursor/agents へコピー（既存はディレクトリごと退避）
 sync_agents_dir() {
   if [[ ! -d "$SRC_AGENTS" ]]; then
     echo "エラー: ソースディレクトリが存在しません: $SRC_AGENTS" >&2
@@ -33,23 +35,10 @@ sync_agents_dir() {
   fi
 
   mkdir -p "$DEST_CURSOR"
-
-  while IFS= read -r -d '' relpath; do
-    local src="${SRC_AGENTS}/${relpath}"
-    local dest="${DEST_CURSOR}/agents/${relpath}"
-
-    if [[ -d "$src" ]]; then
-      backup_if_exists "$dest"
-      mkdir -p "$dest"
-    else
-      local dest_dir
-      dest_dir="$(dirname "$dest")"
-      mkdir -p "$dest_dir"
-      backup_if_exists "$dest"
-      cp -p "$src" "$dest"
-      echo "コピー: agents/$relpath"
-    fi
-  done < <(cd "$SRC_AGENTS" && find . -mindepth 1 -print0 | sort -z)
+  backup_if_exists "$DEST_AGENTS"
+  mkdir -p "$DEST_AGENTS"
+  rsync -a "$SRC_AGENTS/" "$DEST_AGENTS/"
+  echo "コピー: ai/cursor/global/agents/* -> $DEST_AGENTS/"
 }
 
 # mcp.json を ~/.cursor/mcp.json へコピー
@@ -59,7 +48,6 @@ sync_mcp_json() {
     exit 1
   fi
 
-  mkdir -p "$DEST_CURSOR"
   backup_if_exists "$DEST_MCP_JSON"
   cp -p "$SRC_MCP_JSON" "$DEST_MCP_JSON"
   echo "コピー: mcp.json -> $DEST_MCP_JSON"

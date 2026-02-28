@@ -2,7 +2,7 @@
 # sync-claude-to-home.sh
 # ai/claude_code/global を ~/.claude/ へ、
 # ai/claude_code/claude.json を ~/.claude.json へコピーする。
-# 既存ファイルがある場合は日時付き .bak に退避してから上書きする。
+# 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
 
 set -euo pipefail
 
@@ -13,42 +13,29 @@ SRC_CLAUDE_JSON="${PROJECT_ROOT}/ai/claude_code/claude.json"
 DEST_CLAUDE="${HOME}/.claude"
 DEST_CLAUDE_JSON="${HOME}/.claude.json"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
+BAK_SUFFIX=".bak.${TIMESTAMP}"
 
-# 既存ファイルを日時付き .bak に退避
+# 既存のディレクトリまたはファイルを日時付き .bak に退避
 backup_if_exists() {
   local target="$1"
   if [[ -e "$target" ]]; then
-    local bak="${target}.${TIMESTAMP}.bak"
+    local bak="${target}${BAK_SUFFIX}"
     echo "退避: $target -> $bak"
     mv "$target" "$bak"
   fi
 }
 
-# global ディレクトリを ~/.claude へコピー（既存は退避）
+# global ディレクトリを ~/.claude へコピー（既存はディレクトリごと退避）
 sync_global_dir() {
   if [[ ! -d "$SRC_GLOBAL" ]]; then
     echo "エラー: ソースディレクトリが存在しません: $SRC_GLOBAL" >&2
     exit 1
   fi
 
+  backup_if_exists "$DEST_CLAUDE"
   mkdir -p "$DEST_CLAUDE"
-
-  while IFS= read -r -d '' relpath; do
-    local src="${SRC_GLOBAL}/${relpath}"
-    local dest="${DEST_CLAUDE}/${relpath}"
-
-    if [[ -d "$src" ]]; then
-      backup_if_exists "$dest"
-      mkdir -p "$dest"
-    else
-      local dest_dir
-      dest_dir="$(dirname "$dest")"
-      mkdir -p "$dest_dir"
-      backup_if_exists "$dest"
-      cp -p "$src" "$dest"
-      echo "コピー: $relpath"
-    fi
-  done < <(cd "$SRC_GLOBAL" && find . -mindepth 1 -print0 | sort -z)
+  rsync -a "$SRC_GLOBAL/" "$DEST_CLAUDE/"
+  echo "コピー: ai/claude_code/global/* -> $DEST_CLAUDE/"
 }
 
 # claude.json を ~/.claude.json へコピー
