@@ -9,6 +9,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/agents"
+SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/mcp.json"
 DEST_CURSOR="${HOME}/.cursor"
 DEST_MCP_JSON="${HOME}/.cursor/mcp.json"
@@ -75,6 +76,24 @@ main() {
 
   echo ""
   echo "完了しました。"
+  echo ""
+  echo "--- User Rule の設定 ---"
+  echo "ai/common/global/AGENTS.md を Cursor の User Rule として設定することをお勧めします。"
+  echo ""
+  echo "手順:"
+  echo "  1. Cursor 設定を開く (Cmd+, / Ctrl+,)"
+  echo "  2. [Rules, Skills, Subagents] > Rules を選択"
+  echo "  3. User Rule に以下を追加または編集:"
+  echo ""
+  if [[ -f "$SRC_COMMON_AGENTS" ]]; then
+    echo "--- 以下をコピー ---"
+    cat "$SRC_COMMON_AGENTS"
+    echo ""
+    echo "--- ここまで ---"
+  else
+    echo "  （ファイルが存在しません: ${SRC_COMMON_AGENTS}）"
+  fi
+  echo ""
 }
 
 main "$@"
