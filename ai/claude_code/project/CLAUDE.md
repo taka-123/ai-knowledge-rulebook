@@ -52,5 +52,6 @@ Note: 本ファイルはグローバル原則を継承し、プロジェクト�
 
 - コードレビュー: AGENTS.md `## コードレビュー` に準拠
 - セキュリティ: パイプ・リダイレクトを用いた Deny 回避を厳禁。
+- **Terminal**: `cd` / `pushd` / `popd` は使用しない。`working_directory` または絶対パスで指定する。
 
 </development_rules>
