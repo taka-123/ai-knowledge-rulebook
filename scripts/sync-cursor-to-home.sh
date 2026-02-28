@@ -3,8 +3,23 @@
 # ai/cursor/global/agents を ~/.cursor/agents へ、
 # ai/cursor/global/mcp.json を ~/.cursor/mcp.json へコピーする。
 # 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
+#
+# デフォルトでは mcp.json（MCP/認証設定）はコピー・退避しない。
+# --include-mcp を指定した場合のみ含める。
 
 set -euo pipefail
+
+INCLUDE_MCP=false
+for arg in "$@"; do
+  case "$arg" in
+    --include-mcp) INCLUDE_MCP=true ;;
+    -h|--help)
+      echo "Usage: $0 [--include-mcp]"
+      echo "  --include-mcp  MCP/認証設定（mcp.json）もコピー・退避する"
+      exit 0
+      ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -41,8 +56,12 @@ sync_agents_dir() {
   echo "コピー: ai/cursor/global/agents/* -> $DEST_AGENTS/"
 }
 
-# mcp.json を ~/.cursor/mcp.json へコピー
+# mcp.json を ~/.cursor/mcp.json へコピー（--include-mcp 時のみ）
 sync_mcp_json() {
+  if [[ "$INCLUDE_MCP" != true ]]; then
+    echo "スキップ: mcp.json（認証情報を含むため。--include-mcp で含める）"
+    return
+  fi
   if [[ ! -f "$SRC_MCP_JSON" ]]; then
     echo "エラー: ソースファイルが存在しません: $SRC_MCP_JSON" >&2
     exit 1
@@ -69,18 +88,10 @@ main() {
   echo "ai/common/global/AGENTS.md を Cursor の User Rule として設定することをお勧めします。"
   echo ""
   echo "手順:"
-  echo "  1. Cursor 設定を開く (Cmd+, / Ctrl+,)"
-  echo "  2. [Rules, Skills, Subagents] > Rules を選択"
-  echo "  3. User Rule に以下を追加または編集:"
-  echo ""
-  if [[ -f "$SRC_COMMON_AGENTS" ]]; then
-    echo "--- 以下をコピー ---"
-    cat "$SRC_COMMON_AGENTS"
-    echo ""
-    echo "--- ここまで ---"
-  else
-    echo "  （ファイルが存在しません: ${SRC_COMMON_AGENTS}）"
-  fi
+  echo "  1. 以下を開いて内容をコピーする:"
+  echo "     ${SRC_COMMON_AGENTS}"
+  echo "  2. Cursor 設定 (Cmd+, / Ctrl+,) > [Rules, Skills, Subagents] > Rules"
+  echo "  3. User Rule に貼り付けて追加または編集"
   echo ""
 }
 

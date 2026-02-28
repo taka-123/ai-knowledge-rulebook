@@ -3,8 +3,23 @@
 # ai/claude_code/global を ~/.claude/ へ、
 # ai/claude_code/claude.json を ~/.claude.json へコピーする。
 # 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
+#
+# デフォルトでは claude.json（MCP/認証設定）はコピー・退避しない。
+# --include-mcp を指定した場合のみ含める。
 
 set -euo pipefail
+
+INCLUDE_MCP=false
+for arg in "$@"; do
+  case "$arg" in
+    --include-mcp) INCLUDE_MCP=true ;;
+    -h|--help)
+      echo "Usage: $0 [--include-mcp]"
+      echo "  --include-mcp  MCP/認証設定（claude.json）もコピー・退避する"
+      exit 0
+      ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -38,8 +53,12 @@ sync_global_dir() {
   echo "コピー: ai/claude_code/global/* -> $DEST_CLAUDE/"
 }
 
-# claude.json を ~/.claude.json へコピー
+# claude.json を ~/.claude.json へコピー（--include-mcp 時のみ）
 sync_claude_json() {
+  if [[ "$INCLUDE_MCP" != true ]]; then
+    echo "スキップ: claude.json（認証情報を含むため。--include-mcp で含める）"
+    return
+  fi
   if [[ ! -f "$SRC_CLAUDE_JSON" ]]; then
     echo "エラー: ソースファイルが存在しません: $SRC_CLAUDE_JSON" >&2
     exit 1
@@ -61,6 +80,14 @@ main() {
 
   echo ""
   echo "完了しました。"
+  echo ""
+  if [[ -f "$SRC_CLAUDE_JSON" ]]; then
+    echo "--- MCP 設定の案内 ---"
+    echo "ai/claude_code/claude.json に MCP 設定があります。"
+    echo "必要なものがあれば ~/.claude.json の mcpServers に適切に記述してください。"
+    echo "プレースホルダー（\${GITHUB_PAT} 等）は必要に応じて修正してください。"
+    echo ""
+  fi
 }
 
 main "$@"
