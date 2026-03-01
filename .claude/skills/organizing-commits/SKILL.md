@@ -15,7 +15,7 @@ description: Use when the user explicitly asks to organize git changes under .cl
 
 - 変更ファイルが存在せずコミット対象がないとき。
 - Git 操作そのものが禁止されるタスク条件のとき。
-- 履歴改変（rebase など）を要求されていないとき。
+- コミット履歴が既に整理済みで再分割の必要がないとき。
 
 ## Trigger Keywords
 

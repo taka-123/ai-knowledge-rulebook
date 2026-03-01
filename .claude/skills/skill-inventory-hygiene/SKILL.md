@@ -55,14 +55,14 @@ description: Use proactively when editing any file under .claude/skills/ to remo
 ### Example 1
 
 Input: `.claude/skills/agent-factory/` が空ディレクトリとして残っている。
-Output: 削除済みパス一覧と再スキャン結果。
+Output: `Removed: .claude/skills/agent-factory/` を含む削除済みパス一覧と、`find .claude/skills -mindepth 2 -name SKILL.md` の再スキャン結果（例: `.claude/skills/lint-fix/SKILL.md`, `.claude/skills/schema-guard/SKILL.md` 等の実体一覧）。
 
 ### Example 2
 
 Input: `.claude/skills/.DS_Store` が残っている。
-Output: 削除ログと validator 実行結果。
+Output: `Removed: .claude/skills/.DS_Store` の削除ログと `node scripts/validate-skills.mjs` の実行結果（exit 0）。
 
 ### Example 3
 
-Input: skill 大量更新後に実体一覧を確定したい。
-Output: `SKILL.md` 実体一覧の確定表。
+Input: `.claude/skills/new-skill/` を追加し、既存の `.claude/skills/old-skill/` から `SKILL.md` を削除した後に実体一覧を確定したい。
+Output: Remaining Skill Dirs に `.claude/skills/new-skill`, `.claude/skills/lint-fix`, `.claude/skills/schema-guard` 等を列挙した確定表。`.claude/skills/old-skill/` は実体なしとして削除候補に表示。
