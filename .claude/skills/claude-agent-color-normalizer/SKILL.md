@@ -59,10 +59,10 @@ Output: `Purple` へ変換した結果と検証 PASS。
 
 ### Example 2
 
-Input: 全 agent の color を監査したい。
-Output: 変換一覧表（変更なし含む）。
+Input: `.claude/agents/` 配下の全 agent（`code-reviewer.md`, `security-reviewer.md`, `verifier.md` 等）の color を一括監査したい。
+Output: `code-reviewer: Green (ok)`, `security-reviewer: Red (ok)`, `verifier: Blue (ok)` 等の変換一覧表（変更なし含む）。
 
 ### Example 3
 
-Input: 新規 agent 追加後に color policy を確認したい。
-Output: 許可値適合のチェック結果。
+Input: `.claude/agents/new-agent.md` を新規追加した後に color policy を確認したい。
+Output: `new-agent: Orange (ok)` の適合確認結果と、全 agent の color 一覧表。
