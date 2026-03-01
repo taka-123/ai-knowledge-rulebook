@@ -65,33 +65,18 @@
       "Bash(sudo *)",
       "Bash(ssh *)",
       "Bash(scp *)",
-      "Bash(aws *)",
-      "Bash(terraform *)",
-      "Bash(kubectl *)",
       "Bash(git push --force)",
       "Bash(git push --force *)",
       "Bash(git push -f)",
       "Bash(git push -f *)",
       "Bash(git reset --hard)",
       "Bash(git reset --hard *)",
-      "Bash(nc *)",
       "Bash(env)",
       "Bash(printenv)",
       "Bash(export *)",
       "Bash(bash -c *)",
       "Bash(sh -c *)",
-      "Bash(ping *)",
-      "Bash(dig *)",
-      "Bash(nslookup *)",
       "Bash(base64 *)"
-    ],
-    "ask": [
-      "Bash(git checkout *)",
-      "Bash(git merge *)",
-      "Bash(psql *)",
-      "Bash(mysql *)",
-      "Bash(docker compose *)",
-      "Bash(docker-compose *)"
     ],
     "allow": [
       "WebSearch",
@@ -110,22 +95,13 @@
       "Bash(pwd)",
       "Bash(whoami)",
       "Bash(which *)",
-      "Bash(node *)",
-      "Bash(npm *)",
-      "Bash(npx *)",
-      "Bash(yarn *)",
-      "Bash(pnpm *)",
-      "Bash(python *)",
-      "Bash(pytest *)",
-      "Bash(make *)",
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git pull)",
-      "Bash(git branch *)",
-      "Bash(gomi *)"
+      "Bash(git branch *)"
     ]
   },
   "hooks": {
@@ -145,26 +121,6 @@
           {
             "type": "command",
             "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash -c 'if echo \"$1\" | grep -q \"rm -rf\"; then echo \"rm -rf禁止。gomiを使え\"; exit 2; fi' _ \"$(jq -r .tool_input.command)\""
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '✅ 変更完了'"
           }
         ]
       }
