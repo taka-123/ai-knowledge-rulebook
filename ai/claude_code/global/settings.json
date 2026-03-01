@@ -86,7 +86,6 @@
       "Bash(base64 *)"
     ],
     "ask": [
-      "Bash(git push *)",
       "Bash(git checkout *)",
       "Bash(git merge *)",
       "Bash(psql *)",
