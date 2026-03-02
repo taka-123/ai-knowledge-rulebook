@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# sync-gemini-to-home.sh
-# ai/antigravity/gemini/antigravity/mcp_config.json を ~/.gemini/antigravity/mcp_config.json へコピーする。
+# sync-antigravity-to-home.sh
+# ai/antigravity/global/.gemini/antigravity/mcp_config.json を
+# ~/.gemini/antigravity/mcp_config.json へ、
+# ai/common/global/AGENTS.md を ~/.gemini/GEMINI.md へコピーする。
 # 既存がある場合はファイル単位で日時付き .bak に退避してから上書きする。
 #
 # デフォルトでは mcp_config.json（MCP/認証設定）はコピー・退避しない。
@@ -22,8 +24,10 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SRC_MCP="${PROJECT_ROOT}/ai/antigravity/gemini/antigravity/mcp_config.json"
+SRC_MCP="${PROJECT_ROOT}/ai/antigravity/global/.gemini/antigravity/mcp_config.json"
+SRC_GEMINI_MD="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 DEST_MCP="${HOME}/.gemini/antigravity/mcp_config.json"
+DEST_GEMINI_MD="${HOME}/.gemini/GEMINI.md"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BAK_SUFFIX=".bak.${TIMESTAMP}"
 
@@ -38,15 +42,28 @@ backup_if_exists() {
 }
 
 main() {
-  echo "=== sync-gemini-to-home ==="
+  echo "=== sync-antigravity-to-home ==="
   echo "タイムスタンプ: $TIMESTAMP"
   echo ""
 
+  # AGENTS.md を GEMINI.md としてコピー
+  if [[ -f "$SRC_GEMINI_MD" ]]; then
+    mkdir -p "$(dirname "$DEST_GEMINI_MD")"
+    backup_if_exists "$DEST_GEMINI_MD"
+    cp -p "$SRC_GEMINI_MD" "$DEST_GEMINI_MD"
+    echo "コピー: AGENTS.md (common) -> $DEST_GEMINI_MD"
+  else
+    echo "スキップ: AGENTS.md が存在しません: $SRC_GEMINI_MD"
+  fi
+
+  echo ""
+
+  # MCP 設定のコピー
   if [[ "$INCLUDE_MCP" != true ]]; then
     echo "スキップ: mcp_config.json（認証情報を含むため。--include-mcp で含める）"
     echo ""
     echo "完了しました。"
-    exit 0
+    return
   fi
 
   if [[ ! -f "$SRC_MCP" ]]; then

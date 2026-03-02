@@ -1,5 +1,24 @@
 {
+  "context": {
+    "fileName": ["AGENTS.md"],
+    "includeDirectoryTree": true
+  },
+  "model": {
+    "name": "gemini-3.1-pro-preview"
+  },
+  "ui": {
+    "theme": "GitHub",
+    "hideContextSummary": false
+  },
+  "tools": {
+    "sandbox": "docker",
+    "excludeTools": ["run_shell_command(rm -rf)"]
+  },
   "mcpServers": {
+    "ultra-mcp": {
+      "command": "npx",
+      "args": ["-y", "ultra-mcp"]
+    },
     "github": {
       "type": "http",
       "url": "https://api.githubcopilot.com/mcp/",

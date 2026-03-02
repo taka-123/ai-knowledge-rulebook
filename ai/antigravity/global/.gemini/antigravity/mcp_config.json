@@ -1,9 +1,9 @@
 {
   "mcpServers": {
     "github": {
-      "url": "https://api.githubcopilot.com/mcp/",
+      "serverUrl": "https://api.githubcopilot.com/mcp/",
       "headers": {
-        "Authorization": "Bearer <PLACEHOLDER_GITHUB_PAT>"
+        "Authorization": "Bearer <PLACEHOLDER>"
       }
     },
     "context7": {
@@ -11,15 +11,19 @@
       "args": ["-y", "@upstash/context7-mcp"]
     },
     "exa": {
-      "url": "https://mcp.exa.ai/mcp"
+      "serverUrl": "https://mcp.exa.ai/mcp"
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": ["-y", "@playwright/mcp@latest"]
     },
     "drawio": {
       "command": "npx",
       "args": ["-y", "@drawio/mcp"]
+    },
+    "ultra-mcp": {
+      "command": "npx",
+      "args": ["-y", "ultra-mcp"]
     }
   }
 }

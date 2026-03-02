@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # sync-all-to-home.sh
-# 5つの sync スクリプト（claude, cursor, codex, windsurf, gemini）を順に実行する。
+# 6つの sync スクリプト（claude, cursor, codex, windsurf, antigravity, geminicli）を順に実行する。
 # --include-mcp を渡すと各スクリプトにそのまま引き継ぐ。
 
 set -euo pipefail
@@ -14,7 +14,7 @@ for arg in "$@"; do
     -h|--help)
       echo "Usage: $0 [--include-mcp]"
       echo ""
-      echo "以下を順に実行: sync-claude, sync-cursor, sync-codex, sync-windsurf, sync-gemini"
+      echo "以下を順に実行: sync-claude, sync-cursor, sync-codex, sync-windsurf, sync-antigravity, sync-geminicli"
       echo "  --include-mcp  各スクリプトに渡し、MCP/認証設定もコピーする"
       exit 0
       ;;
@@ -47,7 +47,12 @@ echo ""
 echo "---"
 echo ""
 
-"${SCRIPT_DIR}/sync-gemini-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
+"${SCRIPT_DIR}/sync-antigravity-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
+echo ""
+echo "---"
+echo ""
+
+"${SCRIPT_DIR}/sync-geminicli-to-home.sh" ${EXTRA_ARGS+"${EXTRA_ARGS[@]}"}
 
 echo ""
 echo "=========================================="
