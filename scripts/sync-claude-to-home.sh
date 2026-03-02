@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sync-claude-to-home.sh
-# ai/claude_code/global を ~/.claude/ へ、
-# ai/claude_code/claude.json を ~/.claude.json へコピーする。
+# ai/claude_code/global/ 以下を ~/ へコピーする。
+# global/ 以下には .claude/ ディレクトリ構造と claude.json が含まれる。
 # 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
 #
 # デフォルトでは claude.json（MCP/認証設定）はコピー・退避しない。
@@ -24,7 +24,8 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SRC_GLOBAL="${PROJECT_ROOT}/ai/claude_code/global"
-SRC_CLAUDE_JSON="${PROJECT_ROOT}/ai/claude_code/claude.json"
+SRC_CLAUDE_MD="${SRC_GLOBAL}/CLAUDE.md"
+SRC_CLAUDE_JSON="${SRC_GLOBAL}/claude.json"
 DEST_CLAUDE="${HOME}/.claude"
 DEST_CLAUDE_JSON="${HOME}/.claude.json"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
@@ -40,17 +41,39 @@ backup_if_exists() {
   fi
 }
 
-# global ディレクトリを ~/.claude へコピー（既存はディレクトリごと退避）
-sync_global_dir() {
-  if [[ ! -d "$SRC_GLOBAL" ]]; then
-    echo "エラー: ソースディレクトリが存在しません: $SRC_GLOBAL" >&2
+# global/.claude/ 内のサブディレクトリ・ファイルを ~/.claude/ へ個別にコピー
+# ソースに存在する項目のみ退避・上書きし、ユーザー作成データ（plans/, memory/ 等）は保持する
+sync_claude_dir() {
+  local src_claude_dir="${SRC_GLOBAL}/.claude"
+  if [[ ! -d "$src_claude_dir" ]]; then
+    echo "エラー: ソースディレクトリが存在しません: $src_claude_dir" >&2
     exit 1
   fi
 
-  backup_if_exists "$DEST_CLAUDE"
   mkdir -p "$DEST_CLAUDE"
-  rsync -a "$SRC_GLOBAL/" "$DEST_CLAUDE/"
-  echo "コピー: ai/claude_code/global/* -> $DEST_CLAUDE/"
+
+  # サブディレクトリを個別に退避・コピー（例: hooks/）
+  for src_entry in "$src_claude_dir"/*/; do
+    [[ -d "$src_entry" ]] || continue
+    local name
+    name="$(basename "$src_entry")"
+    local dest_entry="${DEST_CLAUDE}/${name}"
+    backup_if_exists "$dest_entry"
+    mkdir -p "$dest_entry"
+    rsync -a "$src_entry" "$dest_entry/"
+    echo "コピー: .claude/${name}/ -> $dest_entry/"
+  done
+
+  # ファイルを個別に退避・コピー（例: settings.json）
+  for src_file in "$src_claude_dir"/*; do
+    [[ -f "$src_file" ]] || continue
+    local name
+    name="$(basename "$src_file")"
+    local dest_file="${DEST_CLAUDE}/${name}"
+    backup_if_exists "$dest_file"
+    cp -p "$src_file" "$dest_file"
+    echo "コピー: .claude/${name} -> $dest_file"
+  done
 }
 
 # claude.json を ~/.claude.json へコピー（--include-mcp 時のみ）
@@ -74,7 +97,16 @@ main() {
   echo "タイムスタンプ: $TIMESTAMP"
   echo ""
 
-  sync_global_dir
+  sync_claude_dir
+
+  # CLAUDE.md を ~/.claude/CLAUDE.md へコピー
+  if [[ -f "$SRC_CLAUDE_MD" ]]; then
+    local dest_claude_md="${DEST_CLAUDE}/CLAUDE.md"
+    backup_if_exists "$dest_claude_md"
+    cp -p "$SRC_CLAUDE_MD" "$dest_claude_md"
+    echo "コピー: CLAUDE.md -> $dest_claude_md"
+  fi
+
   echo ""
   sync_claude_json
 
@@ -83,7 +115,7 @@ main() {
   echo ""
   if [[ -f "$SRC_CLAUDE_JSON" ]]; then
     echo "--- MCP 設定の案内 ---"
-    echo "ai/claude_code/claude.json に MCP 設定があります。"
+    echo "ai/claude_code/global/claude.json に MCP 設定があります。"
     echo "必要なものがあれば ~/.claude.json の mcpServers に適切に記述してください。"
     echo "プレースホルダー（\${GITHUB_PAT} 等）は必要に応じて修正してください。"
     echo ""

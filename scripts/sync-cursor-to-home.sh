@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # sync-cursor-to-home.sh
-# ai/cursor/global/agents を ~/.cursor/agents へ、
-# ai/cursor/global/mcp.json を ~/.cursor/mcp.json へコピーする。
+# ai/cursor/global/.cursor/agents を ~/.cursor/agents へ、
+# ai/cursor/global/.cursor/mcp.json を ~/.cursor/mcp.json へコピーする。
 # 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
 #
 # デフォルトでは mcp.json（MCP/認証設定）はコピー・退避しない。
@@ -23,9 +23,9 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/agents"
+SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/.cursor/agents"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
-SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/mcp.json"
+SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/.cursor/mcp.json"
 DEST_CURSOR="${HOME}/.cursor"
 DEST_AGENTS="${HOME}/.cursor/agents"
 DEST_MCP_JSON="${HOME}/.cursor/mcp.json"
@@ -53,7 +53,7 @@ sync_agents_dir() {
   backup_if_exists "$DEST_AGENTS"
   mkdir -p "$DEST_AGENTS"
   rsync -a "$SRC_AGENTS/" "$DEST_AGENTS/"
-  echo "コピー: ai/cursor/global/agents/* -> $DEST_AGENTS/"
+  echo "コピー: ai/cursor/global/.cursor/agents/* -> $DEST_AGENTS/"
 }
 
 # mcp.json を ~/.cursor/mcp.json へコピー（--include-mcp 時のみ）

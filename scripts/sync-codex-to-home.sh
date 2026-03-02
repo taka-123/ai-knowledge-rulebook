@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 # sync-codex-to-home.sh
-# ai/openai_codex/global 以下を ~/.codex/ へ、
-# ai/common/global/AGENTS.md を ~/.codex/AGENTS.md へコピーする。
+# ai/openai_codex/global/.codex/ 以下を ~/.codex/ へコピーする。
 # 既存がある場合はディレクトリ単位で日時付き .bak に退避してから上書きする。
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
-SRC_GLOBAL="${PROJECT_ROOT}/ai/openai_codex/global"
+SRC_CODEX="${PROJECT_ROOT}/ai/openai_codex/global/.codex"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 DEST_CODEX="${HOME}/.codex"
-DEST_AGENTS="${HOME}/.codex/AGENTS.md"
 DEST_CONFIG="${HOME}/.codex/config.toml"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
 BAK_SUFFIX=".bak.${TIMESTAMP}"
@@ -26,28 +24,43 @@ backup_if_exists() {
   fi
 }
 
-# global ディレクトリを ~/.codex へコピー（既存はディレクトリごと退避）
-sync_global_dir() {
-  if [[ ! -d "$SRC_GLOBAL" ]]; then
-    echo "エラー: ソースディレクトリが存在しません: $SRC_GLOBAL" >&2
+# .codex/ 内のサブディレクトリ・ファイルを ~/.codex/ へ個別にコピー
+# ソースに存在する項目のみ退避・上書きし、ユーザーデータ（sessions/, history.jsonl 等）は保持する
+sync_codex_dir() {
+  if [[ ! -d "$SRC_CODEX" ]]; then
+    echo "エラー: ソースディレクトリが存在しません: $SRC_CODEX" >&2
     exit 1
   fi
 
-  backup_if_exists "$DEST_CODEX"
   mkdir -p "$DEST_CODEX"
-  rsync -a "$SRC_GLOBAL/" "$DEST_CODEX/"
-  echo "コピー: ai/openai_codex/global/* -> $DEST_CODEX/"
-}
 
-# ai/common/global/AGENTS.md を ~/.codex/AGENTS.md へコピー（上書き）
-sync_common_agents() {
-  if [[ ! -f "$SRC_COMMON_AGENTS" ]]; then
-    echo "エラー: ソースファイルが存在しません: $SRC_COMMON_AGENTS" >&2
-    exit 1
-  fi
+  # サブディレクトリを個別に退避・コピー（例: agents/, prompts/, rules/）
+  for src_entry in "$SRC_CODEX"/*/; do
+    [[ -d "$src_entry" ]] || continue
+    local name
+    name="$(basename "$src_entry")"
+    local dest_entry="${DEST_CODEX}/${name}"
+    backup_if_exists "$dest_entry"
+    mkdir -p "$dest_entry"
+    rsync -a "$src_entry" "$dest_entry/"
+    echo "コピー: .codex/${name}/ -> $dest_entry/"
+  done
 
-  cp -p "$SRC_COMMON_AGENTS" "$DEST_AGENTS"
-  echo "コピー: AGENTS.md (common) -> $DEST_AGENTS"
+  # ファイルを個別に退避・コピー（例: config.toml）
+  for src_file in "$SRC_CODEX"/*; do
+    [[ -f "$src_file" ]] || continue
+    local name
+    name="$(basename "$src_file")"
+    local dest_file="${DEST_CODEX}/${name}"
+    backup_if_exists "$dest_file"
+    cp -p "$src_file" "$dest_file"
+    echo "コピー: .codex/${name} -> $dest_file"
+  done
+
+  # AGENTS.md (common) -> ~/.codex/AGENTS.md
+  backup_if_exists "${DEST_CODEX}/AGENTS.md"
+  cp -p "$SRC_COMMON_AGENTS" "${DEST_CODEX}/AGENTS.md"
+  echo "コピー: AGENTS.md (common) -> ${DEST_CODEX}/AGENTS.md"
 }
 
 main() {
@@ -55,9 +68,7 @@ main() {
   echo "タイムスタンプ: $TIMESTAMP"
   echo ""
 
-  sync_global_dir
-  echo ""
-  sync_common_agents
+  sync_codex_dir
 
   echo ""
   echo "完了しました。"
