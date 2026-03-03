@@ -24,12 +24,6 @@
     "drawio": {
       "command": "npx",
       "args": ["-y", "@drawio/mcp"]
-    },
-    "ultra-mcp": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "ultra-mcp@latest"],
-      "env": {}
     }
   }
 }

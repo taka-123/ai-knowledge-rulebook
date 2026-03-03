@@ -20,10 +20,6 @@
     "drawio": {
       "command": "npx",
       "args": ["-y", "@drawio/mcp"]
-    },
-    "ultra-mcp": {
-      "command": "npx",
-      "args": ["-y", "ultra-mcp"]
     }
   }
 }
