@@ -4,11 +4,11 @@
 
 <project_context>
 
-<!-- ファイルがないなら、ここはタグ毎削除で良い -->
+<!-- テンプレート注記: `README.md` / `directorystructure.md` / `technologystack.md` の3項目のみ使用。不存在の行を削除し、3項目すべて不存在ならブロックごと削除 -->
 
-- 概要: README.md
-- アーキテクチャ: directorystructure.md
-- 技術スタック: technologystack.md
+- 概要: `README.md`
+- アーキテクチャ: `directorystructure.md`
+- 技術スタック: `technologystack.md`
 
 </project_context>
 
@@ -16,58 +16,22 @@
 
 ## 開発コマンド
 
-<!-- プロジェクトに合わせて記入 -->
-<!-- 例:
-```bash
-npm run dev          # 開発サーバー起動
-npm test             # テスト実行
-npm run lint         # Lint チェック
-npm run build        # ビルド
-```
--->
+<!-- テンプレート注記: 無理に記載しない。毎ターン有益な開発コマンドのみ記載 -->
 
 </development_commands>
 
-<delegation_policy>
-
-## 委任原則
-
-`.claude/agents/` と `.claude/skills/` の description にマッチするタスクは自発的に委任せよ。
-
-- **品質ゲート**: 完了報告前に品質監査を実行せよ。
-- **計画先行**: 複数ファイルにまたがる変更は計画→承認→着手の順序を守れ。
-- 重い探索・試行錯誤は Subagents に閉じ込め、メイン窓のトークン消費を抑えよ。
-- 技術的回答は一次情報に接地させ、出典URLを伴う根拠を示せ。
-
-</delegation_policy>
-
 <development_rules>
 
-## 自律動作プロトコル
+## 実行プロトコル（Claude Code）
 
-**自律実行の境界**:
-
-- **自律OK**: 単一ファイル編集、新規ファイル生成、非破壊的な Read/Search/Task。
-- **要確認**: 複数ファイルの破壊的 Edit、ファイル/ディレクトリ削除。
-  - 隔離環境（`git worktree` 等）での一括作業は計画提示→一括承認で個別確認不要。
-- **`--dangerously-skip-permissions` 時**: 機密アクセスと破壊的操作（削除/force push）は禁止。
-
-## 検証の義務
-
-- 既存テストがあれば実行し結果を報告に含めよ。
-- テストがなければ CLI 実行か一時スクリプトで検証せよ（一時ファイルは検証後に削除）。
-
-## 完了の定義
-
-- [ ] 意図した変更が反映されている
-- [ ] テストがパスしている（または自律検証済み）
-- [ ] 関連ドキュメントが更新されている
-- [ ] ユーザーに報告し確認を求めている
-
-## 固有規約
-
-- コードレビュー: AGENTS.md `## コードレビュー` に準拠
-- セキュリティ: パイプ・リダイレクトによる Deny 回避を厳禁
-- Terminal: 絶対パスで指定せよ（`cd`/`pushd`/`popd` 不使用）
+- 計画先行: 複数ファイル変更は `Plan → 実装 → Verify` の順で進める。
+- 自律OK: 単一ファイル編集、新規ファイル生成、非破壊の Read/Search/Task。
+- 要確認: 複数ファイルの破壊的 Edit、復元困難な削除、タスク範囲外の変更。
+- 委任: 重い探索や試行錯誤は Subagents へ委任する。
+- 検証: 既存テストを優先実行。なければ CLI 等で代替検証し、未検証範囲を明示する。
+- 完了報告: 変更概要、検証結果、未実施事項（ある場合）を含める。
+- レビュー: AGENTS.md の `レビュー基準` に準拠する。
+- セキュリティ: パイプ/リダイレクトで権限制約を回避しない。
+- Terminal: 絶対パスで指定する（`cd`/`pushd`/`popd` 不使用）。
 
 </development_rules>

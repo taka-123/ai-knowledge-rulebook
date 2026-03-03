@@ -119,11 +119,11 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
 
 ## Output Contract
 
-| 成果物            | 配置先                                   | 記法                               |
-| ----------------- | ---------------------------------------- | ---------------------------------- |
-| `backlog.md`      | `.work/backlog/BUSSW-AI/backlog.md`      | `backlog-markdown-formatting` 準拠 |
-| `requirements.md` | `.work/backlog/BUSSW-AI/requirements.md` | 標準GFM                            |
-| `design.md`       | `.work/backlog/BUSSW-AI/design.md`       | 標準GFM                            |
+| 成果物            | 配置先                                   | 記法                                        |
+| ----------------- | ---------------------------------------- | ------------------------------------------- |
+| `backlog.md`      | `.work/backlog/BUSSW-AI/backlog.md`      | `backlog-markdown-formatting` 準拠          |
+| `requirements.md` | `.work/backlog/BUSSW-AI/requirements.md` | 標準GFM                                     |
+| `design.md`       | `.work/backlog/BUSSW-AI/design.md`       | 標準GFM                                     |
 | ブランチ名提案    | 出力テキスト                             | `feat\|fix\|chore/BUSSW-XXXX-<description>` |
 
 ### NG例
