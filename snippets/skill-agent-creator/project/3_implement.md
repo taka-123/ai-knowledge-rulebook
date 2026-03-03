@@ -3,7 +3,7 @@
 <objective>
 **主目的**: プロジェクト単位で最高に有益なエージェント・スキルを作ること。
 
-`.work/AI_BLUEPRINT.md` に基づき、Skills/エージェント/メタスキルを一括実装せよ。
+`.work/AI_BLUEPRINT.md` に基づき、Skills/エージェント/メタスキルを一括実装せよ。`TODO`・`TBD`・`<...>` のプレースホルダを残さない。
 </objective>
 
 <generation_directives_hard_constraints>
@@ -32,18 +32,17 @@
     - 必要時は `[features] multi_agent = true` を有効化し、preset 側にも同じ方針を反映する。
     - role 枠より agent が多い場合は、`/.codex/config.preset.*.toml` を用途別に生成し、`/.codex/use-preset.sh` を作成または更新する。
     - 参照先不在（dangling）と未配線（orphan）が残る場合は完了報告せず、修正または理由明記のうえ **Status: BLOCKED** とする。
-  - **自然文レビュー依頼ルーティング資産（必要時）**:
-    - CC: `CLAUDE.local.md`, `.claude/commands/*.md`
-    - Cursor: `.cursor/rules/*.mdc`, `.cursor/commands/*.md`（Bugbot 運用時のみ `BUGBOT.md`）
+  - **自然文レビュー依頼ルーティング（必要時）**:
+    - ルーティングは description-first を原則とする。`CLAUDE.md` / `CLAUDE.local.md` への静的マッピング追記は禁止（保守負債になるため）。
+    - Cursor: `.cursor/rules/*.mdc`（Bugbot 運用時のみ `BUGBOT.md`）
     - Codex: `config.toml` / `config.preset.*.toml` / `.codex/REVIEW_PLAYBOOK.md`
-    - reviewer 系を生成する場合は、上記のうち必要資産を同一ターンで更新する（agent ファイル単体更新で終わらせない）。
-    - ルーティングは description-first を原則とし、静的マッピングは例外ケース（曖昧衝突回避）に限定する。
+    - reviewer 系を生成する場合は、description と Trigger Keywords で発動する設計を前提とし、agent ファイル単体更新で終わらせない。
   - **サブエージェント失敗時フォールバック（必須）**:
     - reviewer 系の一部が失敗・タイムアウトしても、親エージェントが残り観点を実施してレビューを完遂する手順を rules/commands/instructions に明記する。
     - 最終レポートで「失敗したサブエージェント」と「親が代替した観点」を必ず示す。
 - **SKILL.md 実装（品質基準: 必須）**:
   - 各 SKILL.md は以下の全セクションを必須実装する。1つでも欠落したら不合格:
-    1. **frontmatter**: `name`（ディレクトリ名と一致。gerund 形推奨: `processing-pdfs`, `reviewing-code` 等。`helper`/`utils`/`tools`/`documents` は使用禁止。フィールドは `name` と `description` のみ — それ以外は非標準フィールドとして禁止）, `description`（3要素形式: `Use when ...; When NOT to use: ...; Trigger Keywords: [...].`。英語三人称、1024 字以内）
+    1. **frontmatter**: `name`（ディレクトリ名と一致。gerund 形推奨: `processing-pdfs`, `reviewing-code` 等。`helper`/`utils`/`tools`/`documents` は使用禁止。フィールドは `name` と `description` のみ — それ以外は非標準フィールドとして禁止）, `description`（3要素形式: `"Use when ...; When NOT to use: ...; Trigger Keywords: [...]."`。**値全体をダブルクォートで囲む**こと — YAML パーサーによっては `: ` を含む文字列がマッピングとして誤解釈されるため。英語三人称、1024 字以内）
        - **description `[condition]` の実装ルール（必須）**: `Use when` の直後に続く `[condition]` は、具体的なファイルパス・ディレクトリ名・タスク種別を含める。抽象的な技術名（フレームワーク名・言語名のみ）は不十分。
          - 実装・修正・自動検証系: 冒頭を `Use proactively when editing any file under [具体パス]/...` の形式にする
          - 明示依頼待ち系: `Use when the user explicitly asks for [...]` の形式にする
@@ -84,14 +83,11 @@
 - **メタスキル `skill-discoverer` の生成（必須）**:
   - `.claude/skills/skill-discoverer/SKILL.md` を生成する。
   - 目的: `.claude/agents/` と `.claude/skills/` を動的にスキャンし、利用可能なスキル/エージェントの一覧と各 description を提示する。
-  - description の3要素形式: `Use when the user asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: スキル一覧, 何ができる, available skills, help, 委任先.`
+  - description の3要素形式: `"Use when the user asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: [スキル一覧, 何ができる, available skills, help, 委任先]."`
   - Body は以下のプロシージャを含む: (1) `.claude/agents/*.md` と `.claude/skills/*/SKILL.md` の frontmatter を全件読み取り (2) name / description を一覧表示 (3) ユーザーの目的に最適な候補を推薦。
 - **`.claude/rules` の扱い**:
   - `CLAUDE.md` 分割が必要な場合のみ任意作成。
   - config別用途の別系統ファイルとしては扱わない。
-- **サボり防止**:
-  - プレースホルダ禁止（`TODO`, `TBD`, `<...>` などを残さない）。
-  - 「提案のみ」で止まらず、実ファイルへ反映する。
 - **リネーム連鎖更新（必須）**:
   - エージェント/スキル名を変更した場合、`.claude/` `.cursor/` `.codex/` の対応ファイル、ならびに関連文書内参照（例: Memory Strategy の Share 先、実装結果セクション）を同一ターンで更新する。
   - 1箇所でも旧名が残る場合は完了報告せず、修正を完了させる。
@@ -108,7 +104,7 @@
 <language_policy>
 
 - 必須英語は保持:
-  - frontmatter の `description: Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...].`
+  - frontmatter の `description: "Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...]."`
   - ツール名、コマンド名、固有名詞
 - 上記以外の本文は自然な日本語を優先する。
 
@@ -131,7 +127,8 @@
    - `.claude/` `.cursor/` `.codex/` で name/description が一致していること
    - Cursor frontmatter に非対応フィールド（`color`, `tools`, `disallowedTools`, `memory`）が残っていないこと
    - 改名実施時に旧名参照が残っていないこと
-8. **symlink コマンドの提示**:
+8. **スキル共有 symlink の提示**（任意・マルチツール環境向け）:
+   - スキルの手順（Procedure / Output Contract）は Claude Code 以外のツールでも再利用できる。`.claude/skills/` を各ツールのスキルディレクトリへ symlink することで、単一ソースから管理できる。
    - 次のコマンドをそのまま最終レポートに出力する:
      ```bash
      ln -snf ../.claude/skills .agents/skills && \
@@ -139,10 +136,11 @@
      ln -snf ../.claude/skills .windsurf/skills && \
      ln -snf ../.claude/skills .agent/skills
      ```
-   - `.agents` / `.cursor` / `.windsurf` / `.agent` が存在しない可能性がある場合のみ、事前に次を併記する:
+   - 対象ディレクトリが存在しない場合のみ事前に作成:
      ```bash
      mkdir -p .agents .cursor .windsurf .agent
      ```
+   - **注意**: Trigger Keywords による自動発火は Claude Code 専用。他ツールでスキルを使う場合は agent の手順内や rules ファイルで「`.cursor/skills/<name>/SKILL.md` を Read して手順に従え」と明示する必要がある。エージェント定義（`.claude/agents/` / `.cursor/agents/` / `.codex/agents/`）は書式が異なるため symlink 共有は行わない。
 9. **Codex 配線検証（必須）**:
    - `/.codex/config.toml` の `role -> config_file` 対応表を提示する。
    - `/.codex/agents/*.toml` のうち、`config.toml` または `config.preset.*.toml` のいずれにも載っていない未配線ファイル一覧を提示する（理想は空）。
@@ -150,8 +148,8 @@
 10. **レビュー発動・互換性検証（必須）**:
    - 通常レビュー依頼文（例: `この修正でOKかレビューしてください`）で reviewer 系へルーティングされる設計根拠を提示する。
    - `--no-stat` が生成ファイル群に含まれないことを検索結果で提示する。
-11. **マッピング依存・速度検証（必須）**:
-   - 静的マッピングの件数と、description-first で成立する経路を提示する（LOW 依存を目標）。
+11. **description-first 達成度検証（必須）**:
+   - `CLAUDE.md` / `CLAUDE.local.md` への静的マッピング追記が 0 件であることを確認する。ルーティングは description と Trigger Keywords のみで成立すること。
    - 可能な範囲で旧運用と新運用の所要時間・指摘件数を比較し、速度/精度の差分を示す。
 12. **モデル適合検証（必須）**:
    - Cursor agent で `model: fast` 等の固定名が残っていないことを検索結果で提示する。

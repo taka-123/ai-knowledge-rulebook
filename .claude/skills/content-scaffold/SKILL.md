@@ -1,6 +1,6 @@
 ---
 name: content-scaffold
-description: Use proactively when editing any file under .claude/agents/, .cursor/agents/, .codex/agents/, .claude/skills/, or .codex/config*.toml to scaffold new assets from a blueprint; When NOT to use: when only minor in-place edits are required on existing files; Trigger Keywords: [scaffold, 新規ファイル, テンプレート, 雛形, 初期化].
+description: "Use proactively when editing any file under .claude/agents/, .cursor/agents/, .codex/agents/, .claude/skills/, or .codex/config*.toml to scaffold new assets from a blueprint; When NOT to use: when only minor in-place edits are required on existing files; Trigger Keywords: [scaffold, 新規ファイル, テンプレート, 雛形, 初期化]."
 ---
 
 # content-scaffold

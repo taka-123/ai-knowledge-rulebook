@@ -1,6 +1,6 @@
 ---
 name: skill-inventory-hygiene
-description: Use proactively when editing any file under .claude/skills/ to remove empty skill directories, stale artifacts, and inventory drift before validation; When NOT to use: when the task does not modify skill inventory or canonical skill structure; Trigger Keywords: [skill inventory, hygiene, empty dirs, cleanup, canonical skills].
+description: "Use proactively when editing any file under .claude/skills/ to remove empty skill directories, stale artifacts, and inventory drift before validation; When NOT to use: when the task does not modify skill inventory or canonical skill structure; Trigger Keywords: [skill inventory, hygiene, empty dirs, cleanup, canonical skills]."
 ---
 
 # skill-inventory-hygiene

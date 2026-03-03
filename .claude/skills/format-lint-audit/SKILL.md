@@ -1,6 +1,6 @@
 ---
 name: format-lint-audit
-description: Use proactively when editing files under .claude/, .cursor/, .codex/, scripts/, or .work/ and final quality gates must be executed before reporting; When NOT to use: when implementation is still exploratory and verification is intentionally deferred; Trigger Keywords: [quality gate, format:check, lint, CI, 検証].
+description: "Use proactively when editing files under .claude/, .cursor/, .codex/, scripts/, or .work/ and final quality gates must be executed before reporting; When NOT to use: when implementation is still exploratory and verification is intentionally deferred; Trigger Keywords: [quality gate, format:check, lint, CI, 検証]."
 ---
 
 # format-lint-audit
@@ -23,6 +23,7 @@ description: Use proactively when editing files under .claude/, .cursor/, .codex
 - format:check
 - lint
 - CI
+- ci-check
 - 検証
 
 ## Procedure
@@ -30,8 +31,9 @@ description: Use proactively when editing files under .claude/, .cursor/, .codex
 1. `git diff --name-only` で今回変更したファイルを確定する。完了条件: 対象一覧が確定。
 2. `npm run format:check` を実行し、結果を記録する。完了条件: PASS/FAIL が明示。
 3. `npm run agent:check` を実行し、skills/routing 検証の結果を記録する。完了条件: PASS/FAIL が明示。
-4. 必要なら `npm run lint:md` / `npm run lint:json` / `npm run lint:yaml` を追加実行する。完了条件: 追加チェック結果取得。
-5. すべての結果を 1 つの品質レポートへ集約する。完了条件: 再実行可能な記録。
+4. `npm run schema:check` を実行し、JSON スキーマ適合を確認する。完了条件: PASS/FAIL が明示。
+5. 必要なら `npm run lint:md` / `npm run lint:json` / `npm run lint:yaml` を追加実行する。完了条件: 追加チェック結果取得。
+6. すべての結果を 1 つの品質レポートへ集約する。完了条件: 再実行可能な記録。
 
 ## Output Contract
 

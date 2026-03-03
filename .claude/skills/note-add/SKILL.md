@@ -1,6 +1,6 @@
 ---
 name: note-add
-description: Use when the user explicitly asks to create a new Markdown note file under notes/topics/ with valid FrontMatter and tags; When NOT to use: when the task only updates an existing note file without creating a new entry; Trigger Keywords: [ノート追加, note作成, トピック, notes/topics, 新規ノート].
+description: "Use when the user explicitly asks to create a new Markdown note file under notes/topics/ with valid FrontMatter and tags; When NOT to use: when the task only updates an existing note file without creating a new entry; Trigger Keywords: [ノート追加, note作成, トピック, notes/topics, 新規ノート]."
 ---
 
 # note-add

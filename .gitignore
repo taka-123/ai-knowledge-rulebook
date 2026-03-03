@@ -14,3 +14,4 @@ tmp/
 
 # Claude Code
 .claude/settings.local.json
+CLAUDE.local.md

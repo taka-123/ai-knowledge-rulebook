@@ -1,6 +1,6 @@
 ---
 name: cross-platform-agent-sync
-description: Use proactively when editing any file under .claude/agents/, .cursor/agents/, or .codex/agents/ to keep name, description, and role semantics aligned across platforms; When NOT to use: when the change is intentionally platform-specific and documented as an exception; Trigger Keywords: [agent sync, description sync, cross platform, rename chain, parity].
+description: "Use proactively when editing any file under .claude/agents/, .cursor/agents/, or .codex/agents/ to keep name, description, and role semantics aligned across platforms; When NOT to use: when the change is intentionally platform-specific and documented as an exception; Trigger Keywords: [agent sync, description sync, cross platform, rename chain, parity]."
 ---
 
 # cross-platform-agent-sync

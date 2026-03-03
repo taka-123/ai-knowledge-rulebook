@@ -1,6 +1,6 @@
 ---
 name: cursor-agent-schema-guard
-description: Use proactively when editing any file under .cursor/agents/ to enforce Cursor frontmatter constraints and remove unsupported fields; When NOT to use: when no Cursor agent file is modified in the current task; Trigger Keywords: [cursor schema, frontmatter guard, readonly, unsupported fields, cursor agents].
+description: "Use proactively when editing any file under .cursor/agents/ to enforce Cursor frontmatter constraints and remove unsupported fields; When NOT to use: when no Cursor agent file is modified in the current task; Trigger Keywords: [cursor schema, frontmatter guard, readonly, unsupported fields, cursor agents]."
 ---
 
 # cursor-agent-schema-guard

@@ -1,6 +1,6 @@
 ---
 name: codex-wiring-doctor
-description: Use proactively when editing any file under .codex/agents/ or .codex/config*.toml to detect role mapping drift and orphan or dangling references; When NOT to use: when the task only touches .claude/skills content with no Codex agent wiring impact; Trigger Keywords: [codex wiring, config.toml, orphan agent, role mapping, preset].
+description: "Use proactively when editing any file under .codex/agents/ or .codex/config*.toml to detect role mapping drift and orphan or dangling references; When NOT to use: when the task only touches .claude/skills content with no Codex agent wiring impact; Trigger Keywords: [codex wiring, config.toml, orphan agent, role mapping, preset]."
 ---
 
 # codex-wiring-doctor
