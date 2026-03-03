@@ -5,7 +5,7 @@ description: >
   セキュリティ観点で設計/実装/設定を監査 / Security review for design, code, config.
   Trigger: auth, permission, injection, XSS, CSRF, SSRF, secrets, CVE
   When NOT to use: コードが未実装の段階/概念的なリスク議論のみのとき。
-tools: [WebSearch, WebFetch]
+disallowedTools: [Edit, Write]
 ---
 
 # 役割 / Role

@@ -1,6 +1,6 @@
 ---
 name: claude-agent-color-normalizer
-description: Use proactively when editing any file under .claude/agents/ to normalize color values to the allowed set Red, Blue, Green, Yellow, Purple, Orange, Pink, or Cyan; When NOT to use: when the task does not touch Claude agent frontmatter; Trigger Keywords: [color normalize, claude agent color, allowed colors, frontmatter, policy].
+description: "Use proactively when editing any file under .claude/agents/ to normalize color values to the allowed set Red, Blue, Green, Yellow, Purple, Orange, Pink, or Cyan; When NOT to use: when the task does not touch Claude agent frontmatter; Trigger Keywords: [color normalize, claude agent color, allowed colors, frontmatter, policy]."
 ---
 
 # claude-agent-color-normalizer

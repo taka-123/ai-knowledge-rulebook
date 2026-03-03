@@ -46,11 +46,11 @@ CONVERSATION_ID=$(basename "$TRANSCRIPT_PATH" .jsonl)
 TIMESTAMP=$(date +%Y%m%d-%H%M%S)
 LOG_FILE="/tmp/suggest-claude-md-${CONVERSATION_ID}-${TIMESTAMP}.log"
 
-# コマンド定義ファイルのチェック
-COMMAND_FILE="$PROJECT_ROOT/.claude/commands/suggest-claude-md.md"
+# スキル定義ファイルのチェック
+COMMAND_FILE="$PROJECT_ROOT/.claude/skills/suggest-claude-md/SKILL.md"
 if [ ! -f "$COMMAND_FILE" ]; then
-  echo "Error: Command definition file not found: $COMMAND_FILE" >&2
-  echo "Please create .claude/commands/suggest-claude-md.md first." >&2
+  echo "Error: Skill definition file not found: $COMMAND_FILE" >&2
+  echo "Please create .claude/skills/suggest-claude-md/SKILL.md first." >&2
   exit 1
 fi
 

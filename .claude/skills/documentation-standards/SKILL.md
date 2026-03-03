@@ -1,6 +1,6 @@
 ---
 name: documentation-standards
-description: Use proactively when editing Markdown files under .work/, .claude/, or .cursor/ to enforce document style, link format, and heading consistency; When NOT to use: when the task is code-only and produces no documentation output; Trigger Keywords: [ドキュメント, 記述規約, 文章品質, 参照, 構成].
+description: "Use proactively when editing Markdown files under .work/, .claude/, or .cursor/ to enforce document style, link format, and heading consistency; When NOT to use: when the task is code-only and produces no documentation output; Trigger Keywords: [ドキュメント, 記述規約, 文章品質, 参照, 構成]."
 ---
 
 # documentation-standards

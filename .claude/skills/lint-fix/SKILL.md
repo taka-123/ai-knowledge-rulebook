@@ -1,6 +1,6 @@
 ---
 name: lint-fix
-description: Use proactively when editing files under .claude/, .cursor/, .codex/, .work/, or .github/ and npm run format:check or lint commands report failures; When NOT to use: when no failing lint signal exists and the task is discussion-only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
+description: "Use proactively when editing files under .claude/, .cursor/, .codex/, .work/, or .github/ and npm run format:check or lint commands report failures; When NOT to use: when no failing lint signal exists and the task is discussion-only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint]."
 ---
 
 # lint-fix
@@ -21,6 +21,7 @@ description: Use proactively when editing files under .claude/, .cursor/, .codex
 
 - lint
 - format
+- format-fix
 - markdownlint
 - prettier
 - yamllint

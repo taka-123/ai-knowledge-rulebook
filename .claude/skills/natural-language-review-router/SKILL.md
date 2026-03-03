@@ -1,6 +1,6 @@
 ---
 name: natural-language-review-router
-description: Use proactively when editing CLAUDE.local.md, .claude/commands/, .cursor/rules/, .cursor/commands/, or .codex/REVIEW_PLAYBOOK.md to route natural-language review requests; When NOT to use: when reviewer routing already works and only agent internals are being modified; Trigger Keywords: [レビューしてください, routing, review request, natural language, fallback].
+description: "Use proactively when editing CLAUDE.local.md, .claude/commands/, .cursor/rules/, .cursor/commands/, or .codex/REVIEW_PLAYBOOK.md to route natural-language review requests; When NOT to use: when reviewer routing already works and only agent internals are being modified; Trigger Keywords: [レビューしてください, routing, review request, natural language, fallback]."
 ---
 
 # natural-language-review-router

@@ -74,11 +74,10 @@
    - 設計書には `role -> config_file` の配線表と、未配線 agent 一覧（空であること、または preset 側に逃がす方針）を必ず含める。
 13. **自然文レビュー依頼ルーティング（必須）**:
    - 設計に reviewer 系エージェントが含まれる場合、通常の依頼文（例: `レビューしてください`, `この修正でOKか`）から発動するルーティング資産をセットで設計する。
-   - CC: `CLAUDE.local.md` と `.claude/commands/*.md` を優先し、`CLAUDE.md` 本体は最終手段とする。
-   - Cursor: `.cursor/rules/*.mdc` と `.cursor/commands/*.md` を基本対象にし、Bugbot を運用する場合のみ `BUGBOT.md` を追加対象に含める。
+   - ルーティングは description-first（skill/agent の description と Trigger Keywords によるマッチング）を原則とする。`CLAUDE.md` や `CLAUDE.local.md` への静的マッピング追記は禁止（保守負債になるため）。
+   - Cursor: `.cursor/rules/*.mdc` を基本対象にし、Bugbot を運用する場合のみ `BUGBOT.md` を追加対象に含める。
    - Codex: `config.toml`/preset の `developer_instructions` にルーティング規則を含める。
    - 依頼文に `requirements.md` + `直近コミット` が含まれる場合は、diffスコープとして扱う既定パイプライン（cross-service reviewer -> code-reviewer -> security-reviewer(必要時) -> verifier）を設計に含める。
-   - ルーティングは description-first を原則とし、静的マッピングは例外ケースに限定する（保守負債を増やさない）。
 14. **コマンド互換性ゲート（必須）**:
    - 生成する Workflow / Procedure / rules / commands には、実行環境で失敗しやすい非互換オプションを含めない。
    - 代表例として `git --no-stat` を禁止し、差分取得は `--stat`（要約）と `-p`（本文）で設計する。
@@ -98,7 +97,7 @@
 ```markdown
 ---
 name: <name>
-description: Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...].
+description: "Use when [condition]; When NOT to use: [exclusion]; Trigger Keywords: [kw1, kw2, ...]."
 ---
 
 # <name>
@@ -169,9 +168,8 @@ Output: [成果物の形式を明記]
 - Sub-agent.md の高解像度雛形（4セクション全て含む）
 - 権限分離を適用したサブエージェント体系
 - **バンドル設計**（各スキルのバンドル要否を判定。バンドルが必要なスキルについて: ファイル名・内容概要・SKILL.md からの参照形式を記載。配置先は `.claude/skills/<name>/docs/` または `scripts/`）
-- **レビュー発動設計**（自然文レビュー依頼を reviewer へ導くための `CLAUDE.local.md` / `.claude/commands` / `.cursor/rules` / `.cursor/commands` / Codex instructions の採否と内容。Bugbot 運用時のみ `BUGBOT.md` を追加）
+- **レビュー発動設計**（自然文レビュー依頼を reviewer へ導くための description-first ルーティング設計。`.cursor/rules` / Codex instructions の採否と内容。Bugbot 運用時のみ `BUGBOT.md` を追加。`CLAUDE.md` / `CLAUDE.local.md` への静的マッピング追記は禁止）
 - **コマンド互換性設計**（禁止オプション一覧と代替コマンドの明文化）
-- **Mapping最小化設計**（description-first と例外マッピングの境界、保守ルール）
 - **レビュー品質計測設計**（時間・指摘件数・再現性の比較方法）
 
 </output_sections>

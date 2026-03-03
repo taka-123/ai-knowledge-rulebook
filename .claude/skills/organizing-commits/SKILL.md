@@ -1,6 +1,6 @@
 ---
 name: organizing-commits
-description: Use when the user explicitly asks to organize git changes under .claude/, .cursor/, .codex/, scripts/, or .work/ into reviewable commit units; When NOT to use: when there are no file changes or git planning is out of scope; Trigger Keywords: [organizing commits, commit, diff, PR, rollback].
+description: "Use when the user explicitly asks to organize git changes under .claude/, .cursor/, .codex/, scripts/, or .work/ into reviewable commit units; When NOT to use: when there are no file changes or git planning is out of scope; Trigger Keywords: [organizing commits, commit, diff, PR, rollback]."
 ---
 
 # organizing-commits

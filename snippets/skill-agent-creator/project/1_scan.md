@@ -15,7 +15,7 @@
 - **発動条件の唯一の定義場所**: 各 agent/skill の description（3要素形式）。全ツール（Claude Code / Cursor / Windsurf / Codex）がこれを自動発見する。
 - **動的発見の担保**: メタスキル `skill-discoverer` を生成し、AIが利用可能なスキル/エージェントを動的に検索・提示できるようにする。
 - **Claude Code Agent Color**: `.claude/agents/*.md` の frontmatter には `color` を必須とし、`Red | Blue | Green | Yellow | Purple | Orange | Pink | Cyan` のいずれかを設定する。
-- **自然文レビュー発動**: `レビューしてください` のような通常依頼で reviewer 系が発動するルーティング資産（CC local overlay / Cursor rules / Codex instructions）を監査対象に含める。
+- **自然文レビュー発動**: `レビューしてください` のような依頼で reviewer 系が発動するか確認する。発動の担保は description + Trigger Keywords のみで行う。`.cursor/rules/*.mdc` や `CLAUDE.local.md` への静的マッピング追記は禁止。
 - **ルーティング原則**: description-first を優先し、静的マッピング依存を最小化する。必要なマッピングは例外ケースのみに限定する。
 - **コマンド移植性**: `git --no-stat` のような失敗しやすいオプション混入を不適合として扱う。
 
@@ -58,8 +58,8 @@
    - `.codex/agents/*.toml` の未配線（orphan）/未存在参照（dangling）検出
    - description 3要素形式の充足率
    - リポジトリ系エージェントのプレフィックス整合（例: `api-`, `frontend-`, `worker-`）
-   - ルーティング資産の存在: `CLAUDE.local.md`, `.claude/commands/*.md`, `.cursor/rules/*.mdc`, `.cursor/commands/*.md`, `.codex/REVIEW_PLAYBOOK.md`（`BUGBOT.md` は Bugbot 運用時のみ任意）
-   - description-first 達成度: ルーティングが description と自然文規則で成立し、巨大な静的マッピングに依存していないか
+   - 静的マッピング混入検出: `.cursor/rules/*.mdc`・`CLAUDE.local.md` 等に agent 名を直書きした routing テーブルが存在しないか
+   - description-first 達成度: ルーティングが description と Trigger Keywords のみで成立しているか
    - 非互換コマンド混入: `--no-stat` 等のオプションを rules/commands/agent workflow が含んでいないか
 4. **ギャップ分析（欠落スキル・エージェントの能動的発見）**:
    以下の5つの視点でリポジトリを読み、「存在しないが有益なスキル」を洗い出せ。既存スキルと重複するものは除外し、ROI（発動頻度 × 事故防止効果）が高いものを優先して報告する。
@@ -92,16 +92,16 @@
 `.work/AI_SCAN.md` を出力。以下の2部構成にせよ：
 
 **Part 1: 既存資産の品質監査**
-最優先で「過剰配線（不要ファイル）」「description 3要素欠落」「メタスキル未設置」「`.claude/agents` の color 未設定/許可値外」「Skill Body 品質不足（Procedure 汎用テンプレ / Output Contract 欠落 / 架空パス混入）」「非標準 frontmatter フィールド混入」「命名規則違反（gerund 形未使用）」「SKILL.md 500行超」「description の condition が抽象的（具体パス/proactively 欠如）」「`.codex/config.toml` の配線漏れ（orphan/dangling）」「自然文レビュー発動ルーティング欠落」「非互換 git オプション混入（例: --no-stat）」を指摘せよ。
+最優先で「過剰配線（不要ファイル）」「description 3要素欠落」「メタスキル未設置」「`.claude/agents` の color 未設定/許可値外」「Skill Body 品質不足（Procedure 汎用テンプレ / Output Contract 欠落 / 架空パス混入）」「非標準 frontmatter フィールド混入」「命名規則違反（gerund 形未使用）」「SKILL.md 500行超」「description の condition が抽象的（具体パス/proactively 欠如）」「`.codex/config.toml` の配線漏れ（orphan/dangling）」「静的マッピング混入（`.cursor/rules` や `CLAUDE.local.md` に agent 名直書き）」「非互換 git オプション混入（例: --no-stat）」を指摘せよ。
 
 Part 1 の末尾に、以下の監査表を追加せよ：
 
 | 監査項目                                   | 結果              | 根拠ファイル |
 | ------------------------------------------ | ----------------- | ------------ |
-| 自然文レビュー依頼ルーティング             | {OK/NG}           | {files}      |
+| 静的マッピング混入（routing bloat）        | {件数}            | {files}      |
 | Mapping dependency                         | {LOW/MEDIUM/HIGH} | {files}      |
 | `--no-stat` 混入有無                       | {件数}            | {files}      |
-| `CLAUDE.local.md` 等のローカル補完設計余地 | {あり/なし}       | {files}      |
+| description-first 達成度                   | {LOW/MEDIUM/HIGH} | {details}    |
 
 **Part 2: ギャップ分析（新規提案）**
 Step 4 の5視点で発見した提案スキル・エージェントを以下の形式で列挙せよ：

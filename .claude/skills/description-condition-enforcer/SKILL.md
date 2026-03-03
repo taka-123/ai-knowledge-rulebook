@@ -1,6 +1,6 @@
 ---
 name: description-condition-enforcer
-description: Use proactively when editing any file under .claude/skills/*/SKILL.md to enforce concrete path-based description conditions and proactive or explicit trigger patterns; When NOT to use: when skill frontmatter is unchanged and no description quality check is required; Trigger Keywords: [description condition, proactive rule, explicit ask, trigger keywords, skill quality].
+description: "Use proactively when editing any file under .claude/skills/*/SKILL.md to enforce concrete path-based description conditions and proactive or explicit trigger patterns; When NOT to use: when skill frontmatter is unchanged and no description quality check is required; Trigger Keywords: [description condition, proactive rule, explicit ask, trigger keywords, skill quality]."
 ---
 
 # description-condition-enforcer

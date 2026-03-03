@@ -75,7 +75,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/suggest-claude-md-hook.sh"
+            "command": ".claude/hooks/suggest-claude-md-hook.sh"
           }
         ]
       }
@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bin/suggest-claude-md-hook.sh"
+            "command": ".claude/hooks/suggest-claude-md-hook.sh"
           }
         ]
       }

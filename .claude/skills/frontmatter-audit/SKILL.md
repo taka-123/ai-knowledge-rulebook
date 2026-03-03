@@ -1,6 +1,6 @@
 ---
 name: frontmatter-audit
-description: Use proactively when editing any note under notes/ and verifying FrontMatter fields against schemas/notes.schema.json; When NOT to use: when targets are non-note Markdown files such as AGENTS.md or CLAUDE.md; Trigger Keywords: [frontmatter, ノート検証, notes lint, メタデータ, schema].
+description: "Use proactively when editing any note under notes/ and verifying FrontMatter fields against schemas/notes.schema.json; When NOT to use: when targets are non-note Markdown files such as AGENTS.md or CLAUDE.md; Trigger Keywords: [frontmatter, ノート検証, notes lint, メタデータ, schema]."
 ---
 
 # frontmatter-audit

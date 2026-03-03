@@ -8,13 +8,13 @@ description: |
 
 # backlog-issue-planner
 
-Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirements.md` / `implementation-plan.md`）と
+Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirements.md` / `design.md`）と
 ブランチ名を、ユーザーの要求から生成する。
 
 ## When to use
 
 - Backlogチケットを起票する前に、要件・実装計画を整理したい場合。
-- 要求から `backlog.md`・`requirements.md`・`implementation-plan.md` を一括生成したい場合。
+- 要求から `backlog.md`・`requirements.md`・`design.md` を一括生成したい場合。
 
 ## When NOT to use
 
@@ -34,7 +34,7 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
 
 ## Procedure
 
-> このスキルは **2段階** で動作する。
+> このスキルは **5フェーズ** で動作する。
 > 起票に必要な情報が揃ったら `backlog.md` を先に生成し、その後に詳細を詰めて `requirements.md` + `design.md` を生成する。
 
 ---
@@ -54,14 +54,14 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
    | 技術アプローチ・制約         | 不要             | ○ 必要                       |
    | 優先度・期限                 | △ あれば         | △ あれば                     |
 
-2. ◎ 項目が不足している場合は、**最大3つ**の質問をまとめて確認し、回答を待つ。
+2. ◎ 項目が不足している場合は、**最大3つ**の質問をまとめて確認する。
 3. **起票しきい値**（◎ + スコープ・完了条件がざっくりでも揃っている）を満たしたら → フェーズ 2 へ進む。
 
 ---
 
 ### フェーズ 2: backlog.md の生成・Backlog 起票案内
 
-4. `docs/template-guide.md` を Read で参照し、ブランチ種別・命名規則を確認する。
+4. `docs/template-guide.md` を Read する（各ファイルのテンプレートを取得するため）。
 5. ブランチ種別を判定し、提案する:
 
    | 種別                             | 使いどころ                       |
@@ -72,9 +72,8 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
 
    `<description>` は英語のkebab-caseで10語以内に要約する。
 
-6. 出力先ディレクトリ `.work/backlog/BUSSW-AI/` が存在しない場合は `mkdir -p` で作成する。
-7. `../backlog-markdown-formatting/docs/transform-rules.md` を Read で参照し、変換規則を取得する。
-   その規則に従って `backlog.md` を生成する:
+6. `mkdir -p .work/backlog/BUSSW-AI/` を実行する。
+7. `backlog-markdown-formatting` スキルの変換規則に従って `backlog.md` を生成する:
    - テンプレートは `docs/template-guide.md` の「backlog.md テンプレート」を使用する。
    - 非エンジニアも読む想定で平易な表現にする。コードレベルの詳細は書かない。
    - DB変更がある場合のみ「DB変更」セクションを追加する（詳細が未確定でも変更有無が分かる粒度でよい）。
@@ -99,19 +98,18 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
 
 ### フェーズ 4: requirements.md + design.md の生成
 
+フェーズ 4 の全ファイルは標準GFM（`-` 箇条書き・ATX見出し）で記述する。
+
 11. `requirements.md` を生成する:
-    - 標準GFM（`-` 箇条書き・ATX見出し）で記述する。
     - テンプレートは `docs/template-guide.md` の「requirements.md テンプレート」を使用する。
 12. `design.md` を生成する:
-    - 標準GFM（`-` 箇条書き・ATX見出し）で記述する。
     - テンプレートは `docs/template-guide.md` の「design.md テンプレート」を使用する。
     - **書くこと**: アーキテクチャ方針・影響リポジトリ・DB スキーマ詳細・API 設計・制御ルール・実装推奨順。
-    - **書かないこと**: 具体的なファイルパスやコード変更（AI がコードを探索して決める）。
+    - **書かないこと**: 具体的なファイルパスやコード変更（実装時に探索して決める）。
 
 ### フェーズ 5: 完了案内
 
-13. 生成した全ファイルの一覧を提示する。
-14. 以下の案内を必ず添える:
+13. 生成した全ファイルの一覧を提示し、以下の案内を添える:
 
     > **Backlog起票後の手順**
     >
@@ -121,18 +119,18 @@ Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirement
 
 ## Output Contract
 
-| 成果物            | 配置先                                   | 記法                                              |
-| ----------------- | ---------------------------------------- | ------------------------------------------------- |
-| `backlog.md`      | `.work/backlog/BUSSW-AI/backlog.md`      | `backlog-markdown-formatting` 準拠                |
-| `requirements.md` | `.work/backlog/BUSSW-AI/requirements.md` | 標準GFM                                           |
-| `design.md`       | `.work/backlog/BUSSW-AI/design.md`       | 標準GFM                                           |
-| ブランチ名提案    | 出力テキスト                             | ``feat`or`fix`or`chore`/BUSSW-XXXX-<description>` |
+| 成果物            | 配置先                                   | 記法                               |
+| ----------------- | ---------------------------------------- | ---------------------------------- |
+| `backlog.md`      | `.work/backlog/BUSSW-AI/backlog.md`      | `backlog-markdown-formatting` 準拠 |
+| `requirements.md` | `.work/backlog/BUSSW-AI/requirements.md` | 標準GFM                            |
+| `design.md`       | `.work/backlog/BUSSW-AI/design.md`       | 標準GFM                            |
+| ブランチ名提案    | 出力テキスト                             | `feat\|fix\|chore/BUSSW-XXXX-<description>` |
 
 ### NG例
 
 ❌ 情報が不足しているのに壁打ちせず、推測だけでファイルを生成する。
 
-❌ `../backlog-markdown-formatting/docs/transform-rules.md` を Read せずに `backlog.md` を生成する（規則の重複管理になる）。
+❌ `backlog-markdown-formatting` スキルを参照せずに独自の Backlog 記法で `backlog.md` を生成する（規則の重複管理になる）。
 
 ❌ ブランチ名の `XXXX` をリアルな番号で埋める（採番はBacklog起票後のため）。
 
