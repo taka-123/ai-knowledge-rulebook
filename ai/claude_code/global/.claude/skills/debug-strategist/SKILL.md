@@ -1,6 +1,6 @@
 ---
 name: debug-strategist
-description: Use when runtime failures require hypothesis-driven debugging with reproducible steps and narrowed root causes; When NOT to use: when formatting-only fixes can be completed without investigation; Trigger Keywords: [debug, 不具合, 再現, stacktrace, root cause].
+description: "Use when runtime failures require hypothesis-driven debugging with reproducible steps and narrowed root causes; When NOT to use: when formatting-only fixes can be completed without investigation; Trigger Keywords: [debug, 不具合, 再現, stacktrace, root cause]."
 ---
 
 # debug-strategist

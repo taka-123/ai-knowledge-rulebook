@@ -1,54 +1,104 @@
-# AI ルール & 学習ノート リポジトリ
+# ai-knowledge-rulebook
 
-## 目的
+AI エージェント設定・運用ルール・学習ノートを管理するリポジトリです。
 
-- AI アシスタント向けルール・プロファイルと学習ノート/クリップ/スニペットを一元管理し、差分追跡と再利用性を高める。
-- GitHub 上で閲覧・レビューしやすいプレーンテキスト形式（Markdown/JSON/YAML）を採用し、構成管理をシンプルに保つ。
+## 最重要ルール（先にここだけ）
 
-## ディレクトリ構成
+- Canonical Source（正本）は `./ai/` 配下です。
+- `~/.claude` `~/.cursor` `~/.codex` `~/.gemini` `~/.codeium` は配布先です。
+- 配布先を直接編集せず、`./ai/` を編集して `./scripts/sync-*-to-home.sh` で反映します。
 
-- @directorystructure.md 参照
+## このリポジトリで管理しているもの
 
-## 技術スタック
+- AI ツール別のグローバル設定テンプレート
+- 共通ルール（`AGENTS.md` など）
+- スキル/エージェント定義
+- ノート・スニペット・検証スクリプト
 
-- @technologystack.md 参照
+## ディレクトリ概要
 
-## 運用フロー
+| Path              | 役割                                     |
+| ----------------- | ---------------------------------------- |
+| `ai/`             | 正本。各ツール向け設定のソース           |
+| `scripts/`        | `ai/` からホーム配下へ同期するスクリプト |
+| `.claude/skills/` | リポジトリ内で使う Skill 定義            |
+| `notes/`          | 学習ノート                               |
+| `snippets/`       | テンプレート/雛形                        |
+| `schemas/`        | JSON Schema                              |
+| `.work/`          | 作業用ドキュメント                       |
 
-1. 作業ブランチを切り、変更を加えたら PR を作成する。
-2. PR では差分の意図と検証内容を先頭に明記する。
-3. CI（Markdown/YAML/JSON 構文チェック・Secret Scan）がグリーンであることを確認する。
-4. レビュー 1 名以上の承認後に `main` へマージする。
+## `ai/` 配下の考え方
 
-## セキュリティと注意事項
+- `ai/<tool>/global/` は各ツールのグローバル設定ソースです。
+- `ai/<tool>/project/` はプロジェクト単位の設定雛形です。
+- `ai/common/global/AGENTS.md` は複数ツールで共有する共通ルールです。
+- `ai/claude_code/global/.claude/skills` は Claude Code 側の canonical skill ソースです。
 
-- API キーや個人情報など機密はコミットしない。必要に応じて `.env.sample` 等で雛形のみ共有する。
-- GitHub の Secret scanning / Push Protection を有効化し、検出時は速やかに修正する。
-- バイナリや大型ファイルは原則禁止。必要な場合は Git LFS を検討する。
+## 同期コマンド（canonical -> home）
 
-## 今後の拡張例
+| 対象         | 実行コマンド                            |
+| ------------ | --------------------------------------- |
+| 全ツール一括 | `./scripts/sync-all-to-home.sh`         |
+| Claude Code  | `./scripts/sync-claude-to-home.sh`      |
+| Cursor       | `./scripts/sync-cursor-to-home.sh`      |
+| Codex        | `./scripts/sync-codex-to-home.sh`       |
+| Windsurf     | `./scripts/sync-windsurf-to-home.sh`    |
+| Gemini CLI   | `./scripts/sync-geminicli-to-home.sh`   |
+| Antigravity  | `./scripts/sync-antigravity-to-home.sh` |
 
-- Obsidian Sync 連携によるモバイル編集効率化（任意）。
-- GitHub Pages + MkDocs によるブラウザ閲覧強化。
+MCP/認証系ファイルも同期する場合は `--include-mcp` を付けます。
 
-## 最初のセットアップ（手動作業）
+```bash
+./scripts/sync-all-to-home.sh --include-mcp
+```
 
-- GitHub 上で `main` ブランチ保護（直 push 禁止・レビュー 1 名以上・必須ステータスチェック）を設定する。
-- Secret scanning / Push Protection を有効化する。
-
-### 開発環境の準備
+## セットアップ
 
 ```bash
 npm install
 pip install check-jsonschema yamllint
 ```
 
-## 謝辞
+## 検証コマンド
 
-本プロジェクトのAIルールテンプレートは、以下の方々の公開情報を参考に作成しました。心より感謝申し上げます。
+```bash
+npm run lint
+npm run schema:check
+npm run agent:check
+```
 
-- [kinopeee](https://github.com/kinopeee) さん - [cursorrules](https://github.com/kinopeee/cursorrules)
-- [sazan_dev](https://x.com/sazan_dev) さん - [X投稿](https://x.com/sazan_dev/status/1968222841981002203)
-- [sesere](https://zenn.dev/sesere) さん - [Zenn記事](https://zenn.dev/sesere/articles/0420ecec9526dc)
+個別チェックを行う場合:
 
-その他、多くの方々のオープンな知見の共有に感謝いたします。
+```bash
+npm run skills:check
+npm run global-skills:check
+npm run claude-agents:check
+npm run cursor-agents:check
+npm run codex-wiring:check
+npm run routing:check
+```
+
+## 日常運用フロー
+
+1. `./ai/`（必要に応じて `.claude/skills/` など）を編集する。
+2. `npm run lint` と必要な検証コマンドを実行する。
+3. `./scripts/sync-all-to-home.sh` でホーム配下へ同期する。
+4. 各ツール側で起動確認する。
+
+## トラブルシュート
+
+- `MCP client for github failed to start: GITHUB_PAT ... is not set`
+  - `GITHUB_PAT` 未設定が原因です。環境変数を設定してから再起動してください。
+- `invalid YAML: mapping values are not allowed in this context`
+  - `SKILL.md` frontmatter の `description` が未クォートで `: ` を含むと発生します。
+  - `description: "..."` もしくは `description: |` を使ってください。
+
+## セキュリティ
+
+- API キーや個人情報をコミットしないでください。
+- 認証情報を含むファイルは `--include-mcp` 利用時のみ扱ってください。
+- 共有時はプレースホルダー（例: `<API_KEY>`）へ置換してください。
+
+## ライセンス
+
+MIT License（`LICENSE` を参照）。

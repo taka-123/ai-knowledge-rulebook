@@ -1,6 +1,6 @@
 ---
 name: git-helper
-description: Use when repository changes must be grouped into reviewable commits with safe rollback guidance; When NOT to use: when no file changes exist or version control operations are out of scope; Trigger Keywords: [commit, branch, diff, PR, rollback].
+description: "Use when repository changes must be grouped into reviewable commits with safe rollback guidance; When NOT to use: when no file changes exist or version control operations are out of scope; Trigger Keywords: [commit, branch, diff, PR, rollback]."
 ---
 
 # git-helper

@@ -1,6 +1,6 @@
 ---
 name: lint-fix
-description: Use when lint or format checks fail and deterministic repository commands must be applied to fix issues; When NOT to use: when there is no failing lint signal or the task is architecture design only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint].
+description: "Use when lint or format checks fail and deterministic repository commands must be applied to fix issues; When NOT to use: when there is no failing lint signal or the task is architecture design only; Trigger Keywords: [lint, format, markdownlint, prettier, yamllint]."
 ---
 
 # lint-fix
