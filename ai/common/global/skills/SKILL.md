@@ -5,11 +5,10 @@
 3. symlink を作成する。
 
 ```bash
-mkdir -p ~/.agents ~/.cursor ~/.codeium/windsurf ~/.gemini/antigravity
+mkdir -p ~/.agents ~/.codeium/windsurf ~/.gemini/antigravity
 
 for dst in \
   ~/.agents/skills \
-  ~/.cursor/skills \
   ~/.codeium/windsurf/skills \
   ~/.gemini/antigravity/skills
 do
@@ -23,7 +22,7 @@ done
 確認:
 
 ```bash
-ls -ld ~/.claude/skills ~/.agents/skills ~/.cursor/skills ~/.codeium/windsurf/skills ~/.gemini/antigravity/skills
+ls -ld ~/.claude/skills ~/.agents/skills ~/.codeium/windsurf/skills ~/.gemini/antigravity/skills
 ```
 
 Windows (PowerShell):
@@ -32,13 +31,11 @@ Windows (PowerShell):
 $source = "$HOME/.claude/skills"
 $parents = @(
   "$HOME/.agents",
-  "$HOME/.cursor",
   "$HOME/.codeium/windsurf",
   "$HOME/.gemini/antigravity"
 )
 $targets = @(
   "$HOME/.agents/skills",
-  "$HOME/.cursor/skills",
   "$HOME/.codeium/windsurf/skills",
   "$HOME/.gemini/antigravity/skills"
 )
