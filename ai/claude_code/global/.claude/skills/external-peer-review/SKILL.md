@@ -86,8 +86,8 @@ EOF
 
 | Tool | Command |
 | --- | --- |
-| Gemini | `gemini -p < /tmp/gemini_discussion_brief.md \| tee /tmp/gemini_discussion_round1.md` |
-| Codex | `codex exec --search - </tmp/codex_discussion_brief.md \| tee /tmp/codex_discussion_round1.md` |
+| Gemini | `gemini -p "$(cat /tmp/gemini_discussion_brief.md)" -o text \| tee /tmp/gemini_discussion_round1.md` |
+| Codex | `codex exec "$(cat /tmp/codex_discussion_brief.md)" \| tee /tmp/codex_discussion_round1.md` |
 
 ### 5. Iterative Follow-ups (optional)
 
