@@ -4,15 +4,24 @@
   "env": {
     "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
     "DISABLE_TELEMETRY": "1",
-    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "GOOGLE_GENAI_USE_GCA": "true"
   },
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": ["docker", "docker-compose", "docker compose"],
     "filesystem": {
-      "allowWrite": ["~/.Trash", "~/.config", "~/.local/share/gomi", "~/.local/share/Trash", "/tmp"]
+      "allowWrite": [
+        "~/.Trash",
+        "~/.config",
+        "~/.local/share/gomi",
+        "~/.local/share/Trash",
+        "/tmp",
+        "~/.gemini/**",
+        "~/.gemini",
+        "./**"
+      ]
     },
     "network": {
       "allowedDomains": [
@@ -26,7 +35,12 @@
         "*.bing.com",
         "playwright.azureedge.net",
         "playwright.download.prss.microsoft.com",
-        "cdn.playwright.dev"
+        "cdn.playwright.dev",
+        "*.googleapis.com",
+        "generativelanguage.googleapis.com",
+        "api.google.com",
+        "accounts.google.com",
+        "oauth2.googleapis.com"
       ]
     }
   },
