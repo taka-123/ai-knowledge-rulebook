@@ -30,3 +30,27 @@
 - [ ] 主要依存のバージョン表記と実マニフェストの整合を確認したか。
 - [ ] 既存コードパターン探索と機密情報混入チェックを実施したか。
 - [ ] 報告が global 層のタスク分類（🟢🟡🔴）に準拠しているか。
+
+## Cursor Cloud specific instructions
+
+This is a documentation/configuration management repository with no runtime services. The "application" is the lint, schema, and agent validation tooling.
+
+### Services overview
+
+There are no servers or databases. All verification is done via npm scripts defined in `package.json`.
+
+### Key commands
+
+Refer to `README.md` § セットアップ and § 検証コマンド for the full list. The three primary checks are:
+
+- `npm run lint` — Prettier + markdownlint + yamllint (via `./format.sh check`)
+- `npm run schema:check` — JSON Schema validation (uses `check-jsonschema`)
+- `npm run agent:check` — Custom skill/agent/routing validators (Node.js `.mjs` scripts)
+
+### Gotchas
+
+- `yamllint` and `check-jsonschema` are Python packages installed with `pip install --user`. They land in `$HOME/.local/bin`, which must be on `PATH`. The VM snapshot persists `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc` so this is already set.
+- `npm run schema:check` always exits 0 (trailing `; true`) even when schema mismatches exist — check stdout for actual errors.
+- `npm run agent:check` exits non-zero on pre-existing validation failures in the repo (e.g. skill description pattern issues). These are not caused by environment setup.
+- The sync scripts (`scripts/sync-*-to-home.sh`) require `rsync`. Install it with `sudo apt-get install -y rsync` if not already present.
+- `npm run lint` (via `format.sh`) reports Prettier warnings on SKILL.md files — these are pre-existing formatting issues, not environment problems.
