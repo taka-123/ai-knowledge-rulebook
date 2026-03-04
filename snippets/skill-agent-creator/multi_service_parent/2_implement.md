@@ -425,13 +425,12 @@ Output: [成果物の形式を明記]
 
 ### スキル共有 symlink の提示（任意・マルチツール環境向け）
 
-スキルの手順（Procedure / Output Contract）は Claude Code 以外のツールでも再利用できる。`.claude/skills/` を各ツールのスキルディレクトリへ symlink することで、単一ソースから管理できる。
+スキルの手順（Procedure / Output Contract）は Claude Code 以外のツールでも再利用できる。`.claude/skills/` を Codex / Windsurf / Antigravity のスキルディレクトリへ symlink することで、単一ソースから管理できる。
 
 次のコマンドをそのまま最終レポートに出力する:
 
 ```bash
 ln -snf ../.claude/skills .agents/skills && \
-ln -snf ../.claude/skills .cursor/skills && \
 ln -snf ../.claude/skills .windsurf/skills && \
 ln -snf ../.claude/skills .agent/skills
 ```
@@ -439,7 +438,7 @@ ln -snf ../.claude/skills .agent/skills
 対象ディレクトリが存在しない場合のみ事前に作成:
 
 ```bash
-mkdir -p .agents .cursor .windsurf .agent
+mkdir -p .agents .windsurf .agent
 ```
 
 **注意**: Trigger Keywords による自動発火は Claude Code 専用。他ツールでスキルを使う場合は agent の手順内や rules ファイルで「`.cursor/skills/<name>/SKILL.md` を Read して手順に従え」と明示する必要がある。エージェント定義（`.claude/agents/` / `.cursor/agents/` / `.codex/agents/`）は書式が異なるため symlink 共有は行わない。
