@@ -1,5 +1,49 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "cleanupPeriodDays": 30,
+  "env": {
+    "CLAUDE_CODE_ENABLE_TELEMETRY": "0",
+    "DISABLE_TELEMETRY": "1",
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "GOOGLE_GENAI_USE_GCA": "true"
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowWrite": [
+        "~/.Trash",
+        "~/.config",
+        "~/.local/share/gomi",
+        "~/.local/share/Trash",
+        "/tmp",
+        "~/.gemini/**",
+        "~/.gemini",
+        "./**"
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "github.com",
+        "api.github.com",
+        "registry.npmjs.org",
+        "*.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "*.rds.amazonaws.com",
+        "*.bing.com",
+        "playwright.azureedge.net",
+        "playwright.download.prss.microsoft.com",
+        "cdn.playwright.dev",
+        "*.googleapis.com",
+        "generativelanguage.googleapis.com",
+        "api.google.com",
+        "accounts.google.com",
+        "oauth2.googleapis.com"
+      ]
+    }
+  },
   "permissions": {
     "defaultMode": "bypassPermissions",
     "deny": [
@@ -21,6 +65,12 @@
       "Edit(**/secrets/**)",
       "Write(secrets/**)",
       "Write(**/secrets/**)",
+      "Read(~/.ssh/**)",
+      "Write(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Write(~/.aws/**)",
+      "Read(~/.gcp/**)",
+      "Write(~/.gcp/**)",
       "Read(**/*.pem)",
       "Read(**/*.key)",
       "Bash(rm -rf /)",
@@ -40,42 +90,70 @@
       "Bash(export *)",
       "Bash(bash -c *)",
       "Bash(sh -c *)",
-      "Bash(base64 *)",
-      "Bash(terraform *)",
-      "Bash(kubectl *)",
-      "Bash(aws *)",
-      "Bash(nc *)",
-      "Bash(ping *)",
-      "Bash(dig *)",
-      "Bash(nslookup *)"
-    ],
-    "ask": [
-      "Bash(git checkout *)",
-      "Bash(git merge *)",
-      "Bash(psql *)",
-      "Bash(mysql *)",
-      "Bash(docker compose *)",
-      "Bash(docker-compose *)"
+      "Bash(base64 *)"
     ],
     "allow": [
-      "Bash(node *)",
-      "Bash(npm *)",
-      "Bash(npx *)",
-      "Bash(yarn *)",
-      "Bash(pnpm *)",
-      "Bash(python *)",
-      "Bash(pytest *)",
-      "Bash(make *)",
-      "Bash(gomi *)"
+      "WebSearch",
+      "WebFetch(domain:code.claude.com)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:registry.npmjs.org)",
+      "WebFetch(domain:pypi.org)",
+      "Read(./**)",
+      "Edit(./**)",
+      "Write(./**)",
+      "Grep(**)",
+      "Glob(**)",
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(whoami)",
+      "Bash(which *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git pull)",
+      "Bash(git branch *)"
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/pretooluse_guard.sh"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
+          }
+        ]
+      },
+      {
+        "matcher": "WebFetch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/validate-webfetch.sh"
+          }
+        ]
+      }
+    ],
     "SessionEnd": [
       {
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/suggest-claude-md-hook.sh"
+            "command": "bin/suggest-claude-md-hook.sh"
           }
         ]
       }
@@ -85,7 +163,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": ".claude/hooks/suggest-claude-md-hook.sh"
+            "command": "bin/suggest-claude-md-hook.sh"
           }
         ]
       }

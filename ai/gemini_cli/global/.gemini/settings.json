@@ -11,7 +11,7 @@
     "hideContextSummary": false
   },
   "tools": {
-    "sandbox": "docker",
+    "sandbox": false,
     "excludeTools": ["run_shell_command(rm -rf)"]
   },
   "mcpServers": {

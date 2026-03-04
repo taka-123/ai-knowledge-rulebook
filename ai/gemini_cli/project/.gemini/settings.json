@@ -1,6 +1,6 @@
 {
   "context": {
-    "fileName": ["AGENTS.md"],
+    "fileName": ["GEMINI.md", "AGENTS.md"],
     "includeDirectoryTree": true
   },
   "model": {
@@ -11,17 +11,10 @@
     "hideContextSummary": false
   },
   "tools": {
-    "sandbox": "docker",
+    "sandbox": false,
     "excludeTools": ["run_shell_command(rm -rf)"]
   },
   "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_PAT}"
-      }
-    },
     "context7": {
       "type": "stdio",
       "command": "npx",
