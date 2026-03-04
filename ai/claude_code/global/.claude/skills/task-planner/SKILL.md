@@ -1,6 +1,6 @@
 ---
 name: task-planner
-description: Use when implementation requires step-by-step planning with explicit file targets and verification gates; When NOT to use: when a one-line edit can be completed safely without decomposition; Trigger Keywords: [計画, 分解, roadmap, milestone, 実装手順].
+description: "Use when implementation requires step-by-step planning with explicit file targets and verification gates; When NOT to use: when a one-line edit can be completed safely without decomposition; Trigger Keywords: [計画, 分解, roadmap, milestone, 実装手順]."
 ---
 
 # task-planner

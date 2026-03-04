@@ -1,6 +1,6 @@
 ---
 name: skill-discoverer
-description: Use when the user asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: [スキル一覧, 何ができる, available skills, help, 委任先].
+description: "Use when the user asks what skills or agents are available, or when uncertain which specialist to delegate to; When NOT to use: when the target skill is already known; Trigger Keywords: [スキル一覧, 何ができる, available skills, help, 委任先]."
 ---
 
 # skill-discoverer

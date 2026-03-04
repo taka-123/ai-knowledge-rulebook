@@ -1,6 +1,6 @@
 ---
 name: chatwork-formatter
-description: Use when markdown content must be converted to ChatWork-readable format and presented as a copyable block in the conversation; When NOT to use: when the destination supports markdown rendering or when the task is not ChatWork-related; Trigger Keywords: [ChatWork, CW, チャットワーク, CW用, ChatWork用, CWで共有, CWの返信].
+description: "Use when markdown content must be converted to ChatWork-readable format and presented as a copyable block in the conversation; When NOT to use: when the destination supports markdown rendering or when the task is not ChatWork-related; Trigger Keywords: [ChatWork, CW, チャットワーク, CW用, ChatWork用, CWで共有, CWの返信]."
 ---
 
 # chatwork-formatter

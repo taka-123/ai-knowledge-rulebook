@@ -1,6 +1,6 @@
 ---
 name: ui-standardizer
-description: Use when UI or CSS updates must follow repository visual conventions and accessibility checks across app surfaces; When NOT to use: when tasks are backend-only and have no presentation layer impact; Trigger Keywords: [UI, CSS, レイアウト, accessibility, a11y].
+description: "Use when UI or CSS updates must follow repository visual conventions and accessibility checks across app surfaces; When NOT to use: when tasks are backend-only and have no presentation layer impact; Trigger Keywords: [UI, CSS, レイアウト, accessibility, a11y]."
 ---
 
 # ui-standardizer
