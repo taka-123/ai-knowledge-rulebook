@@ -25,7 +25,8 @@ function parseFrontMatter(text) {
     .filter(Boolean)
     .map(line => line.split(':')[0].trim())
   const name = (body.match(/^name:\s*(.+)$/m) || [])[1]?.trim() ?? ''
-  const description = (body.match(/^description:\s*(.+)$/m) || [])[1]?.trim() ?? ''
+  const descQuoted = body.match(/^description:\s*"([^"]*)"\s*$/m)
+  const description = descQuoted ? descQuoted[1] : (body.match(/^description:\s*(.+)$/m) || [])[1]?.trim() ?? ''
   return { fields, name, description }
 }
 

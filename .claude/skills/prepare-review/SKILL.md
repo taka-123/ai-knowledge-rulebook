@@ -42,12 +42,12 @@ Prepare focused review notes for current documentation changes. Captures working
 
 ## Output Contract
 
-| Item | Format |
-| --- | --- |
-| Change Classification | 用途別のファイル分類表 |
-| Review Checklist | `- [ ]` 形式のチェックリスト |
-| Status | 各項目に PASS / WARN / FAIL |
-| Risks | 想定リスクと追加確認事項 |
+| Item                  | Format                       |
+| --------------------- | ---------------------------- |
+| Change Classification | 用途別のファイル分類表       |
+| Review Checklist      | `- [ ]` 形式のチェックリスト |
+| Status                | 各項目に PASS / WARN / FAIL  |
+| Risks                 | 想定リスクと追加確認事項     |
 
 ### NG例
 
