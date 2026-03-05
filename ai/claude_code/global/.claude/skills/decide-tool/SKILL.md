@@ -31,20 +31,20 @@ External CLI tool router. Analyzes the task and selects the optimal tool (Gemini
 
 ## Tool Selection Matrix
 
-| Category | Best Tool | CLI Command | Use Cases |
-| --- | --- | --- | --- |
-| **Fast draft / Prototype** | Gemini | `gemini -p "$ARGUMENTS" -o text` | 高速ドラフト、プロトタイプ作成 |
-| **Breakdown / Planning** | Gemini | `gemini -p "$ARGUMENTS" -o text` | 初動仕様分解、タスクブレイクダウン |
-| **Bulk processing** | Gemini | `gemini -p "$ARGUMENTS" -o text` | 大量ファイル整理、反復作業 |
-| **Research / Search** | Gemini | `gemini -p "$ARGUMENTS" -o text` | 最新情報スキャン、市場調査、Web検索 |
-| **UI / Visual** | Cursor | `cursor-agent -p --trust "$ARGUMENTS"` | UI調整、レスポンシブ最適化 |
-| **Visual diff** | Cursor | `cursor-agent -p --trust "$ARGUMENTS"` | 目視diff確認、微調整 |
-| **Doc + Code polish** | Cursor | `cursor-agent -p --trust "$ARGUMENTS"` | コード＋ドキュメント同時洗練 |
-| **Exploratory prototype** | Cursor | `cursor-agent -p --trust "$ARGUMENTS"` | 探索的プロトタイピング |
-| **Parallel implementation** | Codex | `codex exec "$ARGUMENTS"` | 複数機能同時並列実装 |
-| **Deep debug / Optimize** | Codex | `codex exec "$ARGUMENTS"` | 低レベルdebug、アルゴリズム最適化 |
-| **Long-running task** | Codex | `codex exec "$ARGUMENTS"` | 夜間・長時間放置タスク（30分以上OK） |
-| **Spec / PRD / Test plan** | Codex | `codex exec "$ARGUMENTS"` | 厳密な構造文書・PRD・テスト計画 |
+| Category                    | Best Tool | CLI Command                            | Use Cases                            |
+| --------------------------- | --------- | -------------------------------------- | ------------------------------------ |
+| **Fast draft / Prototype**  | Gemini    | `gemini -p "$ARGUMENTS" -o text`       | 高速ドラフト、プロトタイプ作成       |
+| **Breakdown / Planning**    | Gemini    | `gemini -p "$ARGUMENTS" -o text`       | 初動仕様分解、タスクブレイクダウン   |
+| **Bulk processing**         | Gemini    | `gemini -p "$ARGUMENTS" -o text`       | 大量ファイル整理、反復作業           |
+| **Research / Search**       | Gemini    | `gemini -p "$ARGUMENTS" -o text`       | 最新情報スキャン、市場調査、Web検索  |
+| **UI / Visual**             | Cursor    | `cursor-agent -p --trust "$ARGUMENTS"` | UI調整、レスポンシブ最適化           |
+| **Visual diff**             | Cursor    | `cursor-agent -p --trust "$ARGUMENTS"` | 目視diff確認、微調整                 |
+| **Doc + Code polish**       | Cursor    | `cursor-agent -p --trust "$ARGUMENTS"` | コード＋ドキュメント同時洗練         |
+| **Exploratory prototype**   | Cursor    | `cursor-agent -p --trust "$ARGUMENTS"` | 探索的プロトタイピング               |
+| **Parallel implementation** | Codex     | `codex exec "$ARGUMENTS"`              | 複数機能同時並列実装                 |
+| **Deep debug / Optimize**   | Codex     | `codex exec "$ARGUMENTS"`              | 低レベルdebug、アルゴリズム最適化    |
+| **Long-running task**       | Codex     | `codex exec "$ARGUMENTS"`              | 夜間・長時間放置タスク（30分以上OK） |
+| **Spec / PRD / Test plan**  | Codex     | `codex exec "$ARGUMENTS"`              | 厳密な構造文書・PRD・テスト計画      |
 
 ## Procedure
 
@@ -65,13 +65,13 @@ External CLI tool router. Analyzes the task and selects the optimal tool (Gemini
 
 ## Output Contract
 
-| Item | Format |
-| --- | --- |
-| Selected Tool | `Gemini / Cursor / Codex` |
-| Reason | 選択根拠 1-2 文 |
-| Command | 実行した CLI コマンド |
-| Result Summary | 結果の要約 |
-| Next Action | Claude での後続作業提案 |
+| Item           | Format                    |
+| -------------- | ------------------------- |
+| Selected Tool  | `Gemini / Cursor / Codex` |
+| Reason         | 選択根拠 1-2 文           |
+| Command        | 実行した CLI コマンド     |
+| Result Summary | 結果の要約                |
+| Next Action    | Claude での後続作業提案   |
 
 ### NG例
 

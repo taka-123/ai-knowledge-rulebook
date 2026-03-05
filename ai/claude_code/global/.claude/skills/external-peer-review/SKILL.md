@@ -84,10 +84,10 @@ EOF
 
 ### 4. Run Analysis
 
-| Tool | Command |
-| --- | --- |
+| Tool   | Command                                                                                              |
+| ------ | ---------------------------------------------------------------------------------------------------- |
 | Gemini | `gemini -p "$(cat /tmp/gemini_discussion_brief.md)" -o text \| tee /tmp/gemini_discussion_round1.md` |
-| Codex | `codex exec "$(cat /tmp/codex_discussion_brief.md)" \| tee /tmp/codex_discussion_round1.md` |
+| Codex  | `codex exec "$(cat /tmp/codex_discussion_brief.md)" \| tee /tmp/codex_discussion_round1.md`          |
 
 ### 5. Iterative Follow-ups (optional)
 
@@ -126,13 +126,13 @@ EOF
 
 ## Output Contract
 
-| Item | Format |
-| --- | --- |
-| Tool Used | `Gemini / Codex` |
-| Rounds | 実行ラウンド数 |
-| Key Findings | 箇条書き |
-| Action Items | High / Medium / Low |
-| Log Path | `.claude/discussion_logs/` |
+| Item         | Format                     |
+| ------------ | -------------------------- |
+| Tool Used    | `Gemini / Codex`           |
+| Rounds       | 実行ラウンド数             |
+| Key Findings | 箇条書き                   |
+| Action Items | High / Medium / Low        |
+| Log Path     | `.claude/discussion_logs/` |
 
 ### NG例
 
