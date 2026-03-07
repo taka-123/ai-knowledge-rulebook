@@ -1,5 +1,5 @@
 description = "Use proactively when reviewing security-sensitive changes under .codex/rules, .claude/commands, scripts/, package.json, or workflow definitions for misuse and policy violations; When NOT to use: when the task is pure documentation wording updates with no executable behavior change; Trigger Keywords: [security review, セキュリティ, policy violation, threat, secrets]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 

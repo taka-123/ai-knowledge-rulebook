@@ -1,5 +1,5 @@
 description = "Use proactively when searching across notes/, ai/, clips/, snippets/, .claude/, .cursor/, or .codex/ to locate relevant assets before implementation; When NOT to use: when the exact target file path is already known and no discovery step is needed; Trigger Keywords: [search assets, 検索, find file, knowledge search, locate]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 

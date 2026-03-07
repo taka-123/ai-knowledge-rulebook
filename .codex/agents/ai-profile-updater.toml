@@ -1,5 +1,5 @@
 description = "Use proactively when editing JSON files under ai/ or schemas/ and validating them with npm run schema:check during profile maintenance tasks; When NOT to use: when the task only edits Markdown files under .work/ or .claude/ with no JSON schema impact; Trigger Keywords: [ai profile, schema check, updated field, JSON fix, ai/]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 approval_policy = "on-request"
 
 developer_instructions = """

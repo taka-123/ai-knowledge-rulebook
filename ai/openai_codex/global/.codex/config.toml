@@ -1,6 +1,7 @@
 # デフォルトモデル
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 model_reasoning_effort = "high"
+plan_mode_reasoning_effort = "xhigh"
 
 # 安全寄りのデフォルト
 approval_policy = "on-request"
@@ -30,12 +31,13 @@ args = ["@playwright/mcp@latest"]
 command = "npx"
 args = ["-y", "@drawio/mcp"]
 
-# マルチエージェント
 [features]
+voice_transcription = true
 multi_agent = true
 
 [agents]
 max_threads = 6
+max_depth = 2
 
 ## 役割（role）:
 [agents.default]

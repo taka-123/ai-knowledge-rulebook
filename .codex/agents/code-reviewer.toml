@@ -1,5 +1,5 @@
 description = "Use proactively when reviewing diffs under .claude/, .cursor/, .codex/, scripts/, package.json, or .work/ after implementation or bug-fix work; When NOT to use: when the task only requests creating templates without correctness or regression assessment; Trigger Keywords: [code review, 品質確認, diff review, regression, correctness]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 

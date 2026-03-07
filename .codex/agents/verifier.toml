@@ -1,5 +1,5 @@
 description = "Use proactively when validating implementation outcomes with npm run agent:check, npm run format:check, npm run schema:check, and targeted markdownlint commands; When NOT to use: when implementation is still in progress and verification gates are intentionally deferred; Trigger Keywords: [verify, 検証, format check, agent check, schema check]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 
