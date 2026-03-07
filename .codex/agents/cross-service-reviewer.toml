@@ -1,5 +1,5 @@
 description = "Use proactively when a review request spans multiple assets under .claude/, .cursor/, .codex/, scripts/, package.json, or .work/ and requires multi-agent synthesis; When NOT to use: when a single narrow file check can be completed by one reviewer without orchestration; Trigger Keywords: [レビューしてください, cross review, requirements.md, 直近コミット, integrated review]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 

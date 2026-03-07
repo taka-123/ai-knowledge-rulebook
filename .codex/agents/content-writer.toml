@@ -1,5 +1,5 @@
 description = "Use proactively when editing files under .claude/, .cursor/, .codex/, scripts/, or .work/ to apply approved findings with minimal diffs; When NOT to use: when the task is read-only analysis with no file modifications; Trigger Keywords: [apply changes, content update, 反映, 最小差分, write]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 approval_policy = "on-request"
 
 developer_instructions = """

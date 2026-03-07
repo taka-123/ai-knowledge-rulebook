@@ -1,5 +1,5 @@
 description = "Use proactively when auditing wiring across .claude/agents, .cursor/agents, .codex/agents, .codex/config*.toml, and .claude/skills for drift or orphan references; When NOT to use: when the task modifies only one isolated file with no routing or dependency impact; Trigger Keywords: [routing audit, 配線監査, orphan check, drift, inventory]."
-model = "gpt-5.3-codex"
+model = "gpt-5.4"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 
