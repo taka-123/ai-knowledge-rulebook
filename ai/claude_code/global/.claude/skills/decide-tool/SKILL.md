@@ -1,6 +1,7 @@
 ---
 name: decide-tool
 description: "Use when the user explicitly asks to delegate a task to an external CLI tool (Gemini/Cursor/Codex), or when Claude determines a task is better suited for an external tool; When NOT to use: when Claude can complete the task directly without external tool delegation; Trigger Keywords: [decide-tool, gemini, cursor, codex, external tool, tool selection, consensus]."
+allowed-tools: Bash(gemini*), Bash(cursor-agent*), Bash(cursor*), Bash(codex*), Bash(bash -lc*)
 ---
 
 # decide-tool
