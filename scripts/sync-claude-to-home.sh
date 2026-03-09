@@ -64,6 +64,31 @@ sync_claude_dir() {
     echo "コピー: .claude/${name}/ -> $dest_entry/"
   done
 
+  # ソースに存在しないサブディレクトリを退避（例: commands/ が廃止された場合）
+  # plans/, memory/, projects/ 等のユーザー作成データは除外
+  local -a user_dirs=(plans memory projects backups)
+  for dest_entry in "$DEST_CLAUDE"/*/; do
+    [[ -d "$dest_entry" ]] || continue
+    local name
+    name="$(basename "$dest_entry")"
+    # ユーザー作成データは除外
+    local is_user_dir=false
+    for ud in "${user_dirs[@]}"; do
+      if [[ "$name" == "$ud" ]]; then
+        is_user_dir=true
+        break
+      fi
+    done
+    [[ "$is_user_dir" == true ]] && continue
+    # .bak ディレクトリは除外
+    [[ "$name" == *.bak.* ]] && continue
+    # ソースに存在しなければ退避（末尾スラッシュを除去）
+    if [[ ! -d "${src_claude_dir}/${name}" ]]; then
+      backup_if_exists "${dest_entry%/}"
+      echo "削除（ソースに不在）: .claude/${name}/"
+    fi
+  done
+
   # ファイルを個別に退避・コピー（例: settings.json）
   for src_file in "$src_claude_dir"/*; do
     [[ -f "$src_file" ]] || continue

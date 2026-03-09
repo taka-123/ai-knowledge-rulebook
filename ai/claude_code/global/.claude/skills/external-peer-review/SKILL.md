@@ -1,6 +1,7 @@
 ---
 name: external-peer-review
 description: "Use when the user explicitly asks to run a structured peer review or discussion using an external CLI tool (Gemini or Codex); When NOT to use: when Claude can perform the review directly without external perspective; Trigger Keywords: [discuss-with-gemini, discuss-with-codex, peer review, external review, second opinion]."
+allowed-tools: Bash(gemini*), Bash(codex*), Bash(git *), Bash(bash -lc*), Bash(mkdir -p*), Bash(tee*), Bash(cat*), Bash(rm /tmp/*)
 ---
 
 # external-peer-review
