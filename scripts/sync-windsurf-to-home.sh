@@ -2,7 +2,7 @@
 # sync-windsurf-to-home.sh
 # ai/windsurf/global/.codeium/windsurf/mcp_config.json を ~/.codeium/windsurf/mcp_config.json へ、
 # ai/common/global/AGENTS.md を ~/.codeium/windsurf/memories/global_rules.md へコピーする。
-# 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
+# 既存がある場合はバックアップディレクトリへ退避してから上書きする。
 #
 # デフォルトでは mcp_config.json（MCP/認証設定）はコピー・退避しない。
 # --include-mcp を指定した場合のみ含める。
@@ -23,27 +23,20 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# shellcheck source=lib/sync-utils.sh
+source "${SCRIPT_DIR}/lib/sync-utils.sh"
+
 SRC_MCP="${PROJECT_ROOT}/ai/windsurf/global/.codeium/windsurf/mcp_config.json"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 DEST_WINDSURF="${HOME}/.codeium/windsurf"
-DEST_MCP="${HOME}/.codeium/windsurf/mcp_config.json"
-DEST_GLOBAL_RULES="${HOME}/.codeium/windsurf/memories/global_rules.md"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-BAK_SUFFIX=".bak.${TIMESTAMP}"
+DEST_MCP="${DEST_WINDSURF}/mcp_config.json"
+DEST_GLOBAL_RULES="${DEST_WINDSURF}/memories/global_rules.md"
 
-# 既存のディレクトリまたはファイルを日時付き .bak に退避
-backup_if_exists() {
-  local target="$1"
-  if [[ -e "$target" ]]; then
-    local bak="${target}${BAK_SUFFIX}"
-    echo "退避: $target -> $bak"
-    mv "$target" "$bak"
-  fi
-}
+init_backup_dir "$DEST_WINDSURF"
 
 main() {
   echo "=== sync-windsurf-to-home ==="
-  echo "タイムスタンプ: $TIMESTAMP"
+  echo "タイムスタンプ: $SYNC_TIMESTAMP"
   echo ""
 
   if [[ ! -f "$SRC_COMMON_AGENTS" ]]; then
@@ -58,8 +51,8 @@ main() {
     fi
     mkdir -p "$(dirname "$DEST_MCP")"
     mkdir -p "$(dirname "$DEST_GLOBAL_RULES")"
-    backup_if_exists "$DEST_MCP"
-    backup_if_exists "$DEST_GLOBAL_RULES"
+    backup_to_dir "$DEST_MCP"
+    backup_to_dir "$DEST_GLOBAL_RULES"
     cp -p "$SRC_MCP" "$DEST_MCP"
     cp -p "$SRC_COMMON_AGENTS" "$DEST_GLOBAL_RULES"
     echo "コピー: mcp_config.json -> $DEST_MCP"
@@ -67,7 +60,7 @@ main() {
   else
     echo "スキップ: mcp_config.json（認証情報を含むため。--include-mcp で含める）"
     mkdir -p "$(dirname "$DEST_GLOBAL_RULES")"
-    backup_if_exists "$DEST_GLOBAL_RULES"
+    backup_to_dir "$DEST_GLOBAL_RULES"
     cp -p "$SRC_COMMON_AGENTS" "$DEST_GLOBAL_RULES"
     echo "コピー: AGENTS.md (common) -> $DEST_GLOBAL_RULES"
   fi

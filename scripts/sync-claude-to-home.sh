@@ -2,7 +2,7 @@
 # sync-claude-to-home.sh
 # ai/claude_code/global/ 以下を ~/ へコピーする。
 # global/ 以下には .claude/ ディレクトリ構造と claude.json が含まれる。
-# 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
+# 既存がある場合はバックアップディレクトリへ退避してから上書きする。
 #
 # デフォルトでは claude.json（MCP/認証設定）はコピー・退避しない。
 # --include-mcp を指定した場合のみ含める。
@@ -23,23 +23,16 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# shellcheck source=lib/sync-utils.sh
+source "${SCRIPT_DIR}/lib/sync-utils.sh"
+
 SRC_GLOBAL="${PROJECT_ROOT}/ai/claude_code/global"
 SRC_CLAUDE_MD="${SRC_GLOBAL}/CLAUDE.md"
 SRC_CLAUDE_JSON="${SRC_GLOBAL}/claude.json"
 DEST_CLAUDE="${HOME}/.claude"
 DEST_CLAUDE_JSON="${HOME}/.claude.json"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-BAK_SUFFIX=".bak.${TIMESTAMP}"
 
-# 既存のディレクトリまたはファイルを日時付き .bak に退避
-backup_if_exists() {
-  local target="$1"
-  if [[ -e "$target" ]]; then
-    local bak="${target}${BAK_SUFFIX}"
-    echo "退避: $target -> $bak"
-    mv "$target" "$bak"
-  fi
-}
+init_backup_dir "$DEST_CLAUDE"
 
 # global/.claude/ 内のサブディレクトリ・ファイルを ~/.claude/ へ個別にコピー
 # ソースに存在する項目のみ退避・上書きし、ユーザー作成データ（plans/, memory/ 等）は保持する
@@ -58,15 +51,15 @@ sync_claude_dir() {
     local name
     name="$(basename "$src_entry")"
     local dest_entry="${DEST_CLAUDE}/${name}"
-    backup_if_exists "$dest_entry"
+    backup_to_dir "$dest_entry"
     mkdir -p "$dest_entry"
     rsync -a "$src_entry" "$dest_entry/"
     echo "コピー: .claude/${name}/ -> $dest_entry/"
   done
 
   # ソースに存在しないサブディレクトリを退避（例: commands/ が廃止された場合）
-  # plans/, memory/, projects/ 等のユーザー作成データは除外
-  local -a user_dirs=(plans memory projects backups)
+  # plans/, memory/, projects/, backups/ 等のユーザー作成データは除外
+  local -a user_dirs=(plans memory projects backups sync-backups bak cache file-history ide paste-cache plugins session-env shell-snapshots)
   for dest_entry in "$DEST_CLAUDE"/*/; do
     [[ -d "$dest_entry" ]] || continue
     local name
@@ -80,11 +73,11 @@ sync_claude_dir() {
       fi
     done
     [[ "$is_user_dir" == true ]] && continue
-    # .bak ディレクトリは除外
+    # .bak ディレクトリは除外（旧方式の残存分）
     [[ "$name" == *.bak.* ]] && continue
-    # ソースに存在しなければ退避（末尾スラッシュを除去）
+    # ソースに存在しなければ退避
     if [[ ! -d "${src_claude_dir}/${name}" ]]; then
-      backup_if_exists "${dest_entry%/}"
+      backup_to_dir "${dest_entry%/}"
       echo "削除（ソースに不在）: .claude/${name}/"
     fi
   done
@@ -95,7 +88,7 @@ sync_claude_dir() {
     local name
     name="$(basename "$src_file")"
     local dest_file="${DEST_CLAUDE}/${name}"
-    backup_if_exists "$dest_file"
+    backup_to_dir "$dest_file"
     cp -p "$src_file" "$dest_file"
     echo "コピー: .claude/${name} -> $dest_file"
   done
@@ -112,14 +105,14 @@ sync_claude_json() {
     exit 1
   fi
 
-  backup_if_exists "$DEST_CLAUDE_JSON"
+  backup_to_dir "$DEST_CLAUDE_JSON"
   cp -p "$SRC_CLAUDE_JSON" "$DEST_CLAUDE_JSON"
   echo "コピー: claude.json -> $DEST_CLAUDE_JSON"
 }
 
 main() {
   echo "=== sync-claude-to-home ==="
-  echo "タイムスタンプ: $TIMESTAMP"
+  echo "タイムスタンプ: $SYNC_TIMESTAMP"
   echo ""
 
   sync_claude_dir
@@ -127,7 +120,7 @@ main() {
   # CLAUDE.md を ~/.claude/CLAUDE.md へコピー
   if [[ -f "$SRC_CLAUDE_MD" ]]; then
     local dest_claude_md="${DEST_CLAUDE}/CLAUDE.md"
-    backup_if_exists "$dest_claude_md"
+    backup_to_dir "$dest_claude_md"
     cp -p "$SRC_CLAUDE_MD" "$dest_claude_md"
     echo "コピー: CLAUDE.md -> $dest_claude_md"
   fi
