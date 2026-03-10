@@ -2,7 +2,7 @@
 # sync-cursor-to-home.sh
 # ai/cursor/global/.cursor/agents を ~/.cursor/agents へ、
 # ai/cursor/global/.cursor/mcp.json を ~/.cursor/mcp.json へコピーする。
-# 既存がある場合はディレクトリ/ファイル単位で日時付き .bak に退避してから上書きする。
+# 既存がある場合はバックアップディレクトリへ退避してから上書きする。
 #
 # デフォルトでは mcp.json（MCP/認証設定）はコピー・退避しない。
 # --include-mcp を指定した場合のみ含める。
@@ -23,24 +23,17 @@ done
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+# shellcheck source=lib/sync-utils.sh
+source "${SCRIPT_DIR}/lib/sync-utils.sh"
+
 SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/.cursor/agents"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
 SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/.cursor/mcp.json"
 DEST_CURSOR="${HOME}/.cursor"
 DEST_AGENTS="${HOME}/.cursor/agents"
 DEST_MCP_JSON="${HOME}/.cursor/mcp.json"
-TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-BAK_SUFFIX=".bak.${TIMESTAMP}"
 
-# 既存のディレクトリまたはファイルを日時付き .bak に退避
-backup_if_exists() {
-  local target="$1"
-  if [[ -e "$target" ]]; then
-    local bak="${target}${BAK_SUFFIX}"
-    echo "退避: $target -> $bak"
-    mv "$target" "$bak"
-  fi
-}
+init_backup_dir "$DEST_CURSOR"
 
 # agents ディレクトリを ~/.cursor/agents へコピー（既存はディレクトリごと退避）
 sync_agents_dir() {
@@ -50,7 +43,7 @@ sync_agents_dir() {
   fi
 
   mkdir -p "$DEST_CURSOR"
-  backup_if_exists "$DEST_AGENTS"
+  backup_to_dir "$DEST_AGENTS"
   mkdir -p "$DEST_AGENTS"
   rsync -a "$SRC_AGENTS/" "$DEST_AGENTS/"
   echo "コピー: ai/cursor/global/.cursor/agents/* -> $DEST_AGENTS/"
@@ -67,14 +60,14 @@ sync_mcp_json() {
     exit 1
   fi
 
-  backup_if_exists "$DEST_MCP_JSON"
+  backup_to_dir "$DEST_MCP_JSON"
   cp -p "$SRC_MCP_JSON" "$DEST_MCP_JSON"
   echo "コピー: mcp.json -> $DEST_MCP_JSON"
 }
 
 main() {
   echo "=== sync-cursor-to-home ==="
-  echo "タイムスタンプ: $TIMESTAMP"
+  echo "タイムスタンプ: $SYNC_TIMESTAMP"
   echo ""
 
   sync_agents_dir
