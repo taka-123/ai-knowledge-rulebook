@@ -1,0 +1,558 @@
+{
+  // ===================================
+  // エディタの基本設定
+  // ===================================
+  // フォント設定
+  "editor.fontSize": 16,
+  "editor.fontFamily": "Ricty Diminished, 'Courier New', monospace",
+
+  // 表示設定
+  "editor.renderWhitespace": "boundary",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.rulers": [80, 120],
+
+  // インデント設定
+  "editor.detectIndentation": false,
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // 編集設定
+  "editor.linkedEditing": true,
+  "editor.multiCursorModifier": "ctrlCmd",
+
+  // フォーマット設定（全て手動）
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+  "editor.formatOnType": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "never",
+    "source.organizeImports": "never"
+  },
+
+  // ===================================
+  // ファイル設定
+  // ===================================
+  "files.autoSave": "off",
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": false,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+    "*.blade.php": "blade",
+    "*.ctp": "php",
+    "*.twig": "twig",
+    ".env*": "dotenv",
+    ".prettierrc*": "json",
+    ".eslintrc*": "json",
+    "composer.lock": "json",
+    "*.stub": "php"
+  },
+  "files.exclude": {
+    "**/.git": false,
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true
+  },
+
+  // ===================================
+  // 検索設定
+  // ===================================
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/vendor": true,
+    "**/dist": true,
+    "**/.nuxt": true,
+    "**/bower_components": true,
+    "**/coverage": true,
+    "**/.git": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/out": true,
+    "**/logs": true,
+    "**/cache": true,
+    "**/tmp": true,
+    "**/temp": true,
+    "**/.phpunit.result.cache": true,
+    "**/_ide_helper*.php": true,
+    "**/.phpstorm.meta.php": true
+  },
+
+  // ===================================
+  // Explorer設定
+  // ===================================
+  "explorer.confirmDragAndDrop": false,
+  "explorer.confirmDelete": false,
+  "explorer.compactFolders": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js, ${capture}.d.ts, ${capture}.js.map",
+    "*.tsx": "${capture}.ts, ${capture}.js",
+    "*.jsx": "${capture}.js",
+    "tsconfig.json": "tsconfig.*.json",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, .npmrc, .nvmrc",
+    "composer.json": "composer.lock",
+    ".env": ".env.*",
+    ".gitignore": ".gitattributes, .gitmodules, .gitmessage, .mailmap, .git-blame*",
+    "index.php": "*.config.php, *.env.php",
+    "readme.*": "authors, backers*, changelog*, citation*, code_of_conduct*, codeowners, contributing*, contributors, copying*, credits, governance.md, history.md, license*, maintainers, readme*, security.md, sponsors*",
+    "*.sqlite": "${capture}.${extname}-*",
+    "*.db": "${capture}.${extname}-*"
+  },
+
+  // ===================================
+  // ワークベンチ設定
+  // ===================================
+  "workbench.colorTheme": "Default Dark+",
+  "workbench.iconTheme": "material-icon-theme",
+  "workbench.startupEditor": "none",
+  "workbench.editor.enablePreview": true,
+  "workbench.editor.showTabs": "multiple",
+  "workbench.activityBar.orientation": "vertical",
+  "workbench.tree.indent": 12,
+  "workbench.tree.renderIndentGuides": "always",
+
+  // ===================================
+  // ターミナル設定
+  // ===================================
+  "terminal.integrated.fontSize": 16,
+  "terminal.integrated.fontFamily": "Ricty Diminished, monospace",
+  "terminal.integrated.copyOnSelection": true,
+  "terminal.integrated.rightClickBehavior": "paste",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.shellIntegration.enabled": true,
+
+  // ===================================
+  // Git設定
+  // ===================================
+  "git.confirmSync": false,
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.suggestSmartCommit": true,
+  "git.showPushSuccessNotification": true,
+  "git.untrackedChanges": "separate",
+
+  // --- グラフ（ツリー）の表示設定 ---
+  "scm.graph.pageSize": 200,
+  "scm.graph.pageOnScroll": true,
+  "scm.graph.badges": "all",
+
+  // --- サイドバー（ソース管理）の表示設定 ---
+  "scm.defaultViewMode": "tree",
+
+  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.hideUnchangedRegions.enabled": false,
+
+  // SemanticDiffをデフォルトにする（お好みで）
+  "semanticdiff.defaultDiffViewer": true,
+
+  // 通常のDiff表示も改善
+  "diffEditor.renderSideBySide": true,
+  "diffEditor.renderIndicators": true,
+  "diffEditor.maxComputationTime": 10000,
+  "diffEditor.wordWrap": "off",
+
+  // ===================================
+  // GitLens設定（視覚的静寂 + オンデマンド情報取得）
+  // ===================================
+  // 1. 絶対的「視覚的静寂」の実現（Zero Visual Noise）
+  "gitlens.codeLens.enabled": false,
+  "gitlens.currentLine.enabled": false,
+  "gitlens.statusBar.enabled": false,
+
+  // 2. オンデマンドな情報取得（Hover Strategy）
+  "gitlens.hovers.enabled": true,
+  "gitlens.hovers.currentLine.enabled": true,
+  "gitlens.hovers.currentLine.over": "line",
+
+  // 3. パネルの統合（Panel Integration）
+  "gitlens.views.repositories.location": "scm",
+  "gitlens.views.fileHistory.location": "scm",
+  "gitlens.views.lineHistory.location": "scm",
+
+  // 4. マーケティングUIと不要な通知の排除（Anti-Annoyance）
+  "gitlens.showWelcomeOnInstall": false,
+  "gitlens.showWhatsNewAfterUpgrades": false,
+  "gitlens.plusFeatures.enabled": false,
+  "gitlens.advanced.messages": {
+    "suppressCommitHasNoPreviousCommitWarning": true,
+    "suppressCreatePRWarning": true
+  },
+
+  // 5. パフォーマンスとAI連携の最適化（Performance & AI）
+  "gitlens.advanced.caching.enabled": true,
+  "gitlens.views.defaultItemLimit": 20,
+  "gitlens.ai.enabled": true,
+  "gitlens.ai.model": "vscode",
+
+  // ===================================
+  // 言語別フォーマッター設定（手動フォーマット時に使用）
+  // ===================================
+  // JavaScript/TypeScript
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // Vue
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
+  },
+
+  // HTML/テンプレート
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[blade]": {
+    "editor.defaultFormatter": "shufo.vscode-blade-formatter",
+    "editor.tabSize": 2
+  },
+  "[twig]": {
+    "editor.defaultFormatter": "mblode.twig-language-2",
+    "editor.tabSize": 2
+  },
+
+  // CSS/SCSS
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  // PHP
+  "[php]": {
+    "editor.defaultFormatter": "junstyle.php-cs-fixer",
+    "editor.tabSize": 4
+  },
+
+  // Python
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4
+  },
+
+  // JSON/YAML
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.autoIndent": "advanced",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[yml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.autoIndent": "advanced",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.wordWrap": "on",
+    "files.trimTrailingWhitespace": false,
+    "proseWrap": "preserve",
+    "printWidth": 100
+  },
+
+  // その他
+  "[sql]": {
+    "editor.defaultFormatter": "adpyke.vscode-sql-formatter",
+    "editor.tabSize": 2
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format",
+    "editor.tabSize": 2
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-docker",
+    "editor.tabSize": 2
+  },
+  "[dockercompose]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced"
+  },
+  "[dotenv]": {
+    "editor.tabSize": 2
+  },
+  "[ignore]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+
+  // ===================================
+  // Prettier設定（手動フォーマット時の設定）
+  // ===================================
+  "prettier.requireConfig": true,
+  "prettier.useEditorConfig": true,
+  "prettier.printWidth": 120,
+  "prettier.singleQuote": true,
+  "prettier.semi": true,
+  "prettier.useTabs": false,
+  "prettier.tabWidth": 2,
+  "prettier.trailingComma": "es5",
+  "prettier.bracketSpacing": true,
+  "prettier.arrowParens": "always",
+  "prettier.proseWrap": "preserve",
+  "prettier.endOfLine": "lf",
+
+  // ===================================
+  // PHP-CS-Fixer設定
+  // ===================================
+  "php-cs-fixer.executablePath": "~/.composer/vendor/bin/php-cs-fixer",
+  "php-cs-fixer.onsave": false,
+  "php-cs-fixer.rules": {
+    "@PER": true,
+    "class_attributes_separation": {
+      "elements": {
+        "method": "one"
+      }
+    },
+    "single_space_around_construct": false,
+    "class_definition": {
+      "multi_line_extends_each_single_line": false,
+      "single_item_single_line": true,
+      "single_line": true
+    },
+    "function_declaration": {
+      "closure_function_spacing": "one"
+    },
+    "method_chaining_indentation": false,
+    "trailing_comma_in_multiline": false,
+    "array_syntax": false,
+    "concat_space": false,
+    "single_quote": false,
+    "binary_operator_spaces": false,
+    "blank_line_before_statement": false,
+    "no_unused_imports": true,
+    "ordered_imports": true,
+    "cast_spaces": {
+      "space": "none"
+    },
+    "single_line_empty_body": false
+  },
+  "php-cs-fixer.config": ".php-cs-fixer.dist.php",
+  "php-cs-fixer.allowRisky": false,
+  "php-cs-fixer.pathMode": "override",
+  "php-cs-fixer.exclude": [],
+  "php-cs-fixer.autoFixByBracket": false,
+  "php-cs-fixer.autoFixBySemicolon": false,
+  "php-cs-fixer.formatHtml": false,
+
+  // ===================================
+  // ESLint設定
+  // ===================================
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact", "vue"],
+  "eslint.format.enable": false,
+  "eslint.lintTask.enable": true,
+  "eslint.runtime": null,
+  "eslint.nodeEnv": null,
+
+  // ===================================
+  // Markdownlint設定（品質チェック専用）
+  // ===================================
+  "markdownlint.config": {
+    "default": true,
+    "MD013": false, // 行長制限（日本語文書で非現実的）
+    "MD022": false, // 見出し空行強制（自然な記述を阻害）
+    "MD024": false, // 重複見出し（異なるレベルで使用するため）
+    "MD025": false, // 複数H1見出し（複数セクションで必要）
+    "MD026": false, // 見出し末尾句読点（日本語見出しで自然に発生）
+    "MD031": false, // コードブロック前後の空行（MD022と同様の理由）
+    "MD032": false, // リスト前後の空行（MD022と同様の理由）
+    "MD033": false, // インラインHTML（カスタムXMLタグをAI指示用に許可）
+    "MD036": false, // 強調を見出し代わりに使用（実用的なケース多い）
+    "MD040": false, // フェンスコードブロックの言語指定強制（汎用ブロック用途）
+    "MD041": false, // 最初の行が見出し強制（テンプレートで問題）
+    "MD051": false, // アンカーリンク（日本語見出しの誤検出を回避）
+    "MD058": false, // テーブル前後の空行（MD022と同様の理由）
+    "MD060": false // テーブル列スタイル統一（混在テーブルを許容）
+  },
+
+  // ===================================
+  // その他の拡張機能設定
+  // ===================================
+  // Emmet
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact",
+    "typescript": "typescriptreact",
+    "vue-html": "html",
+    // phpファイル（.ctp含む）でHTMLのEmmetを有効化
+    "php": "html",
+    "twig": "html",
+    "blade": "html"
+  },
+
+  // Tailwind CSS
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "html"
+  },
+
+  // Blade Formatter
+  "bladeFormatter.format.indentSize": 2,
+  "bladeFormatter.format.wrapLineLength": 120,
+  "bladeFormatter.format.wrapAttributes": "auto",
+
+  // Twig
+  "twig-language-2.indentStyle": "space",
+  "twig-language-2.tabSize": 2,
+
+  // Material Icon Theme
+  "material-icon-theme.activeIconPack": "vue",
+  "material-icon-theme.folders.theme": "specific",
+
+  // インデントレインボー（最適化設定）
+  "indentRainbow.indicatorStyle": "light",
+  "indentRainbow.lightIndicatorStyleLineWidth": 1,
+  "indentRainbow.colors": [
+    "rgba(255,255,64,0.3)",
+    "rgba(127,255,127,0.3)",
+    "rgba(255,127,255,0.3)",
+    "rgba(79,236,236,0.3)"
+  ],
+  "indentRainbow.errorColor": "rgba(255,0,0,0.4)",
+  "indentRainbow.ignoreErrorLanguages": ["markdown", "plaintext"],
+  "indentRainbow.excludedLanguages": ["plaintext"],
+
+  // YAML拡張設定
+  "yaml.validate": true,
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*.{yml,yaml}",
+    "https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json": "docker-compose*.{yml,yaml}",
+    "https://json.schemastore.org/prettierrc.json": ".prettierrc.{yml,yaml}",
+    "https://json.schemastore.org/eslintrc.json": ".eslintrc.{yml,yaml}"
+  },
+
+  // ===================================
+  // TypeScript設定
+  // ===================================
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // ===================================
+  // PHP開発設定（汎用的なグローバル設定）
+  // ===================================
+  // Intelephense設定
+  "intelephense.stubs": [
+    "Core",
+    "standard",
+    "json",
+    "mbstring",
+    "openssl",
+    "curl",
+    "PDO",
+    "ctype",
+    "dom",
+    "libxml",
+    "redis",
+    "bcmath"
+  ],
+  "intelephense.files.exclude": [
+    "**/node_modules/**",
+    "**/vendor/**",
+    "**/cache/**",
+    "**/tmp/**",
+    "**/temp/**"
+  ],
+  "intelephense.files.maxSize": 10000000,
+  "intelephense.telemetry.enabled": false,
+
+  // PHP基本設定
+  "php.validate.enable": false,
+  "php.suggest.basic": false,
+
+  // ===================================
+  // セキュリティ設定
+  // ===================================
+  "security.workspace.trust.untrustedFiles": "prompt",
+  "security.workspace.trust.enabled": true,
+
+  // ===================================
+  // テレメトリ設定
+  // ===================================
+  "telemetry.telemetryLevel": "off",
+  "redhat.telemetry.enabled": false,
+
+  // ===================================
+  // アクセシビリティ設定
+  // ===================================
+  "editor.accessibilitySupport": "off",
+  "accessibility.signals.volume": 0,
+  "accessibility.verbosity.terminal": true,
+
+  // ===================================
+  // AI通知設定（VSCode/Windsurf/Cursor共通）
+  // ===================================
+  // VSCode/Windsurf用（Copilot Chat等）
+  "chat.notifyWindowOnResponseReceived": true,
+
+  // ===================================
+  // IDE固有設定
+  // ===================================
+  // Cursor
+  "cursor.chat.showSuggestedFiles": true,
+  "cursor.chat.smoothStreaming": true,
+  "cursor.indexing.gitignoreEnabled": true,
+  "cursor.cpp.enablePartialAccepts": true,
+  "cursor.cpp.disabledLanguages": ["scminput"],
+  "cursor.composer.shouldChimeAfterChatFinishes": true,
+  "extensions.autoUpdate": true,
+  "extensions.ignoreRecommendations": true,
+  "problems.decorations.enabled": true,
+  "debug.console.fontSize": 14,
+  "debug.console.fontFamily": "Ricty Diminished, monospace",
+  "workbench.editor.autoLockGroups": {
+    "imagePreview.previewEditor": true
+  },
+  "remote.SSH.remotePlatform": {
+    "sc-dev-cloud": "linux"
+  },
+  "claudeCode.selectedModel": "opus",
+  "liveServer.settings.donotShowInfoMsg": true,
+  "remote.autoForwardPortsSource": "hybrid",
+  "claudeCode.useTerminal": true,
+  "editor.indentSize": "tabSize",
+  "claudeCode.initialPermissionMode": "bypassPermissions",
+  "claudeCode.allowDangerouslySkipPermissions": true,
+  "cursor.general.emailPrivacyEnabled": true,
+  "claudeCode.preferredLocation": "sidebar"
+}
