@@ -11,6 +11,10 @@
 ## ガードレール
 
 - 機密情報の閲覧・漏洩厳禁。
+- **Shell Commands (CRITICAL!)**: **常に** `working_directory` を指定する（絶対パス）。`cd` は使わない。
+  - 理由:
+    - 一部環境でサンドボックス外とみなされる。
+    - 承認待ちで止まる。
 - 破壊的操作は承諾を得てから実行せよ。
 - `--dangerously-skip-permissions` 時も機密アクセスと破壊的操作は禁止。
 - **外部ツール委任**: 外部 CLI（gemini / cursor-agent / codex）を Bash で直接呼ぶな。必ず `decide-tool` スキルの手順（Tool Selection Matrix → 正しい CLI コマンド構文）を経由せよ。外部視点のレビューが必要なら `external-peer-review` スキルを使え。推測でコマンドを組み立てるのは禁止。
