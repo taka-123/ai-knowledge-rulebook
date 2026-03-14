@@ -59,7 +59,7 @@ Git diff を対象に、4つの観点でコードレビューを行う。
 ## レビューサマリー
 
 - **Diff モード**: [使用した diff コマンド]
-- **リスクレベル**: ✅ None / 🟢 Low / 🟡 Medium / 🟠 High / 🔴 Critical（指摘なしなら None）
+- **リスクレベル**: ✅ None / 🟢 Low / 🟡 Medium / 🟠 High / 🔴 Critical（レビュー全体の評価。指摘なしなら None）
 - **概要**: [3行以内]
 
 ## 指摘事項
@@ -69,7 +69,7 @@ Git diff を対象に、4つの観点でコードレビューを行う。
 ### ⚠️ [タイトル]
 
 - **カテゴリ**: Correctness / Security / Performance / Maintainability
-- **深刻度**: 🔴 High / 🟡 Medium / 🟢 Low
+- **深刻度**: 🔴 High / 🟡 Medium / 🟢 Low（個別指摘の評価）
 - **該当箇所**: diff からコード引用
 - **説明**: リスクのメカニズム
 - **推奨対応**: 修正方針
@@ -79,7 +79,7 @@ Git diff を対象に、4つの観点でコードレビューを行う。
 ### 出力制約
 
 - Linter 検知可能な軽微指摘（インデント・命名規約等）は除外
-- 指摘事項は最大5件
+- 指摘事項は深刻度の高いものから最大5件
 
 ## Examples
 
