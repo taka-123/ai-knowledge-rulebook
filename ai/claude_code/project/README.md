@@ -61,23 +61,11 @@ cp ai/claude_code/project/CLAUDE.md   /path/to/your-project/CLAUDE.md
 2. **繰り返し修正指示** — 同種の修正が 2 回以上出現
 3. **クロス整合性** — 複数箇所で統一を求める指示
 
-### 手動実行
-
-```
-/suggest-claude-md
-```
-
-### ログ確認
-
-```bash
-cat /tmp/suggest-claude-md-{会話ID}-{タイムスタンプ}.log
-```
-
 ### ワークフロー
 
 1. Claude Code で開発作業
-2. セッション終了 or コンテキスト圧縮時に自動分析
-3. 新しいターミナルウィンドウに提案が表示される
+2. セッション終了 or コンテキスト圧縮時にフックが自動で会話履歴を分析
+3. 提案があれば `.claude/suggestions/` に Markdown ファイルとして保存される
 4. 良いと思ったら「この内容を CLAUDE.md に追記して」と指示
 5. コード変更と同じ PR に含めてレビュー
 
