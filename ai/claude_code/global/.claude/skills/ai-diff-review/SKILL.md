@@ -1,6 +1,6 @@
 ---
 name: ai-diff-review
-description: "Use when the user explicitly asks to review code changes via git diff; When NOT to use: when reviewing documentation quality rather than code logic (use prepare-review instead); Trigger Keywords: [ai-diff-review, コードレビュー, diff review, レビューして, review diff, 差分レビュー]."
+description: "Use when the user asks to review code changes via git diff. Single-pass, 4 criteria (Correctness/Security/Performance/Maintainability), any scope. When NOT: documentation quality (prepare-review); lint or format only (lint-fix). Trigger Keywords: [ai-diff-review, コードレビュー, diff review, レビューして, review diff, 差分レビュー]."
 ---
 
 # ai-diff-review
@@ -9,7 +9,8 @@ Git diff を対象に、4つの観点でコードレビューを行う。
 
 ## When to use
 
-- コード変更のリスクをレビューしたいとき。
+- ユーザーがコード変更のレビューを依頼したとき（例: レビューして、差分レビュー、review diff、/ai-diff-review）。
+- git diff を対象に、4 観点で単発レビューしたいとき（任意スコープ）。
 
 ## When NOT to use
 
