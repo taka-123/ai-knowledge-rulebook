@@ -1,22 +1,29 @@
 # Cursor Review Routing Rule
 
-When user asks in natural language such as:
-- レビューしてください
-- この修正でOKか
-- 見てほしい
+## コンテキストベース自動ルーティング
 
-Then route to `cross-service-reviewer` by default.
+発話でファスト/ヘビーを分けない。**差分を取得したうえで、差分量・ファイル数・リスク領域からルートを決める**。
 
-If user request contains both `requirements.md` and `直近コミット`, enforce this order:
+1. `git diff --stat` と `git diff -p` でスコープを把握する。
+2. **小さい**（目安: 約 400 LOC 未満・ファイル数少なめ）かつリスク領域でない → **単一パス**: ai-diff-review 手順を実行（現コンテキスト or 1 サブエージェント）。
+3. **大きい**（約 400 LOC 以上 or 複数ファイル）or リスク領域（auth/security/infra/依存更新等）→ **パイプライン**: cross-service-reviewer → code-reviewer →（必要時）security-reviewer → verifier。
+4. **オーバーライド**: ユーザーが「しっかり」「full review」→ パイプライン強制。「軽く」「quick」→ 単一パス強制。
+
+どちらのルートでも最終レポートは **統一形式**（レビューサマリー・指摘事項の絵文字表現。ai-diff-review の Output Contract に準拠）。
+
+## Pipeline の実行順（パイプラインを選んだ場合）
+
+`requirements.md` と `直近コミット` が依頼に含まれる場合はパイプラインを推奨。順序:
+
 1. cross-service-reviewer
 2. code-reviewer
-3. security-reviewer (only when risk-relevant)
+3. security-reviewer（リスクがある場合）
 4. verifier
 
 Fallback:
-- If a reviewer fails or times out, cross-service-reviewer must cover the missing viewpoint.
-- The final report must include failed sub-agent names and parent fallback coverage.
+- いずれかの reviewer が失敗・タイムアウトしたら、cross-service-reviewer が不足観点を補う。
+- 最終レポートに失敗したサブエージェント名と親の代替観点を明記する。
 
 Compatibility:
-- Do not use unsupported no-stat options.
-- Use `git diff --stat` and `git diff -p`.
+- no-stat 系の非互換オプションは禁止。
+- 差分確認は `git diff --stat` と `git diff -p` を使う。

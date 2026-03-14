@@ -28,20 +28,32 @@ memory: project
 
 **Status:** PASS | FAIL | PARTIAL | BLOCKED
 
+ユーザー向けの最終レポートは **ai-diff-review の Output Contract に準拠**（レビューサマリー・指摘事項を絵文字付きの統一形式で出力）。そのうえでパイプライン状況を追記する。
+
 ```markdown
-## cross-service-reviewer Report
-**Status:** PASS | FAIL | PARTIAL | BLOCKED
-Scope:
-- <path>
-Delegation:
-- code-reviewer: PASS | FAIL | TIMEOUT
-- security-reviewer: PASS | SKIP | FAIL
-- verifier: PASS | FAIL
-Fallback:
-- Failed Agent: <name> | None
-- Parent-covered viewpoints: <items> | None
-Findings:
-1. [HIGH] <issue>
+## レビューサマリー
+
+- **Scope**: <path>
+- **リスクレベル**: ✅ None / 🟢 Low / 🟡 Medium / 🟠 High / 🔴 Critical
+- **概要**: [3行以内]
+
+## 指摘事項
+
+（統合した指摘を最大5件。なければ「🎉 重大な指摘事項なし」）
+
+### ⚠️ [タイトル]
+
+- **カテゴリ**: Correctness / Security / Performance / Maintainability
+- **深刻度**: 🔴 High / 🟡 Medium / 🟢 Low
+- **該当箇所**: コード引用
+- **説明**: リスクのメカニズム
+- **推奨対応**: 修正方針
+- **確信度**: High / Medium / Low
+
+## パイプライン状況
+
+- Delegation: code-reviewer: PASS|FAIL|TIMEOUT, security-reviewer: PASS|SKIP|FAIL, verifier: PASS|FAIL
+- Fallback: Failed Agent: <name> | None, Parent-covered viewpoints: <items> | None
 ```
 
 ## Memory Strategy
