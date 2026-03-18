@@ -8,6 +8,8 @@ approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 web_search = "cached"
 
+suppress_unstable_features_warning = true
+
 # 通知音
 notify = ["bash", "-lc", "afplay /System/Library/Sounds/Glass.aiff"]
 
@@ -39,7 +41,6 @@ multi_agent = true
 max_threads = 6
 max_depth = 2
 
-## 役割（role）:
 [agents.default]
 description = "汎用実装・修正 / General purpose coding helper."
 
@@ -58,3 +59,6 @@ config_file = "agents/test_runner.toml"
 [agents.security_reviewer]
 description = "セキュリティ監査 / Security review for code and config."
 config_file = "agents/security_reviewer.toml"
+
+[projects."/Users/tf/production/sc-docker-swimming-all"]
+trust_level = "trusted"

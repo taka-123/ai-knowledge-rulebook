@@ -99,6 +99,8 @@ fi
 # --- 開発ツール ---
 # local bin
 export PATH="$HOME/.local/bin:$PATH"
+# GitHub
+export GITHUB_PAT="<YOUR_GITHUB_PAT>"
 # Windsurf設定
 export PATH="$HOME/.codeium/windsurf/bin:$PATH"
 # bun
