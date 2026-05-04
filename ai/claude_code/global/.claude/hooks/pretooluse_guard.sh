@@ -2,7 +2,6 @@
 set -euo pipefail
 
 input="$(cat)"
-
 tool="$(jq -r '.tool_name // ""' <<<"$input")"
 cmd="$(jq -r '.tool_input.command // ""' <<<"$input")"
 cwd="$(jq -r '.cwd // ""' <<<"$input")"
@@ -17,39 +16,56 @@ block() {
 }
 
 # fork bomb
-if grep -Eq ':\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:' <<<"$cmd"; then
+if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd"; then
   block "fork bomb pattern"
 fi
 
-# destructive rm flags (rm -rf 等)。/bin/rm や command rm も「危険形だけ」止める
-if grep -Eq '(^|[[:space:]])(\/bin\/rm|rm|command[[:space:]]+rm)[[:space:]]+.*(--force|--recursive|-rf|-fr)([[:space:]]|$)' <<<"$cmd"; then
-  block "destructive rm flags"
-fi
+# rm -rf / rm -fr / rm --recursive --force のうち、危険な削除対象だけ止める。
+# プロジェクト内の rm -rf ./dist, ./build, ./node_modules, ./.claude/skills/foo などは sandbox に任せる。
+if grep -Eq '(^|[[:space:];|&])(/bin/rm|rm|command[[:space:]]+rm)[[:space:]]+' <<<"$cmd"; then
+  if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd"; then
+    # ルート、ホーム、カレント全体、親ディレクトリ全体
+    if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd"; then
+      block "destructive rm target"
+    fi
 
-# dd if=
-if grep -Eq '(^|[[:space:]])dd([[:space:]]|$).*if=' <<<"$cmd"; then
-  block "dd if= pattern"
-fi
+    # macOS / Unix の重要ディレクトリ
+    if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd"; then
+      block "destructive rm system path"
+    fi
 
-# curl/wget piped to shell
-if grep -Eq '(^|[[:space:]])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd"; then
-  block "download piped to shell"
-fi
-
-# $(curl/wget ...) を shell -c で実行する系
-if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd"; then
-  if grep -Eq '(^|[[:space:]])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd"; then
-    block "shell -c with \$(curl/wget)"
+    # ユーザーホーム直下全体や主要設定ディレクトリ
+    if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd"; then
+      block "destructive rm protected home path"
+    fi
   fi
 fi
 
-# git push ガード（force push と保護ブランチをブロック）
-if grep -Eq '^git[[:space:]]+push([[:space:]]|$)' <<<"$cmd"; then
+# dd if= / of= はディスク破壊・大量上書きリスクが高いので止める
+if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd"; then
+  block "dd if/of pattern"
+fi
+
+# curl/wget piped to shell
+if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd"; then
+  block "download piped to shell"
+fi
+
+# sh -c "$(curl ...)" / bash -c "$(wget ...)" 系
+if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd"; then
+  if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd"; then
+    block "shell -c with download substitution"
+  fi
+fi
+
+# git push ガード
+if grep -Eq '(^|[[:space:];|&])git[[:space:]]+push([[:space:]]|$)' <<<"$cmd"; then
+  # force push は常にブロック
   if grep -Eq '(^|[[:space:]])(--force|--force-with-lease|-f)([[:space:]]|$)' <<<"$cmd"; then
     block "force push"
   fi
 
-  # コマンドに main/master/develop/deploy が明示されている場合（origin main / HEAD:main 等）
+  # コマンドに main/master/develop/deploy が明示されている場合
   if grep -Eq '(^|[[:space:]]|:)(main|master|develop|deploy)([[:space:]]|$)' <<<"$cmd"; then
     block "push to protected branch (explicit)"
   fi
