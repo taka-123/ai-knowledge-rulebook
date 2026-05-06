@@ -31,3 +31,28 @@
 - [ ] 主要依存のバージョン表記と実マニフェストの整合を確認したか。
 - [ ] 既存コードパターン探索と機密情報混入チェックを実施したか。
 - [ ] 報告が global 層のタスク分類（🟢🟡🔴）に準拠しているか。
+
+## Cursor Cloud specific instructions
+
+This is a documentation/configuration repository with no runtime services. The "application" is the set of lint, format, and validation scripts.
+
+### Prerequisites
+
+- Node.js >= 18 (installed via NodeSource)
+- Python 3 with `yamllint` and `check-jsonschema` (pip)
+- npm dependencies (see `package.json` devDependencies)
+
+### Key commands (see README.md for full list)
+
+| Task                   | Command                |
+| ---------------------- | ---------------------- |
+| Lint all               | `npm run lint`         |
+| Auto-fix formatting    | `npm run format`       |
+| Schema validation      | `npm run schema:check` |
+| Agent/skill validation | `npm run agent:check`  |
+
+### Gotchas
+
+- `.claude/settings.json` defines PreToolUse hooks that log to `~/.claude/command_history.log`. The directory `~/.claude/` must exist or all Shell commands will be blocked by the hook. The update script creates it via `mkdir -p /root/.claude`.
+- `npm run schema:check` ends with `; true` so it always exits 0, even when schema errors exist. Pre-existing schema mismatches (MCP config files validated against `ai_profile.schema.json`) are expected.
+- `npm run agent:check` may report pre-existing skill validation failures (e.g., trigger keyword count). These are repo-level issues, not environment issues.
