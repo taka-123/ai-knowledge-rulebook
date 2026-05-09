@@ -12,6 +12,7 @@
   "arrowParens": "avoid",
   "endOfLine": "lf",
   "proseWrap": "preserve",
+  "embeddedLanguageFormatting": "off",
   "overrides": [
     {
       "files": "*.md",

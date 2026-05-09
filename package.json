@@ -4,17 +4,18 @@
   "description": "AI学習ノートとルール管理リポジトリ",
   "private": true,
   "scripts": {
+    "check": "npm run format:check && npm run lint:md",
     "format": "./format.sh fix",
     "format:check": "./format.sh check",
-    "lint": "npm run format:check",
-    "lint:md": "markdownlint-cli2 '**/*.md' '#node_modules' '#.git'",
+    "lint": "npm run check",
+    "lint:md": "markdownlint-cli2",
     "lint:yaml": "yamllint -c ./.config/.yamllint.yml .",
     "lint:json": "prettier --check '**/*.{json,jsonc}' --ignore-path .prettierignore",
     "fix": "npm run format",
-    "fix:md": "markdownlint-cli2-fix '**/*.md' '#node_modules' '#.git'",
+    "fix:md": "markdownlint-cli2 --fix",
     "fix:yaml": "prettier --write '**/*.{yml,yaml}' --ignore-path .prettierignore",
     "fix:json": "prettier --write '**/*.{json,jsonc}' --ignore-path .prettierignore",
-    "schema:check": "find ai -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/ai_profile.schema.json; find notes -name '*.json' -type f -print0 2>/dev/null | xargs -0 -r check-jsonschema --schemafile schemas/notes.schema.json; true",
+    "schema:check": "find ai -name '*profile*.json' -type f -print0 2>/dev/null | xargs -0 -r python3 -m check_jsonschema --schemafile schemas/ai_profile.schema.json && find notes -name '*.json' -not -name '*.jsonc' -type f -print0 2>/dev/null | xargs -0 -r python3 -m check_jsonschema --schemafile schemas/notes.schema.json",
     "skills:check": "node scripts/validate-skills.mjs",
     "global-skills:check": "node scripts/validate-global-skills.mjs",
     "description:check": "node .claude/skills/description-condition-enforcer/scripts/enforce-description-condition.mjs",
@@ -24,24 +25,23 @@
     "routing:check": "node scripts/validate-routing.mjs",
     "agent:check": "npm run skills:check && npm run global-skills:check && npm run description:check && npm run claude-agents:check && npm run cursor-agents:check && npm run codex-wiring:check && npm run routing:check",
     "lint:staged": "lint-staged",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "devDependencies": {
-    "ajv-cli": "^5.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "markdownlint": "^0.36.0",
-    "markdownlint-cli2": "^0.15.0",
-    "prettier": "^3.4.2"
+    "markdownlint": "^0.40.0",
+    "markdownlint-cli2": "^0.22.1",
+    "prettier": "^3.8.3"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.17.0"
   },
   "lint-staged": {
     "**/*.{js,mjs,cjs,ts,tsx,jsx}": "prettier --write --ignore-path .prettierignore",
-    "**/*.{md,mdx}": [
+    "**/*.{md,markdown,mdx}": [
       "prettier --write --ignore-path .prettierignore",
-      "markdownlint-cli2"
+      "markdownlint-cli2 --fix --no-globs"
     ],
     "**/*.{json,jsonc,yml,yaml}": "prettier --write --ignore-path .prettierignore"
   }

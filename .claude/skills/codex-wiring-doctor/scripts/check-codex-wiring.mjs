@@ -18,18 +18,31 @@ function listAgentFiles() {
 }
 
 function extractConfigRefs(filePath) {
-  if (!fs.existsSync(filePath)) return []
+  if (!fs.existsSync(filePath)) return { refs: [], invalidFormat: [] }
   const text = fs.readFileSync(filePath, 'utf8')
   const refs = []
+  const invalidFormat = []
   const regex = /^config_file\s*=\s*"([^"]+)"/gm
   for (const match of text.matchAll(regex)) {
-    refs.push(match[1])
+    const ref = match[1]
+    if (!/^agents\/[^/]+\.toml$/.test(ref)) {
+      invalidFormat.push(`${path.relative(process.cwd(), filePath)}: ${ref}`)
+    }
+    refs.push(normalizeRef(ref))
   }
-  return refs
+  return { refs, invalidFormat }
+}
+
+function normalizeRef(ref) {
+  if (ref.startsWith('./.codex/')) return ref
+  if (ref.startsWith('agents/')) return `./.codex/${ref}`
+  return ref
 }
 
 const agents = listAgentFiles().map(name => `./.codex/agents/${name}`)
-const refs = CONFIG_GLOBS.flatMap(extractConfigRefs)
+const extracted = CONFIG_GLOBS.map(extractConfigRefs)
+const refs = extracted.flatMap(item => item.refs)
+const invalidFormat = extracted.flatMap(item => item.invalidFormat)
 
 const refSet = new Set(refs)
 const agentSet = new Set(agents)
@@ -37,7 +50,8 @@ const agentSet = new Set(agents)
 const orphan = agents.filter(agent => !refSet.has(agent))
 const dangling = refs.filter(ref => !agentSet.has(ref))
 
-const status = orphan.length === 0 && dangling.length === 0 ? 'PASS' : 'FAIL'
+const status =
+  orphan.length === 0 && dangling.length === 0 && invalidFormat.length === 0 ? 'PASS' : 'FAIL'
 
 console.log(
   JSON.stringify(
@@ -45,6 +59,7 @@ console.log(
       status,
       agents,
       refs,
+      invalidFormat,
       orphan,
       dangling,
     },
