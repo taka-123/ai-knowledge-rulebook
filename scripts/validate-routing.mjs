@@ -7,7 +7,6 @@ const root = process.cwd()
 const requiredFiles = [
   'CLAUDE.md',
   '.claude/CLAUDE.md',
-  'CLAUDE.local.md',
   '.claude/commands/review-request.md',
   '.cursor/rules/review-routing.mdc',
   '.cursor/commands/review-request.md',

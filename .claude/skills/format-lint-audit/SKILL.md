@@ -23,7 +23,6 @@ description: "Use proactively when editing files under .claude/, .cursor/, .code
 - format:check
 - lint
 - CI
-- ci-check
 - 検証
 
 ## Procedure

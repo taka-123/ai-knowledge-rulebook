@@ -17,7 +17,7 @@ for (const name of fs.readdirSync(DIR)) {
     errors.push(`${name}: missing description`)
     continue
   }
-  const description = match[1]
+  const description = match[1].trim().replace(/^"|"$/g, '')
   const hasPath =
     /\.[a-zA-Z0-9_\-]+\//.test(description) ||
     /notes\//.test(description) ||

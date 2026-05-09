@@ -1,0 +1,41 @@
+{
+  "$schema": "https://raw.githubusercontent.com/DavidAnson/markdownlint-cli2/main/schema/markdownlint-cli2-config-schema.json",
+  "globs": ["**/*.{md,markdown,mdx}"],
+  "ignores": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "vendor/**",
+    "archive/**",
+    "backlog/**",
+    "clips/**",
+    "tmp/**",
+    "**/*.generated.md",
+    "**/*generated*.md"
+  ],
+  "gitignore": true,
+  "frontMatter": "(^---\\s*$[^]*?^---\\s*$)(\\r\\n|\\r|\\n|$)",
+  "config": {
+    // Prettier と衝突する整形系は style/prettier で無効化
+    "extends": "markdownlint/style/prettier",
+
+    // --- 日本語ナレッジ向けに緩める（行長・空行・見出し・HTML・表など） ---
+    "MD013": false,
+    "MD022": false,
+    "MD024": false,
+    "MD025": false,
+    "MD026": false,
+    "MD031": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD036": false,
+    "MD038": false,
+    "MD040": false,
+    "MD041": false,
+    "MD051": false,
+    "MD058": false,
+    "MD060": false
+  }
+}

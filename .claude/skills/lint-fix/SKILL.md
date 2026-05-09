@@ -21,7 +21,6 @@ description: "Use proactively when editing files under .claude/, .cursor/, .code
 
 - lint
 - format
-- format-fix
 - markdownlint
 - prettier
 - yamllint

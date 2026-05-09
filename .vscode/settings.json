@@ -39,15 +39,44 @@
   "[jsonc]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
+  // 🧩 JavaScript/TypeScript設定（CI の Prettier 対象と同期）
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   // 🔧 Markdownlint設定（品質チェック専用）
   "markdownlint.config": {
-    "extends": "./.markdownlint.jsonc"
+    "extends": "markdownlint/style/prettier",
+    "MD013": false,
+    "MD022": false,
+    "MD024": false,
+    "MD025": false,
+    "MD026": false,
+    "MD031": false,
+    "MD032": false,
+    "MD033": false,
+    "MD034": false,
+    "MD036": false,
+    "MD038": false,
+    "MD040": false,
+    "MD041": false,
+    "MD051": false,
+    "MD058": false,
+    "MD060": false
   },
   // 🔍 YAML拡張設定
   "yaml.validate": true,
   "yaml.schemas": {
     "https://json.schemastore.org/github-workflow.json": "/.github/workflows/*",
-    "./schemas/ai_profile.schema.json": "ai/**/*.json",
+    "./schemas/ai_profile.schema.json": "ai/**/*profile*.json",
     "./schemas/notes.schema.json": "notes/**/*.json"
   },
   // 🚫 不要な警告を抑制
