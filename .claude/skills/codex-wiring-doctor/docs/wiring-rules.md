@@ -3,7 +3,7 @@
 ## Scope
 
 - 対象は `.codex/agents/*.toml`, `.codex/config.toml`, `.codex/config.preset.*.toml`。
-- `config_file` は `./.codex/agents/<name>.toml` 形式で統一する。
+- `config_file` は `.codex/config*.toml` からの相対パスとして `agents/<name>.toml` 形式で統一する。
 
 ## Quality Gate
 

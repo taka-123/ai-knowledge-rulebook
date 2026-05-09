@@ -371,14 +371,14 @@ jobs:
 
 ※ すべて一次情報（Claude Docs/公式GitHub）を基に最小テンプレ化しています。必要に応じて**モデル名/権限/トークン**を環境に合わせて調整してください。
 
-[1]: https://docs.claude.com/en/docs/claude-code/sub-agents 'Subagents - Claude Docs'
-[2]: https://docs.claude.com/en/docs/claude-code/plugins-reference 'Plugins reference - Claude Docs'
-[3]: https://docs.claude.com/en/docs/claude-code/settings 'Claude Code settings - Claude Docs'
-[4]: https://docs.claude.com/en/docs/claude-code/mcp 'Connect Claude Code to tools via MCP - Claude Docs'
-[5]: https://docs.claude.com/en/docs/claude-code/sdk/migration-guide 'Migrate to Claude Agent SDK - Claude Docs'
-[6]: https://docs.claude.com/en/docs/claude-code/slash-commands 'Slash commands - Claude Docs'
-[7]: https://docs.claude.com/en/docs/claude-code/github-actions 'Claude Code GitHub Actions - Claude Docs'
-[8]: https://docs.claude.com/en/docs/claude-code/checkpointing 'Checkpointing - Claude Docs'
-[9]: https://docs.claude.com/en/docs/claude-code/hooks 'Hooks reference - Claude Docs'
-[18]: https://docs.claude.com/en/docs/claude-code/skills 'Agent Skills - Claude Docs'
-[19]: https://note.com/kyutaro15/n/nfcc15522626f 'Claudeを“育てる”新常識！ Agent Skills徹底解説'
+[1]: https://docs.claude.com/en/docs/claude-code/sub-agents "Subagents - Claude Docs"
+[2]: https://docs.claude.com/en/docs/claude-code/plugins-reference "Plugins reference - Claude Docs"
+[3]: https://docs.claude.com/en/docs/claude-code/settings "Claude Code settings - Claude Docs"
+[4]: https://docs.claude.com/en/docs/claude-code/mcp "Connect Claude Code to tools via MCP - Claude Docs"
+[5]: https://docs.claude.com/en/docs/claude-code/sdk/migration-guide "Migrate to Claude Agent SDK - Claude Docs"
+[6]: https://docs.claude.com/en/docs/claude-code/slash-commands "Slash commands - Claude Docs"
+[7]: https://docs.claude.com/en/docs/claude-code/github-actions "Claude Code GitHub Actions - Claude Docs"
+[8]: https://docs.claude.com/en/docs/claude-code/checkpointing "Checkpointing - Claude Docs"
+[9]: https://docs.claude.com/en/docs/claude-code/hooks "Hooks reference - Claude Docs"
+[18]: https://docs.claude.com/en/docs/claude-code/skills "Agent Skills - Claude Docs"
+[19]: https://note.com/kyutaro15/n/nfcc15522626f "Claudeを“育てる”新常識！ Agent Skills徹底解説"

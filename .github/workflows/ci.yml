@@ -15,22 +15,16 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "22"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           pip install check-jsonschema==0.* yamllint
-      - name: Prettier format check
-        run: npx prettier --check .
-      - name: Markdown Lint
-        run: npx markdownlint-cli2 "**/*.md" "#!{.git,node_modules,clips,tmp}"
-      - name: YAML Lint
-        run: yamllint -c ./.config/.yamllint.yml .
-      - name: JSON Schema check
-        run: npm run schema:check
+      - name: Format and lint check
+        run: npm run check
       - name: Gitleaks (secret scan)
         uses: zricethezav/gitleaks-action@v2
         env:
