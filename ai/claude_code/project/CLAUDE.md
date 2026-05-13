@@ -1,16 +1,3 @@
-# CLAUDE.md (Project Constitution)
-
-このファイルは、このリポジトリで Claude Code が作業する際のプロジェクト憲章です。
-
-役割は、命令の網羅ではなく、判断軸・不変条件・成功条件・自律範囲の宣言。本ファイル単独で Claude Code が必要とするルールが揃うように書き、AGENTS.md など他ツール用ファイルへ依存しない。
-
-## 位置づけ
-
-- 適用順序: ユーザーが明示したパスのルール > 作業対象に近い階層の `CLAUDE.md` > 本ファイル > グローバル `~/.claude/CLAUDE.md`。
-- 詳細な path-scoped ルールは `.claude/rules/<topic>.md`、繰り返し手順は `.claude/skills/<name>/SKILL.md`、必ず実行させたい処理は `.claude/settings.json` の hooks に置く。
-- 本ファイルは肥大化させない（目安 200 行未満）。長くなりそうな内容は上記の分離先へ逃がす。
-- 迷った場合は、推測よりも既存コード、設定ファイル、テスト、ドキュメントを優先する。
-
 ## プロジェクト概要
 
 <!-- 1〜3 行で書く。長文化させない。 -->
@@ -58,8 +45,6 @@
 
 設計ルール:
 
-- 既存パターンを優先し、並行する抽象を新設しない。
-- factory、registry、plugin system、config-driven dispatch は、実呼び出し箇所が 2 つ以上揃ってから検討する。
 - アーキテクチャ違反が必要な変更は、編集前に停止してトレードオフを提示する。
 
 ## ハード制約（commitments, not preferences）
@@ -67,13 +52,11 @@
 <!-- 違反時に必ず止まるべき境界だけを書く。 -->
 
 - 秘密情報、トークン、`.env*` を git に入れない。
-- 依頼範囲外のリファクタや整形を行わない。
 - 既存実装を確認せず新しいランタイム依存を追加しない。
 - 公開 API・DB スキーマの動作変更には、テストとドキュメント更新を伴う。
 - DB スキーマ・migration の変更にはロールバック手順を添える。
 - 失敗テスト、lint、型エラーを、無効化や回避で「通った」ことにしない。
 - 生成ファイル（`dist/`、`build/` 等）は直接編集しない。lockfile を変更する場合は理由を明示する。
-- commit、reset、rebase、force-push、branch 削除、PR 作成は、明示依頼なしに行わない。
 
 ## プロジェクト固有ルール
 
@@ -156,10 +139,6 @@
 ## コンテキスト衛生
 
 - 大規模調査、依存追跡、セキュリティ確認、横断 grep は subagent に委任し、メインに集約結果のみ取り込む。
-- ファイル種別ごとのルールは `.claude/rules/<topic>.md` に分離する（例: frontend、api、testing、db）。
-- 繰り返し手順や長いチェックリストは `.claude/skills/<name>/SKILL.md` に分離する。
-- 永続的な決定事項は `docs/ARCHITECTURE.md`、`docs/DECISIONS.md` に書き出す。
-- 個人専用の上書きは `CLAUDE.local.md`（git 管理外）。
 
 ## Shell
 
