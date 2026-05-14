@@ -24,6 +24,12 @@
     "drawio": {
       "command": "npx",
       "args": ["-y", "@drawio/mcp"]
+    },
+    "pencil": {
+      "command": "/Users/tf/.pencil/mcp/cursor/out/mcp-server-darwin-arm64",
+      "args": ["--app", "cursor"],
+      "env": {},
+      "type": "stdio"
     }
   }
 }

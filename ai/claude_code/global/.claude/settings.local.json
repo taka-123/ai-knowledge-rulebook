@@ -1,17 +1,10 @@
 {
   "enabledPlugins": {
-    "codex@openai-codex": true,
-    "discord@claude-plugins-official": true,
     "claude-code-setup@claude-plugins-official": true,
-    "company@cc-company": true
+    "codex@openai-codex": true,
+    "discord@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
-    "cc-company": {
-      "source": {
-        "source": "github",
-        "repo": "Shin-sibainu/cc-company"
-      }
-    },
     "openai-codex": {
       "source": {
         "source": "github",

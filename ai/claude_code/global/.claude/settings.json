@@ -9,7 +9,7 @@
     "type": "command",
     "command": "sh $HOME/.claude/statusline-command.sh"
   },
-  "model": "opusplan",
+  "model": "opus",
   "effortLevel": "xhigh",
   "skipDangerousModePermissionPrompt": true,
   "sandbox": {
