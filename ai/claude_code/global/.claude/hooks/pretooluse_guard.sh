@@ -23,7 +23,7 @@ fi
 
 # rm -rf / rm -fr / rm --recursive --force のうち、危険な削除対象だけ止める。
 # プロジェクト内の rm -rf ./dist, ./build, ./node_modules, ./.claude/skills/foo などは sandbox に任せる。
-if grep -Eq '(^|[[:space:];|&])(/bin/rm|rm|command[[:space:]]+rm)[[:space:]]+' <<<"$cmd_scan"; then
+if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
   if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
     # ルート、ホーム、カレント全体、親ディレクトリ全体
     if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
@@ -60,7 +60,7 @@ if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$
 fi
 
 # git push ガード
-if grep -Eq '(^|[[:space:];|&])git[[:space:]]+push([[:space:]]|$)' <<<"$cmd_scan"; then
+if grep -Eq '(^|[[:space:];|&])(/usr/bin/git|/bin/git|/sbin/git|/usr/local/bin/git|/opt/homebrew/bin/git|git)[[:space:]]+push([[:space:]]|$)' <<<"$cmd_scan"; then
   # force push は常にブロック
   if grep -Eq '(^|[[:space:]])(--force|--force-with-lease|-f)([[:space:]]|$)' <<<"$cmd_scan"; then
     block "force push"
