@@ -26,9 +26,9 @@
 
 ## 外部 CLI 委任
 
-- 外部 CLI（gemini / cursor-agent / codex）を Bash で直接呼ばない。
-- ツール選定は `decide-tool` スキルの Tool Selection Matrix を経由する。
-- 外部視点のレビューが必要な場合は `external-peer-review` スキルを使う。
+- ユーザーが明示的に指定した外部 CLI（Cody / Cursor CLI / Gemini / Codex 等）を使う。
+- CLI 構文が不明な場合は推測せず、`--help` または公式ドキュメントで確認してから実行する。
+- 機密情報を含むタスクを外部 AI に送信しない。
 
 ## 完了報告
 

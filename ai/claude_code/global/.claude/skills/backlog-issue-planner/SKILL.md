@@ -8,155 +8,65 @@ description: |
 
 # backlog-issue-planner
 
-Backlogチケット起票に必要な3ファイル（`backlog.md` / `requirements.md` / `design.md`）と
-ブランチ名を、ユーザーの要求から生成する。
+Backlog 起票に必要な 3 ファイル（`backlog.md` / `requirements.md` / `design.md`）と
+ブランチ名を、ユーザーの要求から段階的に生成する。
 
-## When to use
+## 必要情報
 
-- Backlogチケットを起票する前に、要件・実装計画を整理したい場合。
-- 要求から `backlog.md`・`requirements.md`・`design.md` を一括生成したい場合。
+| 項目                         | backlog.md (起票) | requirements / design |
+| ---------------------------- | ----------------- | --------------------- |
+| 目的・背景                   | ◎ 必須            | ◎ 必須                |
+| 実装したい機能・修正内容     | ◎ 必須            | ◎ 必須                |
+| 対象コンポーネント・スコープ | ○ ざっくり        | ○ 明確に              |
+| スコープ外                   | ○ ざっくり        | ○ 明確に              |
+| 受け入れ条件                 | ○ ざっくり        | ○ テスト可能な粒度    |
+| DB 変更                      | ○ 有無のみ        | ○ スキーマ詳細        |
+| 技術アプローチ・制約         | 不要              | ○ 必要                |
 
-## When NOT to use
+◎ が不足している場合は最大 3 つの質問でまとめて確認する。
 
-- 既にチケットが起票済みで、ドキュメント更新のみ必要な場合。
-- Backlog以外のツール（GitHub Issues、Jiraなど）向けのチケットを作る場合。
-- Markdown整形だけが目的の場合（`backlog-markdown-formatting` を使うこと）。
+## 出力先 & ブランチ命名
 
-## Trigger Keywords
+- ファイル配置: `.work/backlog/BUSSW-AI/{backlog,requirements,design}.md`
+- ブランチ名: `<種別>/BUSSW-XXXX-<英語kebab-case>`（10 語以内）
 
-- backlog起票
-- チケット作成
-- 要件定義
-- 実装計画
-- BUSSW
-- issue作成
-- backlog-issue-planner
+| 種別    | 用途                             |
+| ------- | -------------------------------- |
+| `feat`  | 新機能・新規開発                 |
+| `fix`   | バグ修正・不具合対応             |
+| `chore` | 設定変更・整備・リファクタリング |
 
 ## Procedure
 
-> このスキルは **5フェーズ** で動作する。
-> 起票に必要な情報が揃ったら `backlog.md` を先に生成し、その後に詳細を詰めて `requirements.md` + `design.md` を生成する。
+1. **起票情報を収集**: ◎ 項目が揃うまで壁打ち。
 
----
+2. **`backlog.md` 生成 + ブランチ名提案**:
+   - `mkdir -p .work/backlog/BUSSW-AI/`
+   - `docs/template-guide.md` の「backlog.md テンプレート」を Read。
+   - `backlog-markdown-formatting` スキルの変換規則で `backlog.md` を生成。非エンジニアも読む想定で平易に。
+   - 「この内容で Backlog に起票できます。`requirements.md` と `design.md` を続けますか？」と問う。
 
-### フェーズ 1: 起票情報の収集（backlog.md のしきい値）
+3. **詳細情報を追加収集**（続行希望時）: 受け入れ条件詳細・DB スキーマ・技術アプローチ・API 設計・エッジケース。
 
-1. ユーザーの要求から以下を抽出する:
+4. **`requirements.md` + `design.md` 生成**:
+   - 両ファイルは標準 GFM（`-` 箇条書き・ATX 見出し）。
+   - `docs/template-guide.md` の対応テンプレートを Read。
+   - `design.md` は **アーキテクチャ方針 / 影響リポジトリ / DB / API / 制御ルール / 実装推奨順** を含む。具体的なファイルパスは書かない（実装時に決める）。
 
-   | 項目                         | 起票しきい値     | requirements/design しきい値 |
-   | ---------------------------- | ---------------- | ---------------------------- |
-   | 目的・背景（なぜ必要か）     | ◎ 必須           | ◎ 必須                       |
-   | 実装したい機能・修正内容     | ◎ 必須           | ◎ 必須                       |
-   | 対象コンポーネント・スコープ | ○ ざっくりでよい | ○ 明確に                     |
-   | スコープ外（やらないこと）   | ○ ざっくりでよい | ○ 明確に                     |
-   | 受け入れ条件                 | ○ ざっくりでよい | ○ テスト可能な粒度で         |
-   | DB変更の有無                 | ○ 有無だけでよい | ○ 詳細スキーマまで           |
-   | 技術アプローチ・制約         | 不要             | ○ 必要                       |
-   | 優先度・期限                 | △ あれば         | △ あれば                     |
+5. **起票後の手順を案内**:
 
-2. ◎ 項目が不足している場合は、**最大3つ**の質問をまとめて確認する。
-3. **起票しきい値**（◎ + スコープ・完了条件がざっくりでも揃っている）を満たしたら → フェーズ 2 へ進む。
+   > 1. Backlog でチケットを起票し採番（例: `BUSSW-1234`）を確認する。
+   > 2. フォルダ名を `.work/backlog/BUSSW-AI/` → `.work/backlog/BUSSW-1234/` に変更する。
+   > 3. ブランチ名の `XXXX` を採番に書き換える（例: `feat/BUSSW-1234-add-user-auth`）。
 
----
+## ルール（必守）
 
-### フェーズ 2: backlog.md の生成・Backlog 起票案内
-
-4. `docs/template-guide.md` を Read する（各ファイルのテンプレートを取得するため）。
-5. ブランチ種別を判定し、提案する:
-
-   | 種別                             | 使いどころ                       |
-   | -------------------------------- | -------------------------------- |
-   | `feat/BUSSW-XXXX-<description>`  | 新機能・新規開発                 |
-   | `fix/BUSSW-XXXX-<description>`   | バグ修正・不具合対応             |
-   | `chore/BUSSW-XXXX-<description>` | 設定変更・整備・リファクタリング |
-
-   `<description>` は英語のkebab-caseで10語以内に要約する。
-
-6. `mkdir -p .work/backlog/BUSSW-AI/` を実行する。
-7. `backlog-markdown-formatting` スキルの変換規則に従って `backlog.md` を生成する:
-   - テンプレートは `docs/template-guide.md` の「backlog.md テンプレート」を使用する。
-   - 非エンジニアも読む想定で平易な表現にする。コードレベルの詳細は書かない。
-   - DB変更がある場合のみ「DB変更」セクションを追加する（詳細が未確定でも変更有無が分かる粒度でよい）。
-8. `backlog.md` を生成したら以下を提示する:
-   - 生成した `backlog.md` のパス
-   - 提案ブランチ名
-   - 「**この内容で Backlog に起票できます。** `requirements.md` と `design.md` の作成を続けますか？」
-
----
-
-### フェーズ 3: 詳細情報の収集（requirements/design のしきい値）
-
-9. ユーザーが続行を希望した場合、不足している詳細情報を追加確認する:
-   - 受け入れ条件の詳細（テスト可能な粒度）
-   - DB 詳細スキーマ（カラム名・型・NULL 制約・説明）
-   - 技術アプローチ・影響リポジトリ
-   - API 設計・外部サービス連携
-   - ビジネスロジック・制御ルール・エッジケース
-10. 詳細情報が充分に揃ったら → フェーズ 4 へ進む。
-
----
-
-### フェーズ 4: requirements.md + design.md の生成
-
-フェーズ 4 の全ファイルは標準GFM（`-` 箇条書き・ATX見出し）で記述する。
-
-11. `requirements.md` を生成する:
-    - テンプレートは `docs/template-guide.md` の「requirements.md テンプレート」を使用する。
-12. `design.md` を生成する:
-    - テンプレートは `docs/template-guide.md` の「design.md テンプレート」を使用する。
-    - **書くこと**: アーキテクチャ方針・影響リポジトリ・DB スキーマ詳細・API 設計・制御ルール・実装推奨順。
-    - **書かないこと**: 具体的なファイルパスやコード変更（実装時に探索して決める）。
-
-### フェーズ 5: 完了案内
-
-13. 生成した全ファイルの一覧を提示し、以下の案内を添える:
-
-    > **Backlog起票後の手順**
-    >
-    > 1. Backlogでチケットを起票し、採番（例: `BUSSW-1234`）を確認する。
-    > 2. フォルダ名を `.work/backlog/BUSSW-AI/` から `.work/backlog/BUSSW-1234/` に変更する。
-    > 3. ブランチ名の `XXXX` を採番した番号に書き換える（例: `feat/BUSSW-1234-add-user-auth`）。
-
-## Output Contract
-
-| 成果物            | 配置先                                   | 記法                                        |
-| ----------------- | ---------------------------------------- | ------------------------------------------- |
-| `backlog.md`      | `.work/backlog/BUSSW-AI/backlog.md`      | `backlog-markdown-formatting` 準拠          |
-| `requirements.md` | `.work/backlog/BUSSW-AI/requirements.md` | 標準GFM                                     |
-| `design.md`       | `.work/backlog/BUSSW-AI/design.md`       | 標準GFM                                     |
-| ブランチ名提案    | 出力テキスト                             | `feat\|fix\|chore/BUSSW-XXXX-<description>` |
-
-### NG例
-
-❌ 情報が不足しているのに壁打ちせず、推測だけでファイルを生成する。
-
-❌ `backlog-markdown-formatting` スキルを参照せずに独自の Backlog 記法で `backlog.md` を生成する（規則の重複管理になる）。
-
-❌ ブランチ名の `XXXX` をリアルな番号で埋める（採番はBacklog起票後のため）。
-
-❌ 起票後のフォルダ名変更・ブランチ名変更の案内を省略する。
-
-❌ `.work/backlog/BUSSW-AI/` 以外の場所にファイルを生成する。
+- `.work/backlog/BUSSW-AI/` 以外の場所には生成しない。
+- ブランチ名の `XXXX` を実番号で埋めない（採番は起票後）。
+- `backlog-markdown-formatting` を経由せず独自記法で `backlog.md` を生成しない。
+- 情報不足時に推測でファイルを生成しない（壁打ちで補完する）。
 
 ## Examples
 
-### Example 1
-
-Input: 「ユーザー認証機能を追加したい。メール・パスワードでログインできるようにする」
-Output:
-壁打ち（受け入れ条件とスコープ外を確認）→ backlog.md / requirements.md / design.md を生成 →
-ブランチ名: `feat/BUSSW-XXXX-add-email-password-authentication` を提案。
-
-### Example 2
-
-Input: 「決済処理でNullPointerExceptionが発生する不具合を修正したい」
-Output:
-壁打ちなし（情報が充分）→ backlog.md / requirements.md / design.md を生成 →
-ブランチ名: `fix/BUSSW-XXXX-fix-payment-null-pointer-exception` を提案。
-
-### Example 3
-
-Input: 「CIのLintチェックを追加して、マージ前に自動確認できるようにしたい」
-Output:
-壁打ち（対象ブランチ・ツール確認）→ backlog.md / requirements.md / design.md を生成 →
-ブランチ名: `chore/BUSSW-XXXX-add-ci-lint-check` を提案。
+- 「ユーザー認証機能を追加したい（メール・パスワードログイン）」→ 壁打ち後、3 ファイル生成、ブランチ案 `feat/BUSSW-XXXX-add-email-password-authentication`。
+- 「決済処理で NullPointerException が出る不具合を修正」→ 情報十分なので壁打ちなし、3 ファイル生成、ブランチ案 `fix/BUSSW-XXXX-fix-payment-null-pointer-exception`。
