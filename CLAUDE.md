@@ -2,40 +2,53 @@
 
 - 何を作っているか: AI エージェント設定、運用ルール、学習ノートの正本。
 - 主要利用者: 複数 AI ツールを横断して運用する開発者と AI Coding Agent。
-- コアバリュー: 正本を `ai/` に集約し、ツール別配布先へ安全に同期する。
+- コアバリュー: 設定テンプレートの正本を `ai/` に集約し、配布先（ホームや各 repo）へ安全に同期する。
 - ランタイム / パッケージマネージャ: Node.js 18 以上 / npm。
 
 ## 参照先
 
 - 全体概要: `README.md`
+- テンプレート設計・3 階層: `ai/README.md`
+- 同期マッピング: `scripts/README.md`
 - 技術スタック: `package.json`
-- ディレクトリ構造: `README.md`
 
 実態とドキュメントが食い違う場合は、実ディレクトリ、設定ファイル、テスト、依存関係マニフェストを優先し、必要に応じてドキュメント更新を提案する。
 
+## 編集境界（デフォルト）
+
+| 区分                       | 場所                                                                    | 役割                     | デフォルト     |
+| -------------------------- | ----------------------------------------------------------------------- | ------------------------ | -------------- |
+| **A テンプレート正本**     | `ai/<tool>/{global\|multi_service_parent\|project}/`                    | コピー配布する推奨設定   | **編集対象**   |
+| **B リポジトリ生ファイル** | ルート直下（`CLAUDE.md`、`AGENTS.md`、`.claude/`、`.cursor/` 等）       | この repo 自身の運用設定 | 明示依頼時のみ |
+| **C ホーム生ファイル**     | `~/.claude/`、`~/.cursor/`、`~/.codex/`、`~/.gemini/`、`~/.codeium/` 等 | マシン上の配布先         | 明示依頼時のみ |
+
+- 依頼対象が特定階層・ツールに紐づかなければ、まず `ai/` 配下のテンプレートを Read で探し、そこを編集する。
+- B / C には書き込まず、配布先の変更を A へ逆流させない。反映は `./scripts/sync-*-to-home.sh` をユーザーが実行する。
+- ユーザーが「ルートの `CLAUDE.md` を直して」等と B / C を明示した場合のみ、そこを編集する。
+- `ai/` の 3 階層: `global/` = マシン / ユーザー全体、`multi_service_parent/` = モノレポ親、`project/` = 単一サービス。
+
+詳細は `ai/README.md`（テンプレート設計）と `scripts/README.md`（配布先マッピング）。
+
 ## プロジェクト構造
 
-- `ai/`: 各 AI ツール向け設定・ルールの正本。
-- `.claude/skills/`: このリポジトリ内で使う Skill 定義。
+- `ai/`: 各 AI ツール向けの **設定テンプレート正本**。
 - `scripts/`: `ai/` からホーム配下へ同期するスクリプトと検証スクリプト。
 - `schemas/`: `ai/` と `notes/` 向け JSON Schema。
 - `notes/`: 学習ノート。
 - `snippets/`: テンプレート / 雛形。
 - `.work/`: 作業用ドキュメント。
-- 生成物: `node_modules/` や検証・出力用の一時ディレクトリは編集対象にしない。
-- 直接編集してはいけないもの: `~/.claude`、`~/.cursor`、`~/.codex`、`~/.gemini`、`~/.codeium` などの配布先。
+- ルート直下と `~/.claude` 等の配布先は **生きた設定**。編集ポリシーは「編集境界」を参照。
+- 生成物（`node_modules/` 等）は編集対象にしない。
 
 ## アーキテクチャ不変条件
 
-- レイヤー / モジュール責務: `ai/` が正本、`scripts/` が同期・検証、`schemas/` が構造検証を担う。
-- 依存方向: 配布先の変更を正本へ逆流させず、正本から同期スクリプトで反映する。
+- レイヤー / モジュール責務: `ai/` がテンプレート正本、`scripts/` が同期・検証、`schemas/` が構造検証を担う。
 - データ境界 / 入力検証地点: JSON は `schemas/`、Agent / Skill は `scripts/validate-*.mjs` で検証する。
 - バイパス禁止コンポーネント: `scripts/sync-*-to-home.sh` と `npm run agent:check`。
 
 設計ルール:
 
 - 既存パターンを優先し、並行する抽象を新設しない。
-- factory、registry、plugin system、config-driven dispatch は、実呼び出し箇所が 2 つ以上揃ってから検討する。
 - アーキテクチャ違反が必要な変更は、編集前に停止してトレードオフを提示する。
 
 ## ハード制約（commitments, not preferences）
@@ -45,13 +58,13 @@
 - 既存実装を確認せず新しいランタイム依存を追加しない。
 - 同期先契約や Agent / Skill の自動マッチ条件を変える場合は、対応する検証とドキュメント更新を伴う。
 - 失敗テスト、lint、型エラーを、無効化や回避で「通った」ことにしない。
+- 失敗を隠すための暫定コード、ダミー値、不要な TODO、デバッグ出力、コメントアウトされたコードを残さない。
 - 生成ファイル（`dist/`、`build/` 等）は直接編集しない。lockfile を変更する場合は理由を明示する。
 - commit、reset、rebase、force-push、branch 削除、PR 作成は、明示依頼なしに行わない。
 
 ## プロジェクト固有ルール
 
-- `ai/` を正本として編集し、ホーム配下への反映は `scripts/sync-*-to-home.sh` を使う。
-- `.claude/skills/<name>/SKILL.md` が Skill 本文の置き場。ルーターや補助設定に本文を複製しない。
+- Skill 本文の置き場は、テンプレートなら `ai/claude_code/global/.claude/skills/<name>/SKILL.md`、この repo 自身の運用なら `.claude/skills/<name>/SKILL.md`。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
 
@@ -63,11 +76,11 @@
 - Lint: `npm run lint`
 - その他: `./scripts/sync-all-to-home.sh`、必要に応じて `./scripts/sync-*-to-home.sh`
 
-検証手順:
+## テストと検証
 
-1. 変更箇所に対応する最小のテストから実行する。
-2. 共有ルール、Agent、Skill、schema、同期スクリプトに触れた場合は、より広い検証を実行する。
-3. 実行したコマンドと、失敗した場合の正確な出力を報告する。
+1. 変更箇所に対応する最小の `*:check` から実行する（ルール: `lint:md` / Agent・Skill: `skills:check` 等 / JSON・YAML: `schema:check` または対象 lint）。
+2. 共有ルール、Agent、Skill、schema、同期スクリプトに触れた場合は `npm run agent:check` まで広げる。
+3. 実行コマンドと、失敗時の正確な出力を報告する。検証できない場合は理由と、ユーザーが実行すべきコマンドを示す。
 
 ## 自律範囲
 
@@ -96,21 +109,13 @@
 
 誤った解釈のコストが高い場合は確認する。そうでなければ、前提を明記して進める。
 
-## テストと検証
-
-- ルール修正: 対象の Markdown lint / format check を行う。
-- Agent / Skill 修正: 対応する `*:check` を実行し、必要に応じて `npm run agent:check` まで広げる。
-- JSON / YAML 修正: format check、schema check、または対象 validation を実行する。
-- 検証できない場合は、未検証の理由と、ユーザーが実行すべきコマンドを示す。
-
 ## 外部情報
 
-外部 SDK、フレームワーク、クラウドサービス、CLI、API 仕様、バージョン依存の挙動に関わる場合は、内部知識だけで判断しない。
+外部 SDK、フレームワーク、CLI、API 仕様、バージョン依存の挙動に関わる場合は内部知識だけで判断しない。
 
-- まず、このリポジトリの `package.json`、lockfile、設定、import、既存使用例、型定義を確認する。
-- ライブラリ・フレームワークの仕様確認は、`context7` など一次情報系 MCP サーバーが利用可能ならそれを活用する。
-- 不足する場合に WebFetch / WebSearch で公式ドキュメント、公式リポジトリ、changelog を確認する。
-- 根拠にした情報源（URL、ファイルパス、コミット）と、必要に応じて確認日・対象バージョンを簡潔に示す。
+- まず `package.json`、lockfile、設定、import、既存使用例、型定義を確認する。
+- 必要なら `context7` 等の一次情報系 MCP、または WebFetch / WebSearch で公式ドキュメント・changelog を確認する。
+- 根拠（URL、ファイルパス、コミット）と、必要に応じて確認日・対象バージョンを示す。
 
 ## コンテキスト衛生
 
@@ -120,8 +125,7 @@
 
 ## Shell
 
-- Shell ツール使用時は、**常に** 絶対パスの `working_directory` を指定する。
-- `cd` を前提にしたコマンド連鎖は使わない。
+- Shell 実行時は絶対パスの `working_directory` を指定し、`cd` を前提にしたコマンド連鎖は使わない。
 - 一時ファイルは完了時に削除するか、削除を提案する。
 
 ## 完了報告
