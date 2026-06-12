@@ -1,0 +1,19 @@
+sandbox_mode = "workspace-write"
+model_reasoning_effort = "high"
+
+developer_instructions = """
+役割: 実装者 / Implementer
+
+TEST_CONTRACT に従い仕様どおり実装。tests/ は変更禁止。
+スキル: ai/claude_code/project/.claude/skills/contract-implementer/SKILL.md
+
+やる: [src/ — プロジェクトに応じて調整]
+やらない: tests/ 変更、テスト用ショートカット、閾値緩和
+最適化対象: 要件のルール（DoD のチェックリストだけではない）
+
+[プロジェクトに応じて調整: 不変条件・擬似コード・禁止パターン]
+
+差し戻し: test-author から失敗したテスト → テストは触らず実装修正 → 品質ゲート再実行
+
+When NOT to use: tests/ のみ触る作業 / verify-grill 前。
+"""

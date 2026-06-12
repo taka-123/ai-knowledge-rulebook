@@ -60,5 +60,13 @@ config_file = "agents/test_runner.toml"
 description = "セキュリティ監査 / Security review for code and config."
 config_file = "agents/security_reviewer.toml"
 
+[agents.spec_auditor]
+description = "要件↔実装↔テストの第三者監査 / Spec audit with PASS-FAIL veto."
+config_file = "agents/spec_auditor.toml"
+
+[agents.tech_researcher]
+description = "一次情報ベースの技術調査 / Grounded tech research."
+config_file = "agents/tech_researcher.toml"
+
 [projects."/Users/tf/production/sc-docker-swimming-all"]
 trust_level = "trusted"

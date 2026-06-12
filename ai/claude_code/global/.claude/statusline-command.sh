@@ -1,7 +1,8 @@
 #!/bin/sh
 # ~/.claude/statusline-command.sh
-# Line 1: ~/cwd  branch  model
-# Line 2: ctx: NN%used  5h: icon NN%used  7d: icon NN%used
+# Line 1: ~/cwd  model
+# Line 2: branch
+# Line 3: ctx: NN%used  5h: icon NN%used  7d: icon NN%used
 
 input=$(cat)
 
@@ -14,10 +15,10 @@ percent_int() {
 }
 
 append_segment() {
-  if [ -n "$line2" ]; then
-    line2="${line2}  $1"
+  if [ -n "$line3" ]; then
+    line3="${line3}  $1"
   else
-    line2="$1"
+    line3="$1"
   fi
 }
 
@@ -87,13 +88,16 @@ ring_icon() {
   fi
 }
 
-# --- Line 1: location info ---
+# --- Line 1: cwd + model (model is short, kept on top line for narrow widths) ---
 line1="${CYAN}${short_cwd}${RESET}"
-[ -n "$branch" ] && line1="${line1}  ${YELLOW}${branch}${RESET}"
-[ -n "$model" ]  && line1="${line1}  ${MAGENTA}${model}${RESET}"
+[ -n "$model" ] && line1="${line1}  ${MAGENTA}${model}${RESET}"
 
-# --- Line 2: resource usage ---
+# --- Line 2: branch (independent so long names do not push other info off-screen) ---
 line2=""
+[ -n "$branch" ] && line2="${YELLOW}${branch}${RESET}"
+
+# --- Line 3: resource usage ---
+line3=""
 
 if [ -n "$ctx_used" ]; then
   ctx_int=$(percent_int "$ctx_used")
@@ -130,5 +134,8 @@ fi
 
 printf '%b\n' "$line1"
 if [ -n "$line2" ]; then
-  printf '%b' "$line2"
+  printf '%b\n' "$line2"
+fi
+if [ -n "$line3" ]; then
+  printf '%b' "$line3"
 fi

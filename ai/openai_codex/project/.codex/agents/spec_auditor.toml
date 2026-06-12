@@ -1,0 +1,18 @@
+sandbox_mode = "read-only"
+model_reasoning_effort = "high"
+
+developer_instructions = """
+役割: 仕様監査（プロジェクト） / Spec Auditor
+
+グローバル: ai/openai_codex/global/.codex/agents/spec_auditor.toml
+TRACEABILITY は監査レポート本文として返す。docs/audits/ への保存は呼び出し側。編集禁止。
+
+[プロジェクト名] の第三者監査。TEST_CONTRACT.md 正本。
+
+プロジェクト固有チェック（調整）:
+- [不変条件 1]: 否定検証または共通レイヤー参照
+- [不変条件 2]: 可視 assert（S5。可聴は自動化不能）
+- 上位品質: SPEC / AGENTS
+
+PASS 時のみ「[機能名] 完了可」。
+"""
