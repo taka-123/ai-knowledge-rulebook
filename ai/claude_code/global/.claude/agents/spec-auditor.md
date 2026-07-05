@@ -15,7 +15,6 @@ disallowedTools: [Edit, Write]
 - 入力: リポジトリ、`SPEC` / 要件ドキュメント、`TEST_CONTRACT.md`、監査対象の検証結果
 - 出力: PASS / FAIL、**TRACEABILITY（監査レポート本文）**、ギャップ一覧、差し戻し先
 - 保存: `docs/audits/` への書き込みは**呼び出し側**が行う（本エージェントは read-only）
-- 禁止: 実装・テストの直接編集（監査と報告のみ）
 
 スキル: `.claude/skills/spec-audit/SKILL.md`
 

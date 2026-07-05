@@ -3,7 +3,7 @@
 - 何を作っているか: AI エージェント設定、運用ルール、学習ノートの正本。
 - 主要利用者: 複数 AI ツールを横断して運用する開発者と AI Coding Agent。
 - コアバリュー: 設定テンプレートの正本を `ai/` に集約し、配布先（ホームや各 repo）へ安全に同期する。
-- ランタイム / パッケージマネージャ: Node.js 18 以上 / npm。
+- ランタイム / パッケージマネージャ: Node.js 20.17 以上 / npm。
 
 ## 参照先
 
@@ -67,6 +67,11 @@
 - Skill 本文の置き場は、テンプレートなら `ai/claude_code/global/.claude/skills/<name>/SKILL.md`、この repo 自身の運用なら `.claude/skills/<name>/SKILL.md`。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
+- AI 向け指示文書（Skill / Agent / ルール）に書くのは、固有規約（モデルが推測できないもの）と反デフォルト規律（実際の失敗に根拠があるもの）だけ。自明な指示、仕組みが保証済みのことの言い直し、設計意図の解説は書かない（手順: `instruction-pruning` スキル）。
+- Skill の挙動修正は末尾への注意書き追加で済ませず、Procedure・判定基準・Examples を一体で再設計する。特定の出力例に合わせた場当たりなルール追加をしない。
+- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
+- frontmatter のキーと定型句（`Use when` / `When NOT to use` / `Trigger Keywords` 等）は仕様どおり英語。その他の説明文は保守しやすい自然な日本語で書く。常用英語の単語（PASS / FAIL 等）はそのまま使ってよいが、日本語で問題ない説明文をまるごと英文にしない。3 要素は description に書き、本文に同内容の見出しを重複させない。
+- テストの成否は「通る / 失敗」「PASS / FAIL」など自然な表現で書く。「テストが緑」「緑化」のような直訳表現は使わない。
 
 ## 環境とコマンド
 
@@ -81,6 +86,7 @@
 1. 変更箇所に対応する最小の `*:check` から実行する（ルール: `lint:md` / Agent・Skill: `skills:check` 等 / JSON・YAML: `schema:check` または対象 lint）。
 2. 共有ルール、Agent、Skill、schema、同期スクリプトに触れた場合は `npm run agent:check` まで広げる。
 3. 実行コマンドと、失敗時の正確な出力を報告する。検証できない場合は理由と、ユーザーが実行すべきコマンドを示す。
+4. `scripts/validate-*.mjs` は検証対象 0 件のとき fail させる（「passed (0 files)」を合格と扱わない）。
 
 ## 自律範囲
 
