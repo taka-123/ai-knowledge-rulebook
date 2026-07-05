@@ -120,7 +120,7 @@ Internal Quality Pass で確認する項目。
 
 ### Example 1: パス指定あり
 
-Input: 「`ai/claude_code/global/CLAUDE.md` に編集境界を追記するプロンプトを作って」。
+Input: 「`docs/coding-guidelines.md` に編集境界を追記するプロンプトを作って」。
 Output: 指定パスを Context に含み、触らないパス・参照ファイル・Acceptance Criteria・完了報告形式を明示したプロンプト。
 
 ### Example 2: スコープ不明 → 確認 → 生成
