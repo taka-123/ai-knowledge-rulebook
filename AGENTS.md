@@ -7,7 +7,7 @@
 
 - 概要: AI エージェント設定、運用ルール、学習ノートの正本を管理するリポジトリ。
 - 主要技術: Markdown、JSON / JSONC、YAML、Node.js 検証スクリプト、Shell 同期スクリプト。
-- ランタイム: Node.js 18 以上。YAML / JSON Schema 検証に Python 系 CLI も使う。
+- ランタイム: Node.js 20.17 以上。YAML / JSON Schema 検証に Python 系 CLI も使う。
 - パッケージマネージャ: npm（`package-lock.json`）。
 - 主要エントリポイント: `ai/`（テンプレート正本）、`scripts/`、`schemas/`、`notes/`。
 - 非自明な設計・制約: 設定テンプレートの正本は `ai/` 配下。ルート直下とホーム配下は「生きた設定」で、明示依頼がない限り編集しない。
@@ -118,12 +118,15 @@
 - Skill / Agent のテンプレート例: `ai/claude_code/global/.claude/skills/<name>/SKILL.md`（global）、`ai/claude_code/project/` 配下（project）。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
+- Skill / Agent / ルールなど AI 向け指示文書の作成・編集は、`instruction-authoring` スキルの記述規約と刈り込み判定に従う。
+- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
 
 ## 検証
 
 - 変更箇所に対応する最小のテストから実行する。
 - 共有ルール、Agent、Skill、schema、同期スクリプトに触れた場合は、対応する `*:check` を実行する。
 - Markdown、JSON、YAML を変更した場合は、必要に応じて lint または format check を実行する。
+- `scripts/validate-*.mjs` は検証対象 0 件のとき fail させる（「passed (0 files)」を合格と扱わない）。
 - 検証できない場合は、未検証の理由と、ユーザーが実行すべきコマンドを示す。
 
 ## 禁止事項

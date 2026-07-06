@@ -67,11 +67,8 @@
 - Skill 本文の置き場は、テンプレートなら `ai/claude_code/global/.claude/skills/<name>/SKILL.md`、この repo 自身の運用なら `.claude/skills/<name>/SKILL.md`。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
-- AI 向け指示文書（Skill / Agent / ルール）に書くのは、固有規約（モデルが推測できないもの）と反デフォルト規律（実際の失敗に根拠があるもの）だけ。自明な指示、仕組みが保証済みのことの言い直し、設計意図の解説は書かない（手順: `instruction-pruning` スキル）。
-- Skill の挙動修正は末尾への注意書き追加で済ませず、Procedure・判定基準・Examples を一体で再設計する。特定の出力例に合わせた場当たりなルール追加をしない。
+- Skill / Agent / ルールなど AI 向け指示文書の作成・編集は、`instruction-authoring` スキルの記述規約と刈り込み判定に従う。
 - グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
-- frontmatter のキーと定型句（`Use when` / `When NOT to use` / `Trigger Keywords` 等）は仕様どおり英語。その他の説明文は保守しやすい自然な日本語で書く。常用英語の単語（PASS / FAIL 等）はそのまま使ってよいが、日本語で問題ない説明文をまるごと英文にしない。3 要素は description に書き、本文に同内容の見出しを重複させない。
-- テストの成否は「通る / 失敗」「PASS / FAIL」など自然な表現で書く。「テストが緑」「緑化」のような直訳表現は使わない。
 
 ## 環境とコマンド
 

@@ -1,18 +1,25 @@
 ---
-name: instruction-pruning
+name: instruction-authoring
 description: |
   Use when: スキル・エージェント・ルールファイルなど AI 向け指示文書を作成・編集するとき。ユーザーが指示の刈り込み・監査を求めたとき。
   When NOT to use: 指示文書以外（アプリコード、記事、学習ノート）が対象のとき。
-  Trigger Keywords: [刈り込み, 自明な指示, 冗長な指示, instruction pruning, 指示監査]
+  Trigger Keywords: [指示文書, スキル作成, エージェント作成, 刈り込み, 自明な指示, 冗長な指示, instruction authoring]
 ---
 
-# instruction-pruning
+# instruction-authoring
 
-AI 向け指示文書から、書かなくても挙動が変わらない指示を削る。
-残してよい指示は 2 種類だけ。
+AI 向け指示文書の記述規約と刈り込み。
+書いてよい指示は 2 種類だけ。
 
 1. **固有規約** — モデルが推測できないもの（環境固有の記法・パス・フォーマット・SOP・好み）
 2. **反デフォルト規律** — 指示がないと有能なモデルが流されやすい方向への逆張り（実際に起きた / 起きうる失敗に根拠があるもの）
+
+## Conventions
+
+- frontmatter のキーと定型句（`Use when` / `When NOT to use` / `Trigger Keywords` 等）は仕様どおり英語。その他の説明文は保守しやすい自然な日本語で書く。常用英語の単語（PASS / FAIL 等）はそのまま使ってよいが、日本語で問題ない説明文をまるごと英文にしない。
+- 3 要素（Use when / When NOT to use / Trigger Keywords）は description に書き、本文に同内容の見出しを重複させない。
+- テストの成否は「通る / 失敗」「PASS / FAIL」など自然な表現で書く。「テストが緑」のような直訳表現は使わない。
+- 挙動修正は末尾への注意書き追加で済ませず、Procedure・判定基準・Examples を一体で再設計する。特定の出力例に合わせた場当たりなルール追加をしない。
 
 ## Procedure
 
