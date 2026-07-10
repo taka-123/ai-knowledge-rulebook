@@ -1,5 +1,7 @@
 # Project Constitution for Claude Code
 
+作業開始前: `docs/ai/PROJECT_REALITY_MAP.md` → `docs/ai/AI_OPERATING_GUIDE.md` → 本ファイル。
+
 ## Canonical Source
 
 - Skill 実体は `.claude/skills/<name>/SKILL.md` に限定する。

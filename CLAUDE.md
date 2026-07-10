@@ -7,6 +7,9 @@
 
 ## 参照先
 
+- プロジェクト実態: `docs/ai/PROJECT_REALITY_MAP.md`
+- AI 運用ガイド: `docs/ai/AI_OPERATING_GUIDE.md`
+- 確認済み知見: `docs/ai/lessons/`
 - 全体概要: `README.md`
 - テンプレート設計・3 階層: `ai/README.md`
 - 同期マッピング: `scripts/README.md`
@@ -67,7 +70,7 @@
 - Skill 本文の置き場は、テンプレートなら `ai/claude_code/global/.claude/skills/<name>/SKILL.md`、この repo 自身の運用なら `.claude/skills/<name>/SKILL.md`。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
-- Skill / Agent / ルールなど AI 向け指示文書の作成・編集は、`instruction-authoring` スキルの記述規約と刈り込み判定に従う。
+- 自然言語ドキュメントの作成・編集は `document-authoring` に従う。Skill / Agent / CLAUDE.md・AGENTS.md など AI 向け指示は `ai-instruction-authoring` も使う。
 - グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
 
 ## 環境とコマンド
