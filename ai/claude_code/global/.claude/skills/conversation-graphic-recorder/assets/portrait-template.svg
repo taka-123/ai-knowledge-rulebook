@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">[タイトル]</title>
+  <desc id="desc">[画像の内容を説明]</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#315c6b"/>
+    </marker>
+    <filter id="paperShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#24343b" flood-opacity="0.12"/>
+    </filter>
+    <pattern id="paperDots" width="32" height="32" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1.2" fill="#dfe9e7"/>
+    </pattern>
+    <style>
+      .title { font: 800 58px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #18323c; }
+      .subtitle { font: 650 28px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #52666e; }
+      .block-title { font: 800 34px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #18323c; }
+      .body { font: 600 27px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #334b54; }
+      .small { font: 650 24px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #52666e; }
+      .core { font: 850 38px -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic UI", sans-serif; fill: #0e4857; }
+      .line { fill: none; stroke: #315c6b; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+      .arrow { fill: none; stroke: #315c6b; stroke-width: 5; stroke-linecap: round; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="1500" fill="#fbfaf5"/>
+  <rect width="1200" height="1500" fill="url(#paperDots)" opacity="0.55"/>
+
+  <g id="header">
+    <text x="70" y="95" class="title">[タイトル]</text>
+    <text x="72" y="142" class="subtitle">[対象・確認時点]</text>
+    <path d="M 70 170 C 320 185, 670 155, 1060 178" class="line" stroke="#ef8f62"/>
+  </g>
+
+  <g id="core-message" filter="url(#paperShadow)">
+    <rect x="110" y="225" width="980" height="210" rx="36" fill="#e6f3f0" stroke="#2d7a72" stroke-width="5"/>
+    <text x="600" y="290" text-anchor="middle" class="small">最重要メッセージ</text>
+    <text x="600" y="355" text-anchor="middle" class="core">[核心を1〜2行で記載]</text>
+  </g>
+
+  <g id="block-1" filter="url(#paperShadow)">
+    <rect x="75" y="520" width="500" height="245" rx="30" fill="#fff" stroke="#e59a5f" stroke-width="5"/>
+    <text x="110" y="575" class="block-title">[ブロック1]</text>
+    <text x="115" y="630" class="body">
+      <tspan x="115" dy="0">• [短い要点]</tspan>
+      <tspan x="115" dy="45">• [短い要点]</tspan>
+      <tspan x="115" dy="45">• [短い要点]</tspan>
+    </text>
+  </g>
+
+  <g id="block-2" filter="url(#paperShadow)">
+    <rect x="625" y="520" width="500" height="245" rx="30" fill="#fff" stroke="#5b8cc0" stroke-width="5"/>
+    <text x="660" y="575" class="block-title">[ブロック2]</text>
+    <text x="665" y="630" class="body">
+      <tspan x="665" dy="0">• [短い要点]</tspan>
+      <tspan x="665" dy="45">• [短い要点]</tspan>
+      <tspan x="665" dy="45">• [短い要点]</tspan>
+    </text>
+  </g>
+
+  <path d="M 420 435 C 380 465, 345 485, 325 520" class="arrow"/>
+  <path d="M 780 435 C 820 465, 855 485, 875 520" class="arrow"/>
+
+  <g id="block-3" filter="url(#paperShadow)">
+    <rect x="75" y="850" width="500" height="245" rx="30" fill="#fff" stroke="#6c9f70" stroke-width="5"/>
+    <text x="110" y="905" class="block-title">[ブロック3]</text>
+    <text x="115" y="960" class="body">
+      <tspan x="115" dy="0">• [短い要点]</tspan>
+      <tspan x="115" dy="45">• [短い要点]</tspan>
+      <tspan x="115" dy="45">• [短い要点]</tspan>
+    </text>
+  </g>
+
+  <g id="block-4" filter="url(#paperShadow)">
+    <rect x="625" y="850" width="500" height="245" rx="30" fill="#fff" stroke="#b78ab9" stroke-width="5"/>
+    <text x="660" y="905" class="block-title">[ブロック4]</text>
+    <text x="665" y="960" class="body">
+      <tspan x="665" dy="0">• [短い要点]</tspan>
+      <tspan x="665" dy="45">• [短い要点]</tspan>
+      <tspan x="665" dy="45">• [短い要点]</tspan>
+    </text>
+  </g>
+
+  <path d="M 325 765 L 325 850" class="arrow"/>
+  <path d="M 875 765 L 875 850" class="arrow"/>
+
+  <g id="summary" filter="url(#paperShadow)">
+    <rect x="125" y="1190" width="950" height="190" rx="34" fill="#fff4d9" stroke="#d2a640" stroke-width="5"/>
+    <text x="165" y="1250" class="block-title">まとめ・次の一歩</text>
+    <text x="170" y="1310" class="body">
+      <tspan x="170" dy="0">[最終まとめまたは次の行動]</tspan>
+    </text>
+  </g>
+</svg>

@@ -208,5 +208,4 @@
 | ------------------------------------------------------------ | --------------------------------------------------------------------------- |
 | CI に `npm run agent:check` を追加                           | README は agent:check を推奨するが CI 未実行                                |
 | `.prettierignore` に `.claude/suggestions/` を追加           | gitignore 済みだが Prettier 対象のためローカル `npm run check` が失敗しうる |
-| `html-review-artifact/SKILL.md` の Prettier 整形             | 本セッション `npm run check` で warn                                        |
 | Claude 専用 agent 2 件の Cursor/Codex への意図的除外を文書化 | agent 数不一致                                                              |
