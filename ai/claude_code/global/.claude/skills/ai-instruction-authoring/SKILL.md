@@ -8,6 +8,8 @@ description: |
 
 # ai-instruction-authoring
 
+## 目的
+
 AI 向け指示（Skill、Agent、ルール、`CLAUDE.md`、`AGENTS.md` など）の書き方。
 文章の短さ・一貫性・見直しタイミングは `document-authoring` に従い、本 Skill は **AI 指示固有の決めごと**だけを扱う。
 
