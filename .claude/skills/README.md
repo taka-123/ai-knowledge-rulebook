@@ -7,7 +7,6 @@
 
 - `claude-agent-color-normalizer`
 - `codex-wiring-doctor`
-- `content-scaffold`
 - `cross-platform-agent-sync`
 - `cursor-agent-schema-guard`
 - `description-condition-enforcer`
@@ -15,9 +14,6 @@
 - `format-lint-audit`
 - `frontmatter-audit`
 - `lint-fix`
-- `natural-language-review-router`
 - `note-add`
-- `organizing-commits`
 - `schema-guard`
 - `skill-inventory-hygiene`
-- `task-planner`
