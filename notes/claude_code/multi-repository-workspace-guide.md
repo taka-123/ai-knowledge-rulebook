@@ -246,13 +246,11 @@ git commit -m "..."
     "allow": [
       "Read(**/*)",
       "Grep(**/*)",
-      "Glob(**/*)",
       "Bash(git status:*)",
       "Bash(git diff:*)"
     ],
     "ask": [
       "Edit(**/*)",
-      "Write(**/*)",
       "Bash(git commit:*)",
       "Bash(git push:*)"
     ],
@@ -269,7 +267,7 @@ git commit -m "..."
 **ポイント**:
 
 - `Read`は全許可（子リポジトリの`CLAUDE.md`読み込みに必須）
-- `Edit`/`Write`は`ask`（誤操作防止）
+- `Edit`は`ask`（誤操作防止。書き込み系は `Edit(path)` に統合済み）
 - `.env`系は完全拒否
 
 ---
