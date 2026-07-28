@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Typically invoked by cross-service-reviewer; also when user explicitly requests review limited to .claude/, .cursor/, .codex/, scripts/, package.json, or .work/. Use when reviewing diffs under those paths after implementation or bug-fix work. When NOT to use: when the task only requests creating templates without correctness or regression assessment; when repo-wide or arbitrary-scope diff review with 4 criteria is requested (use ai-diff-review skill). Trigger Keywords: [code review, 品質確認, regression, correctness].
+description: Typically invoked by cross-service-reviewer; also when user explicitly requests review limited to .claude/, .cursor/, .codex/, scripts/, package.json, or .work/. Use when reviewing diffs under those paths after implementation or bug-fix work. When NOT to use: when the task only requests creating templates without correctness or regression assessment. For single-path (small) reviews, run this Output Format in the current context. Trigger Keywords: [code review, 品質確認, regression, correctness].
 color: Yellow
 tools: [Read, Grep, Glob, Bash]
 disallowedTools: [Edit, Write]

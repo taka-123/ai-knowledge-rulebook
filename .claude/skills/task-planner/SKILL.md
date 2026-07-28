@@ -35,9 +35,9 @@ description: "Use when the user explicitly asks for a stepwise implementation pl
 
 ## Output Contract
 
-| Step | Target Files                               | Action   | Completion Criteria | Verification          |
-| ---- | ------------------------------------------ | -------- | ------------------- | --------------------- |
-| 1    | `.claude/skills/skill-discoverer/SKILL.md` | 新規追加 | 8セクション実装済み | `npm run agent:check` |
+| Step | Target Files                        | Action | Completion Criteria | Verification          |
+| ---- | ----------------------------------- | ------ | ------------------- | --------------------- |
+| 1    | `.claude/skills/docs-sync/SKILL.md` | 更新   | description 整合    | `npm run agent:check` |
 
 ### NG例
 
@@ -61,5 +61,5 @@ Output: 依存順とロールバック方針を含む計画書。
 
 ### Example 3
 
-Input: `.claude/skills/skill-discoverer/SKILL.md` 新規追加の前後で必要な作業を整理したい。
-Output: 新規作成→README反映→検証の段階計画。
+Input: `.claude/skills/docs-sync/SKILL.md` 更新の前後で必要な作業を整理したい。
+Output: 更新→README反映→検証の段階計画。

@@ -1,6 +1,6 @@
 ---
 name: organizing-commits
-description: "Use when the user explicitly asks to organize git changes under .claude/, .cursor/, .codex/, scripts/, or .work/ into reviewable commit units; When NOT to use: when there are no file changes or git planning is out of scope; Trigger Keywords: [organizing commits, commit, diff, PR, rollback]."
+description: "Use when the user explicitly asks to organize git changes under .claude/, .cursor/, .codex/, scripts/, or .work/ into reviewable commit units; When NOT to use: when there are no file changes, git planning is out of scope, or the request is only a commit message / single commit (use global commit-message-suggester or diff-review-commit); Trigger Keywords: [organizing commits, コミット整理, commit units, rollback plan]."
 ---
 
 # organizing-commits
@@ -13,17 +13,16 @@ description: "Use when the user explicitly asks to organize git changes under .c
 
 ## When NOT to use
 
-- 変更ファイルが存在せずコミット対象がないとき。
-- Git 操作そのものが禁止されるタスク条件のとき。
+- 変更が無い、または Git 操作が禁止されているとき。
+- メッセージ案や単一コミット実行だけが目的のとき（グローバルの commit-message-suggester / diff-review-commit）。
 - コミット履歴が既に整理済みで再分割の必要がないとき。
 
 ## Trigger Keywords
 
 - organizing commits
-- commit
-- diff
-- PR
-- rollback
+- コミット整理
+- commit units
+- rollback plan
 
 ## Procedure
 

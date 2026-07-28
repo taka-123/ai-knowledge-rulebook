@@ -7,11 +7,11 @@
 発話でファスト/ヘビーを分けない。**差分を取得したうえで、差分量・ファイル数・リスク領域からルートを決める**。
 
 1. `git diff --stat` と `git diff -p` でスコープを把握する。
-2. **小さい**（目安: 約 400 LOC 未満・ファイル数少なめ）かつリスク領域でない → **単一パス**: ai-diff-review 手順を実行（現コンテキスト or 1 サブエージェント）。
+2. **小さい**（目安: 約 400 LOC 未満・ファイル数少なめ）かつリスク領域でない → **単一パス**: 現コンテキストで `code-reviewer` の Output Format に従ってレビュー。
 3. **大きい**（約 400 LOC 以上 or 複数ファイル）or リスク領域（auth/security/infra/依存更新等）→ **パイプライン**: cross-service-reviewer → code-reviewer →（必要時）security-reviewer → verifier。
 4. **オーバーライド**: ユーザーが「しっかり」「full review」→ パイプライン強制。「軽く」「quick」→ 単一パス強制。
 
-どちらのルートでも最終レポートは **統一形式**（レビューサマリー・指摘事項の絵文字表現。ai-diff-review の Output Contract に準拠）。
+どちらのルートでも最終レポートは **統一形式**（レビューサマリー・指摘事項の絵文字表現。`code-reviewer` の Output Format に準拠）。
 
 ## Pipeline の実行順（パイプラインを選んだ場合）
 

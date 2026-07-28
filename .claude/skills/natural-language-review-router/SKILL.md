@@ -27,7 +27,7 @@ description: "Use proactively when editing CLAUDE.local.md, .claude/commands/, .
 
 ## Runtime routing (reference)
 
-レビュー依頼は **発話で分けず、コンテキストで自動ルーティング**する。差分取得後、小さい（約 400 LOC 未満・ファイル数少なめ）かつリスク領域でない → **ai-diff-review**（単一パス）。大きい or リスク領域 → **cross-service-reviewer** 起点のパイプライン。オーバーライド: 「しっかり」「full」→ パイプライン強制。「軽く」「quick」→ 単一パス強制。詳細は `.codex/REVIEW_PLAYBOOK.md` および `.cursor/rules/review-routing.mdc` を参照。
+レビュー依頼は **発話で分けず、コンテキストで自動ルーティング**する。差分取得後、小さい（約 400 LOC 未満・ファイル数少なめ）かつリスク領域でない → **単一パス**（現コンテキストで `code-reviewer` の Output Format）。大きい or リスク領域 → **cross-service-reviewer** 起点のパイプライン。オーバーライド: 「しっかり」「full」→ パイプライン強制。「軽く」「quick」→ 単一パス強制。詳細は `.codex/REVIEW_PLAYBOOK.md` および `.cursor/rules/review-routing.mdc` を参照。
 
 ## Procedure
 

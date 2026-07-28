@@ -59,7 +59,7 @@ Output: 対象ファイル修正後の再実行結果表。
 
 ### Example 2
 
-Input: `npm run lint:md` が `.claude/skills/skill-discoverer/SKILL.md` で失敗した。
+Input: `npm run lint:md` が `.claude/skills/docs-sync/SKILL.md` で失敗した。
 Output: 規約違反修正後の PASS 記録。
 
 ### Example 3

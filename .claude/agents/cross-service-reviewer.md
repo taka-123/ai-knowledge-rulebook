@@ -28,7 +28,7 @@ memory: project
 
 **Status:** PASS | FAIL | PARTIAL | BLOCKED
 
-ユーザー向けの最終レポートは **ai-diff-review の Output Contract に準拠**（レビューサマリー・指摘事項を絵文字付きの統一形式で出力）。そのうえでパイプライン状況を追記する。
+ユーザー向けの最終レポートは **`code-reviewer` の Output Format（統一レポート形式）に準拠**する。そのうえでパイプライン状況を追記する。
 
 ```markdown
 ## レビューサマリー

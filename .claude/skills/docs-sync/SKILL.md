@@ -64,5 +64,5 @@ Output: scripts 節の更新と `cat package.json` 根拠を含む報告。
 
 ### Example 3
 
-Input: `.claude/skills/skill-discoverer/SKILL.md` 追加後に関連ドキュメントへ反映したい。
+Input: `.claude/skills/note-add/SKILL.md` 追加後に関連ドキュメントへ反映したい。
 Output: 反映済みファイル一覧と `npx markdownlint-cli2` PASS 記録。

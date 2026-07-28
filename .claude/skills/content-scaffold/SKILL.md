@@ -7,7 +7,7 @@ description: "Use proactively when editing any file under .claude/agents/, .curs
 
 ## When to use
 
-- `.claude/skills/skill-discoverer/SKILL.md` のような新規 SKILL.md を規約準拠で追加するとき。
+- `.claude/skills/note-add/SKILL.md` のような新規 SKILL.md を規約準拠で追加するとき。
 - `.claude/agents/*.md` と `.cursor/agents/*.md` を同じ設計で新規作成するとき。
 - `.codex/agents/*.toml` を Markdown agent から変換して新規作成するとき。
 
@@ -54,7 +54,7 @@ description: "Use proactively when editing any file under .claude/agents/, .curs
 
 ### Example 1
 
-Input: `.claude/skills/skill-discoverer/SKILL.md` を新規追加したい。
+Input: `.claude/skills/note-add/SKILL.md` を新規追加したい。
 Output: 8セクション実装済み SKILL.md と `npm run agent:check` 結果。
 
 ### Example 2

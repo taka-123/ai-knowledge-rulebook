@@ -1,10 +1,10 @@
 # Canonical Skills Index
 
 このリポジトリの Skill 実体はすべて `.claude/skills/*/SKILL.md` に配置する。
+汎用 Skill（document-authoring、commit 系、Backlog 整形など）は `~/.claude/skills/`（正本: `ai/claude_code/global/.claude/skills/`）を使う。
 
 ## Skill List
 
-- `backlog-markdown-formatting`
 - `claude-agent-color-normalizer`
 - `codex-wiring-doctor`
 - `content-scaffold`
@@ -12,7 +12,6 @@
 - `cursor-agent-schema-guard`
 - `description-condition-enforcer`
 - `docs-sync`
-- `documentation-standards`
 - `format-lint-audit`
 - `frontmatter-audit`
 - `lint-fix`
@@ -20,6 +19,5 @@
 - `note-add`
 - `organizing-commits`
 - `schema-guard`
-- `skill-discoverer`
 - `skill-inventory-hygiene`
 - `task-planner`
