@@ -2,7 +2,7 @@
 name: conversation-visualizer
 description: |
   Use when: ユーザーが、現在の会話・指定資料・Git差分について、最終結論、決定事項、実際の変更点、影響、次の行動を単一の自己完結HTMLで可視化するよう明示したとき。会話整理、差分要約、比較資料、変更内容の説明を1つのSkillで扱う。
-  When NOT to use: 単なる短い要約、品質レビューだけ、コミット作成、正本Markdownの作成、画像としての可視化。画像は conversation-graphic-recorder、差分品質判定は diff-quality-gate を使う。
+  When NOT to use: 単なる短い要約、品質レビューだけ、コミット作成、正本Markdownの作成、1枚のグラレコ可視化。グラレコ（画像または SVG ポスター）は conversation-graphic-recorder、差分品質判定は diff-quality-gate を使う。
   Trigger Keywords: [conversation-visualizer, 会話をHTML化, 最終結論を可視化, 差分をHTML化, 変更内容を可視化, ブラウザで見たい, HTMLで整理]
 ---
 
@@ -321,13 +321,13 @@ HTML全文を会話へ再掲しない。
 
 ## 他Skillとの境界
 
-| Skill                           | 責務                                           |
-| ------------------------------- | ---------------------------------------------- |
-| `conversation-visualizer`       | 確定内容または実変更点をHTMLで理解しやすくする |
-| `conversation-graphic-recorder` | 同じ情報を1枚のグラレコ画像で直感的に示す      |
-| `diff-quality-gate`             | 差分の品質、残骸、機密、明らかな欠陥を評価する |
-| `diff-review-commit`            | レビュー後にコミットまで行う                   |
-| `document-authoring`            | 正本となる自然言語文書を作成・編集する         |
+| Skill                           | 責務                                                |
+| ------------------------------- | --------------------------------------------------- |
+| `conversation-visualizer`       | 確定内容または実変更点をHTMLで理解しやすくする      |
+| `conversation-graphic-recorder` | 同じ情報を1枚のグラレコ（画像、なければ SVG）で示す |
+| `diff-quality-gate`             | 差分の品質、残骸、機密、明らかな欠陥を評価する      |
+| `diff-review-commit`            | レビュー後にコミットまで行う                        |
+| `document-authoring`            | 正本となる自然言語文書を作成・編集する              |
 
 ## 禁止事項
 
