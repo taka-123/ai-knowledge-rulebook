@@ -1,6 +1,35 @@
 # scripts/
 
-プロジェクト内の AI ツール設定をホームディレクトリへ同期するスクリプト群。
+プロジェクト内の AI ツール設定をホームディレクトリへ同期するスクリプト群と、
+任意プロジェクトへ Portable Kit を実体コピーするスクリプト。
+
+## 同名ポリシー（Skills / Agents）
+
+- global（ホーム）と project に **同名を恒久並存させない**（推奨）。
+- Claude Code Skills は公式上 personal が project より優先され得る。同名だと Local と Cloud で挙動が分かれやすい。
+- `/` 一覧に同名が二重表示されることもある。別名（`my-*`）か、project に置いたら global 同名は使わない。
+- ホームを指す symlink でプロジェクトへ配布しない。Cloud 用は実体コピー＋ commit。
+
+詳細: `ai/PORTABLE_KIT.md`
+
+## copy-portable-to-project.sh
+
+`ai/*/global` の汎用 Skills / Agents を、任意のプロジェクトルートへ実体コピーする。
+
+```bash
+./scripts/copy-portable-to-project.sh --list
+./scripts/copy-portable-to-project.sh /path/to/project --preset cloud-basic
+./scripts/copy-portable-to-project.sh /path/to/project --preset cloud-handoff
+./scripts/copy-portable-to-project.sh /path/to/project --skill document-authoring --agent codebase-explorer
+```
+
+- 正本は常にこの rulebook（他プロジェクトからコピーしない）
+- `cloud-basic`: 文書・整形・調査系（対話・チャット貼付・コミット系・職場起票は含まない）
+- `cloud-handoff`: HTML / グラレコの引き継ぎ成果物
+- 既存は確認のうえ `.portable-kit-backup/` へ退避（`--force` で非対話上書き）
+- `.portable-kit.lock` にコピー元 rev を記録
+- Cloud / チーム共有で使うなら **対象プロジェクトで commit**
+- 移行 vs コピーの方針は `ai/PORTABLE_KIT.md` を参照
 
 ## sync-\*-to-home.sh の仕組み
 
