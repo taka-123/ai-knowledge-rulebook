@@ -1,9 +1,9 @@
 ---
 name: diff-quality-gate
 description: |
-  Use when: 未コミット差分の品質だけを確認したいとき（コミットしない）。冗長・会話残留コメント・デッドコード・既存再利用漏れなどを見るとき。
+  Use when: 未コミット差分の品質だけを確認したいとき（コミットしない）。冗長・会話残留・デッドコード・既存再利用漏れ。差分に共有 Markdown があるときは document-authoring を Read して本文も見る。
   When NOT to use: メッセージ作成やコミット実行が主目的のとき（diff-review-commit / commit-message-suggester）。PR前の受け入れ条件レビュー。セキュリティ専門レビュー単体。
-  Trigger Keywords: [diff-quality-gate, 差分品質, 品質ゲート, 差分チェックだけ, コミット前チェック, 冗長チェック]
+  Trigger Keywords: [diff-quality-gate, 差分品質, 品質ゲート, 差分チェックだけ, コミット前チェック, 冗長チェック, 会話残留]
 ---
 
 # diff-quality-gate
@@ -11,7 +11,9 @@ description: |
 未コミット差分（staged 含む）**全体**の品質ゲート。指摘のみ。**コミット・amend・push はしない**。
 本スキルは**静的レビューのみ**（差分の読取）。lint / 型チェック / テスト実行は行わない（別途依頼）。
 
-文書ファイル（`*.md` 等）の本文品質は、差分に含まれる範囲で **`document-authoring` の SKILL.md を Read して準用**する（ルールをここに再掲しない）。
+差分に共有 Markdown（README、`docs/`、`ai/**/*.md` 等）が含まれるときは、
+その範囲で **`document-authoring` の SKILL.md を Read して準用**する（ルールは再掲しない）。
+AI 向け指示ファイルが主なら `ai-instruction-authoring` も Read する。
 
 ## Procedure
 

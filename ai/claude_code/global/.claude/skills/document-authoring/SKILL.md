@@ -1,16 +1,30 @@
 ---
 name: document-authoring
 description: |
-  Use when: 自然言語のドキュメントを作成・編集するとき。要件・計画・設計・手順・共有メモなど。見直し・冗長削除・継ぎはぎ排除を求められたとき。
-  When NOT to use: アプリコード・テスト・設定値そのものの編集が主目的のとき。Skill / Agent / CLAUDE.md・AGENTS.md など AI 向け指示の書き方そのものが主目的のときは ai-instruction-authoring。
-  Trigger Keywords: [要件定義, 実装計画, 設計メモ, 運用手順, 冗長, 洗練, 継ぎはぎ, ドキュメント整理, document authoring]
+  Use proactively when creating or editing shared Markdown that will be committed
+  (README, docs/, ai/**/*.md, scripts/**/*.md, design or ops notes). Also use when
+  the user explicitly asks to review, refine, or remove redundancy
+  (見直して / 洗練 / 冗長 / 継ぎはぎ).
+  When NOT to use: app code, tests, or config as the main task; chat-only drafts;
+  commit messages only; one-line typos; AI instruction files as the main task
+  (use ai-instruction-authoring — still apply this skill for prose shortness).
+  Trigger Keywords: [document-authoring, README, docs, 共有文書, 会話残留, 見直して, 洗練, 冗長, 継ぎはぎ, 要件定義, 実装計画, 設計メモ, 運用手順]
 ---
 
 # document-authoring
 
 人が読む文章を、短く・分かりやすく・一貫したまま保つ。
 アプリのコードそのものには使わない。
-AI 向け指示（Skill / Agent / ルール / `CLAUDE.md`・`AGENTS.md`）の書き方は `ai-instruction-authoring` に任せる。文章としての短さ・一貫性は本 Skill も併用する。
+AI 向け指示（Skill / Agent / ルール / `CLAUDE.md`・`AGENTS.md`）の書き方は
+`ai-instruction-authoring` に任せる。文章としての短さ・一貫性は本 Skill も併用する。
+
+## いつ起動するか
+
+- **自発（パス該当時）**: コミットする共有 Markdown を新規作成・意味のある編集をするとき。
+- **明示（確実）**: `/document-authoring`、または「見直して」「洗練して」など。
+- チャット下書きやコミットメッセージだけでは起動しない。
+- **区切り**: 提出・共有・完了直前、または同じ文書を会話で何度も直したあと。
+- 小さな追記や誤字のたびに全文を読み直さない（下記「いつ全体を見直すか」）。
 
 ## 目指すこと
 
