@@ -2,11 +2,13 @@
 name: spec-audit
 description: |
   Use when: 検証が完了した後、完了報告の前。要件↔実装↔検証の監査。
-  When NOT to use: trivial 変更。TEST_CONTRACT が存在しない小規模修正。
+  When NOT to use: trivial 変更。TEST_CONTRACT.md または TRACEABILITY.template.md が無いとき。
   Trigger Keywords: [spec-audit, 仕様監査, TRACEABILITY, 完了拒否, ギャップ]
 ---
 
 # spec-audit
+
+`TEST_CONTRACT.md` を採用したプロジェクト向け。global スキルではない。
 
 ## いつ使うか
 
