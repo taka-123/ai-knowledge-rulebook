@@ -1,7 +1,7 @@
 ---
 name: contract-implementer
 description: |
-  Use when: verify-grill 後。TEST_CONTRACT を読み仕様どおり実装。テストは変更不可。
+  Use when: 検証設計の後。TEST_CONTRACT を読み仕様どおり実装。テストは変更不可。
   When NOT to use: テスト作者フェーズ。tests/ のみ触る作業。
   Trigger Keywords: [contract-implementer, implementer, TEST_CONTRACT, 仕様実装]
 ---
@@ -10,7 +10,7 @@ description: |
 
 ## いつ使うか
 
-- verify-grill の**後**
+- 肯定・否定・不変条件の検証設計の**後**
 - test-author と**別コンテキスト**（共謀防止。単一エージェント自律時はメインが本スキルに従う）
 
 ## 役割

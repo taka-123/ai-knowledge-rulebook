@@ -15,5 +15,5 @@ TEST_CONTRACT に従い仕様どおり実装。tests/ は変更禁止。
 
 差し戻し: test-author から失敗したテスト → テストは触らず実装修正 → 品質ゲート再実行
 
-When NOT to use: tests/ のみ触る作業 / verify-grill 前。
+When NOT to use: tests/ のみ触る作業 / 検証設計前。
 """

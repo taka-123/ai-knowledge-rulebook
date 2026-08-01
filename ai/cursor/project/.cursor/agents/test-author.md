@@ -3,7 +3,7 @@ name: test-author
 description: >
   敵対的 E2E テスト作者。実装の共犯者にならない。TEST_CONTRACT 準拠。
   Trigger: 敵対的テスト, adversarial-e2e, E2E 追加, 否定テスト
-  When NOT to use: src/ 実装。verify-grill 前の設計のみ。
+  When NOT to use: src/ 実装。検証設計のみのフェーズ。
 ---
 
 # サブエージェント: テスト作者（test-author）
@@ -17,7 +17,7 @@ description: >
 @TEST_CONTRACT.md @[要件ドキュメント]
 
 [機能名] の敵対的 E2E のみ。src/ は編集禁止。
-verify-grill 設計: [貼り付け]
+検証設計（肯定・否定・不変条件）: [貼り付け]
 ```
 
 ## identity

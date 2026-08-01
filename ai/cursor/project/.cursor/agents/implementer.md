@@ -3,7 +3,7 @@ name: implementer
 description: >
   TEST_CONTRACT に従う実装者。テストは読めるが変更不可。
   Trigger: 機能実装, contract-implementer, マイルストーン実装
-  When NOT to use: tests/ のみ触る作業。verify-grill 前。
+  When NOT to use: tests/ のみ触る作業。検証設計前。
 ---
 
 # サブエージェント: 実装者（implementer）

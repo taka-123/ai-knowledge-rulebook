@@ -2,7 +2,7 @@
 name: adversarial-e2e
 description: |
   Use when: 実装後。TEST_CONTRACT に従い敵対的 E2E / 統合テストを書く。
-  When NOT to use: 単体テストのみの trivial 変更。verify-grill 前の設計フェーズ。
+  When NOT to use: 単体テストのみの trivial 変更。検証設計だけのフェーズ。
   Trigger Keywords: [adversarial-e2e, 敵対的テスト, E2E, test-author, TEST_CONTRACT]
 ---
 
@@ -12,7 +12,7 @@ description: |
 
 - 実装者が機能を書いた**後**
 - **別会話・別サブエージェント**として起動（実装コンテキストと分離 — 共謀が起きた場合は必須）
-- verify-grill の設計書があるときはそれを一次入力にする
+- 実装前の肯定・否定・不変条件の記録があるときはそれを一次入力にする
 
 ## 役割
 
@@ -25,7 +25,7 @@ description: |
 
 1. `TEST_CONTRACT.md` — 禁止・必須パターン
 2. `[要件ドキュメント — プロジェクトに応じて調整]` — 当該機能節
-3. verify-grill 出力（あれば）
+3. 実装前の検証設計メモ（あれば）
 4. `docs/VERIFICATION.md` — 必要時のみ
 
 ## 実装ルール
@@ -39,7 +39,7 @@ description: |
 
 ### 否定テスト
 
-verify-grill で設計した否定を必ず 1 本以上実装する。
+検証設計で挙げた否定を必ず 1 本以上実装する。
 
 ### 完了検証
 

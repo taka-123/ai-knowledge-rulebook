@@ -21,5 +21,5 @@ developer_instructions = """
 
 失敗時は implementer へ（テスト名・要件引用・期待・実際。テストは変えない）。
 
-When NOT to use: src/ 実装 / verify-grill 前の設計のみ。
+When NOT to use: src/ 実装 / 検証設計のみのフェーズ。
 """
