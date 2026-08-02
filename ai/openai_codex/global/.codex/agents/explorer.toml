@@ -1,4 +1,4 @@
-# 読み取り中心。codebase-explorer と同等。必要ならプロジェクト側で model を上書きする。
+# 読み取り中心。codebase-explorer と同等。モデル世代は固定しない。
 sandbox_mode = "read-only"
 model_reasoning_effort = "medium"
 

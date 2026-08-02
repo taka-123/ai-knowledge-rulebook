@@ -1,5 +1,4 @@
 sandbox_mode = "workspace-write"
-model_reasoning_effort = "high"
 
 developer_instructions = """
 役割: テスト失敗収束 / Test Runner

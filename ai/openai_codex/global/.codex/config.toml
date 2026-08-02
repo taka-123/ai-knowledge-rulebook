@@ -1,6 +1,4 @@
-# デフォルトモデル
-model = "gpt-5.5"
-model_reasoning_effort = "medium"
+# モデル世代は固定しない（Codex 既定に任せる）。Plan モードのみ推論量を上げる。
 plan_mode_reasoning_effort = "high"
 
 # 安全寄りのデフォルト

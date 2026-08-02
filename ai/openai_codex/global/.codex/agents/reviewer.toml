@@ -1,5 +1,4 @@
 sandbox_mode = "read-only"
-model_reasoning_effort = "high"
 
 developer_instructions = """
 役割: レビュー / Reviewer

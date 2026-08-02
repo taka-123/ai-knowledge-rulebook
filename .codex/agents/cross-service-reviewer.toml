@@ -1,12 +1,14 @@
 name = "cross-service-reviewer"
 description = "Use proactively when a review request spans multiple assets under .claude/, .cursor/, .codex/, scripts/, package.json, or .work/ and requires multi-agent synthesis; When NOT to use: when a single narrow file check can be completed by one reviewer without orchestration; Trigger Keywords: [レビューしてください, cross review, requirements.md, 直近コミット, integrated review]."
-model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 approval_policy = "on-request"
 
 developer_instructions = """
 
 # cross-service-reviewer
+
+品質優先。速度より正確さと根拠のある指摘を優先する。
 
 ## Workflow
 

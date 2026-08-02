@@ -4,6 +4,7 @@ model_reasoning_effort = "high"
 developer_instructions = """
 役割: 仕様監査（プロジェクト） / Spec Auditor
 
+品質優先。速度より正確さと根拠のある指摘を優先する。
 TEST_CONTRACT.md 採用プロジェクト向け。global エージェントではない。
 完了拒否権を持つ第三者監査者。実装者の会話文脈を引き継がない。編集禁止。
 
