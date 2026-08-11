@@ -31,8 +31,9 @@ cp ai/claude_code/project/CLAUDE.md   /path/to/your-project/CLAUDE.md
 
 ```
 .claude/
-├── settings.json                   # 権限設定 + フック定義
+├── settings.json                   # 権限設定 + フック定義（Cloud でも有効）
 ├── hooks/
+│   ├── pretooluse_guard.sh         # aws/gh/force-push 等（repo 相対）
 │   └── suggest-claude-md-hook.sh  # CLAUDE.md 自動提案フック
 ├── agents/                         # プロジェクト固有エージェント（後から追加）
 └── skills/                         # プロジェクト固有スキル（後から追加）
@@ -40,14 +41,14 @@ cp ai/claude_code/project/CLAUDE.md   /path/to/your-project/CLAUDE.md
 
 ### settings.json の主な設定
 
-| 設定                             | 内容                                              |
-| -------------------------------- | ------------------------------------------------- |
-| `defaultMode: bypassPermissions` | Claude が都度確認なしに作業できる                 |
-| `deny`                           | .env / secrets / pem / sudo / force push 等を禁止 |
-| `ask`                            | git checkout / merge / DB 操作は確認を求める      |
-| `allow`                          | node / npm / python / make 等を許可               |
-| `SessionEnd` フック              | セッション終了時に CLAUDE.md 更新を提案           |
-| `PreCompact` フック              | コンテキスト圧縮前に CLAUDE.md 更新を提案         |
+| 設定                             | 内容                                                         |
+| -------------------------------- | ------------------------------------------------------------ |
+| `defaultMode: bypassPermissions` | Claude が都度確認なしに作業できる                            |
+| `deny`                           | .env / secrets / pem / sudo / aws / gh / force push 等を禁止 |
+| `allow`                          | 基本の読取・git 参照等を許可                                 |
+| `PreToolUse` フック              | `.claude/hooks/pretooluse_guard.sh`（ホーム非依存）          |
+| `SessionEnd` フック              | セッション終了時に CLAUDE.md 更新を提案                      |
+| `PreCompact` フック              | コンテキスト圧縮前に CLAUDE.md 更新を提案                    |
 
 ---
 

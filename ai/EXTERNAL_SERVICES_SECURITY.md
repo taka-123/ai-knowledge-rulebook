@@ -118,22 +118,45 @@ update_pull_request,actions_list,actions_get,get_job_logs
 
 default branch に最低限: PR 必須、approvals、status checks、force push 禁止、削除禁止、bypass を不用意に与えない。
 
-## テンプレート配置
+## テンプレート配置（global + project）
 
-| 種別             | 場所                                                                                         |
-| ---------------- | -------------------------------------------------------------------------------------------- |
-| 方針             | `ai/common/global/AGENTS.md`、`ai/claude_code/global/CLAUDE.md`                              |
-| Claude deny/hook | `ai/claude_code/global/.claude/`（project / multi_service_parent も同趣旨）                  |
-| MCP              | 各ツール `global` の MCP 設定（同期は `--include-mcp`）                                      |
-| Codex            | `ai/openai_codex/global/.codex/config.toml`、`rules/default.rules`（`.rules.md` は案内のみ） |
-| Cursor hooks     | `ai/cursor/global/.cursor/hooks.json`（Shell のみ。MCP 制限は `X-MCP-Tools`）                |
-| Windsurf hooks   | `ai/windsurf/project/.windsurf/`（`tool_info.command_line` を読む）                          |
+**方針**: Local は global、Cloud でも必要な方針・実行制御は project にも置く。秘密情報は repo に置かない。
+
+| 種別                 | Local (global)                    | Cloud / portable (project)                                                       |
+| -------------------- | --------------------------------- | -------------------------------------------------------------------------------- |
+| 共通方針             | `ai/common/global/AGENTS.md`      | `ai/common/project/AGENTS.md`（→ 各 repo の `AGENTS.md`）                        |
+| Claude 方針          | `ai/claude_code/global/CLAUDE.md` | `ai/claude_code/project/CLAUDE.md`                                               |
+| Claude deny/hook     | `~/.claude/` 同期                 | repo `.claude/settings.json` + `.claude/hooks/pretooluse_guard.sh`               |
+| Cursor hooks         | `~/.cursor/hooks.json`            | repo `.cursor/hooks.json` + `.cursor/hooks/*.sh`                                 |
+| Cursor rules         | User Rules                        | repo `.cursor/rules/external-services-safety.mdc`                                |
+| Codex rules / config | `~/.codex/`（Local のみ）         | Cloud の本線は repo `AGENTS.md`。`.codex/rules` は Cloud 防御に数えない          |
+| Windsurf hooks       | Local/Cascade 用                  | `.windsurf/hooks.json` は Local 用。Cloud 保証は `AGENTS.md` まで                |
+| MCP 認証             | ホーム / 環境変数 / dashboard     | **PAT・AWS鍵を repo に置かない**。Cloud は各製品の Secrets / OAuth / GitHub 連携 |
+
+### Cloud 向け最小コピー例
+
+```bash
+# 方針（必須寄り）
+cp ai/common/project/AGENTS.md /path/to/repo/AGENTS.md
+
+# Cursor Cloud
+mkdir -p /path/to/repo/.cursor/hooks /path/to/repo/.cursor/rules
+cp ai/cursor/project/.cursor/hooks.json /path/to/repo/.cursor/
+cp ai/cursor/project/.cursor/hooks/check-external-services.sh /path/to/repo/.cursor/hooks/
+cp ai/cursor/project/.cursor/rules/external-services-safety.mdc /path/to/repo/.cursor/rules/
+
+# Claude Cloud
+cp ai/claude_code/project/CLAUDE.md /path/to/repo/CLAUDE.md
+cp -R ai/claude_code/project/.claude /path/to/repo/.claude
+```
+
+Anthropic-hosted Claude Cloud に長期 AWS credential を渡して AWS MCP を使うのは推奨しない。AWS 操作は Local か、組織管理の self-hosted 環境へ寄せる。
 
 ## 反映手順
 
 1. AWS IAM（必要なら SCP）と GitHub Rulesets を先に整える。
-2. `ai/` テンプレートを使う。
-3. 明示依頼時のみ `./scripts/sync-*-to-home.sh`（MCP もなら `--include-mcp`）。
+2. Local: `ai/*/global` を使い、明示時のみ `./scripts/sync-*-to-home.sh`（MCP もなら `--include-mcp`）。
+3. Cloud 利用 repo: 上記 project 資産を実体コピーして commit。
 4. AWS Region・PAT・プラグイン重複を確認して再起動。
 
 ## 一次情報

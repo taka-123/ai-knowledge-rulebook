@@ -21,7 +21,7 @@
 1. **保守負荷の削減**: AGENTS.md 統一で複数AIツールの設定を一元管理（60-70%削減）
 2. **マルチレポ精度向上**: 3層構造（global / multi_service_parent / project）で親ディレクトリから開いても子サービスのルールを確実に適用
 
-AWS / GitHub を AI から安全に使う方針・MCP・Hooks の正本は [EXTERNAL_SERVICES_SECURITY.md](./EXTERNAL_SERVICES_SECURITY.md)。
+AWS / GitHub を AI から安全に使う方針・MCP・Hooks の正本は [EXTERNAL_SERVICES_SECURITY.md](./EXTERNAL_SERVICES_SECURITY.md)。Local は global、Cloud では project 資産の二重化が必要。
 
 ---
 

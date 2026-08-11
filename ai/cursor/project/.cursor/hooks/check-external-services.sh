@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Cursor beforeShellExecution guard (user global: ~/.cursor)。
-# stdin: Cursor hook JSON. stdout: {"permission":"allow"|"deny"|"ask","user_message":"..."}
-# MCP 制限は X-MCP-Tools（server-side）に任せる。Cloud では本ファイルは効かない → project 側を使う。
+# Cursor beforeShellExecution guard (project / Cloud Agent 向け)。
+# プロジェクトルート相対で実行される。stdin: Cursor hook JSON。
+# stdout: {"permission":"allow"|"deny"|"ask","user_message":"..."}
 set -euo pipefail
 
 input="$(cat)"

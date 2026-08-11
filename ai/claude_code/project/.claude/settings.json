@@ -120,16 +120,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash $HOME/.claude/hooks/pretooluse_guard.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo \"[$(date)] $USER: $(jq -r '.tool_input.command')\" >> ~/.claude/command_history.log"
+            "command": "bash .claude/hooks/pretooluse_guard.sh"
           }
         ]
       }
