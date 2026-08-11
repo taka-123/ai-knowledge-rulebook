@@ -26,6 +26,22 @@
   - 承認待ちで停止する。
 - 一時ファイルは完了時に削除するか、削除を提案する。
 
+## 外部サービスの操作
+
+### AWS
+
+- AWS へのアクセスは AWS MCP Server を使う（プラグインまたは MCP 設定のどちらか一方）。
+- AWS CLI、AWS SDK、絶対パス・相対パスでの AWS CLI 実行、その他の迂回経路は使わない。
+- リソースの作成・更新・削除・起動・停止・デプロイ・権限変更など状態変更は行わない。必要な変更は実行せずユーザーへ提示する。
+
+### GitHub
+
+- GitHub API 操作は公式 GitHub MCP Server を使う。GitHub CLI（`gh`）は直接使わない。
+- 明示依頼があれば自動で行ってよい: Issue / PR / CI の参照、Issue 作成・通常編集、Issue・PR へのコメント、PR 作成・通常編集、feature branch への通常 push。
+- 既存 Issue の更新は、ユーザーから明示的に依頼された場合のみ行う。依頼されていない Issue の close、状態変更、大幅な本文変更は行わない。
+- 既存 PR についても同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更は行わない。
+- 禁止: PR merge、PR review 提出、main/master への直接 push、force push、protected branch の削除、Actions workflow の手動実行、Repository / Ruleset / Branch Protection の変更。
+
 ## 外部 CLI 委任
 
 - ユーザーが明示的に指定した外部 CLI（Cody / Cursor CLI / Gemini / Codex 等）を使う。

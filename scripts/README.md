@@ -71,12 +71,15 @@ ai/common/global/AGENTS.md          → 各ツールのグローバルルール�
 
 #### sync-cursor-to-home.sh
 
-| コピー元                            | コピー先             | 備考                   |
-| ----------------------------------- | -------------------- | ---------------------- |
-| `ai/cursor/global/.cursor/agents/`  | `~/.cursor/agents/`  | ディレクトリ単位で退避 |
-| `ai/cursor/global/.cursor/mcp.json` | `~/.cursor/mcp.json` | `--include-mcp` 時のみ |
+| コピー元                              | コピー先               | 備考                   |
+| ------------------------------------- | ---------------------- | ---------------------- |
+| `ai/cursor/global/.cursor/agents/`    | `~/.cursor/agents/`    | ディレクトリ単位で退避 |
+| `ai/cursor/global/.cursor/hooks.json` | `~/.cursor/hooks.json` | 常時同期               |
+| `ai/cursor/global/.cursor/hooks/`     | `~/.cursor/hooks/`     | 常時同期               |
+| `ai/cursor/global/.cursor/mcp.json`   | `~/.cursor/mcp.json`   | `--include-mcp` 時のみ |
 
 - 完了後に `ai/common/global/AGENTS.md` を Cursor の User Rule として手動設定する案内を表示
+- `hooks.json` / `hooks/` は秘密情報を含まないため常時同期する
 
 #### sync-codex-to-home.sh
 

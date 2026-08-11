@@ -59,6 +59,16 @@ if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$
   fi
 fi
 
+# aws CLI は AWS MCP Server 経由に限定（絶対パス迂回も止める）
+if grep -Eq '(^|[[:space:];|&])(/usr/bin/aws|/bin/aws|/sbin/aws|/usr/local/bin/aws|/opt/homebrew/bin/aws|aws)[[:space:]]' <<<"$cmd_scan"; then
+  block "aws CLI (use AWS MCP Server)"
+fi
+
+# gh CLI は GitHub MCP Server 経由に限定（絶対パス迂回も止める）
+if grep -Eq '(^|[[:space:];|&])(/usr/bin/gh|/bin/gh|/sbin/gh|/usr/local/bin/gh|/opt/homebrew/bin/gh|gh)[[:space:]]' <<<"$cmd_scan"; then
+  block "gh CLI (use GitHub MCP Server)"
+fi
+
 # git push ガード
 if grep -Eq '(^|[[:space:];|&])(/usr/bin/git|/bin/git|/sbin/git|/usr/local/bin/git|/opt/homebrew/bin/git|git)[[:space:]]+push([[:space:]]|$)' <<<"$cmd_scan"; then
   # force push は常にブロック

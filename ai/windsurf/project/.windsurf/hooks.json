@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "pre_run_command": [
+      {
+        "command": "bash .windsurf/hooks/check-external-services.sh",
+        "show_output": true
+      }
+    ],
+    "pre_mcp_tool_use": [
+      {
+        "command": "bash .windsurf/hooks/check-external-services.sh",
+        "show_output": true
+      }
+    ]
+  }
+}

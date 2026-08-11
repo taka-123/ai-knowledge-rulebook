@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # sync-cursor-to-home.sh
 # ai/cursor/global/.cursor/agents を ~/.cursor/agents へ、
+# ai/cursor/global/.cursor/hooks.json と hooks/ を ~/.cursor/ へ、
 # ai/cursor/global/.cursor/mcp.json を ~/.cursor/mcp.json へコピーする。
 # 既存がある場合はバックアップディレクトリへ退避してから上書きする。
 #
 # デフォルトでは mcp.json（MCP/認証設定）はコピー・退避しない。
 # --include-mcp を指定した場合のみ含める。
+# hooks.json / hooks/ は常に同期する（秘密情報を含まない）。
 
 set -euo pipefail
 
@@ -26,11 +28,16 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 # shellcheck source=lib/sync-utils.sh
 source "${SCRIPT_DIR}/lib/sync-utils.sh"
 
-SRC_AGENTS="${PROJECT_ROOT}/ai/cursor/global/.cursor/agents"
+SRC_CURSOR="${PROJECT_ROOT}/ai/cursor/global/.cursor"
+SRC_AGENTS="${SRC_CURSOR}/agents"
+SRC_HOOKS_JSON="${SRC_CURSOR}/hooks.json"
+SRC_HOOKS_DIR="${SRC_CURSOR}/hooks"
 SRC_COMMON_AGENTS="${PROJECT_ROOT}/ai/common/global/AGENTS.md"
-SRC_MCP_JSON="${PROJECT_ROOT}/ai/cursor/global/.cursor/mcp.json"
+SRC_MCP_JSON="${SRC_CURSOR}/mcp.json"
 DEST_CURSOR="${HOME}/.cursor"
 DEST_AGENTS="${HOME}/.cursor/agents"
+DEST_HOOKS_JSON="${HOME}/.cursor/hooks.json"
+DEST_HOOKS_DIR="${HOME}/.cursor/hooks"
 DEST_MCP_JSON="${HOME}/.cursor/mcp.json"
 
 init_backup_dir "$DEST_CURSOR"
@@ -47,6 +54,29 @@ sync_agents_dir() {
   mkdir -p "$DEST_AGENTS"
   rsync -a "$SRC_AGENTS/" "$DEST_AGENTS/"
   echo "コピー: ai/cursor/global/.cursor/agents/* -> $DEST_AGENTS/"
+}
+
+# hooks.json と hooks/ を常時同期
+sync_hooks() {
+  mkdir -p "$DEST_CURSOR"
+
+  if [[ -f "$SRC_HOOKS_JSON" ]]; then
+    backup_to_dir "$DEST_HOOKS_JSON"
+    cp -p "$SRC_HOOKS_JSON" "$DEST_HOOKS_JSON"
+    echo "コピー: hooks.json -> $DEST_HOOKS_JSON"
+  else
+    echo "スキップ: hooks.json が存在しません: $SRC_HOOKS_JSON"
+  fi
+
+  if [[ -d "$SRC_HOOKS_DIR" ]]; then
+    backup_to_dir "$DEST_HOOKS_DIR"
+    mkdir -p "$DEST_HOOKS_DIR"
+    rsync -a "$SRC_HOOKS_DIR/" "$DEST_HOOKS_DIR/"
+    chmod -R u+x "$DEST_HOOKS_DIR" 2>/dev/null || true
+    echo "コピー: hooks/* -> $DEST_HOOKS_DIR/"
+  else
+    echo "スキップ: hooks/ が存在しません: $SRC_HOOKS_DIR"
+  fi
 }
 
 # mcp.json を ~/.cursor/mcp.json へコピー（--include-mcp 時のみ）
@@ -71,6 +101,8 @@ main() {
   echo ""
 
   sync_agents_dir
+  echo ""
+  sync_hooks
   echo ""
   sync_mcp_json
 

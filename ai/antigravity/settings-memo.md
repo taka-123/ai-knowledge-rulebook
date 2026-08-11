@@ -45,6 +45,7 @@
   `ssh *`
   `scp *`
   `aws *`
+  `gh *`
   `terraform *`
   `kubectl *`
   `git push --force *`

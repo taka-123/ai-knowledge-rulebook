@@ -3,8 +3,19 @@
     "github": {
       "serverUrl": "https://api.githubcopilot.com/mcp/",
       "headers": {
-        "Authorization": "Bearer <PLACEHOLDER>"
+        "Authorization": "Bearer <PLACEHOLDER>",
+        "X-MCP-Tools": "get_me,issue_read,list_issues,search_issues,issue_write,add_issue_comment,pull_request_read,list_pull_requests,search_pull_requests,create_pull_request,update_pull_request,actions_list,actions_get,get_job_logs"
       }
+    },
+    "aws-mcp": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy-for-aws==1.6.4",
+        "https://aws-mcp.us-east-1.api.aws/mcp",
+        "--metadata",
+        "AWS_REGION=us-west-2",
+        "--read-only"
+      ]
     },
     "context7": {
       "command": "npx",
