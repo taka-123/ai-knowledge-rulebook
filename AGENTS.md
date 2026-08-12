@@ -40,7 +40,7 @@
 - `notes/`: 学習ノート。
 - `snippets/`: テンプレート / 雛形。
 - `.work/`: 作業用ドキュメント。
-- ルート直下（`AGENTS.md`、`CLAUDE.md`、`.claude/`、`.cursor/`、`.codex/`、`.windsurf/` 等）: **このリポジトリ自身の生きた設定**（憲法・skill・agent・hook）。
+- ルート直下（本ファイル、`.cursor/`、`.codex/`、`.windsurf/` 等）: **このリポジトリ自身の生きた設定**（憲法・skill・agent・hook）。
 - 生成物: `node_modules/` や検証・出力用の一時ディレクトリは編集対象にしない。
 
 ## 編集境界（デフォルト）
@@ -50,7 +50,7 @@
 | 区分                         | 場所                                                                                       | 役割                     | エージェントの扱い               |
 | ---------------------------- | ------------------------------------------------------------------------------------------ | ------------------------ | -------------------------------- |
 | **A テンプレート正本**       | `ai/<tool>/{global\|multi_service_parent\|project}/`                                       | コピーして使う推奨案     | **通常はここだけ編集**           |
-| **B リポジトリの生ファイル** | ルート直下（`AGENTS.md`、`CLAUDE.md`、`.claude/`、`.cursor/`、`.codex/`、`.windsurf/` 等） | この repo 自身の運用設定 | **明示依頼がない限り編集しない** |
+| **B リポジトリの生ファイル** | ルート直下（本ファイル、`.cursor/`、`.codex/`、`.windsurf/` 等） | この repo 自身の運用設定 | **明示依頼がない限り編集しない** |
 | **C ホームの生ファイル**     | `~/.claude/`、`~/.cursor/`、`~/.codex/`、`~/.gemini/`、`~/.codeium/` 等                    | マシン上の配布先         | **明示依頼がない限り編集しない** |
 
 **`ai/` の 3 階層**
@@ -68,7 +68,7 @@
 - 同期スクリプトは、ユーザーが明示依頼したときだけ実行する。
 - テンプレートを B や C に複製・上書きしない（明示依頼時を除く）。
 - ユーザーが「ルートの `AGENTS.md` を直して」等と **生ファイルを明示** した場合のみ、B または C を編集する。
-- **`ai/` 配下の `AGENTS.md` / `CLAUDE.md` はコピー用テンプレート。** Codex CLI 等がルートから cwd までのパス上で複数ファイルを結合する場合でも、テンプレ内のプレースホルダ（`<repo-a>/` 等）やサンプル文言を **このリポジトリの現行方針** として適用しない。ルート `AGENTS.md`（本ファイル）と「編集境界」を優先する。
+- **`ai/` 配下の運用憲法テンプレートはコピー用。** Codex CLI 等がルートから cwd までのパス上で複数ファイルを結合する場合でも、テンプレ内のプレースホルダ（`<repo-a>/` 等）やサンプル文言を **このリポジトリの現行方針** として適用しない。ルートの本ファイルと「編集境界」を優先する。
 
 **詳細**: テンプレートの使い方は `ai/README.md`、配布先マッピングは `scripts/README.md` を参照。
 
@@ -121,8 +121,8 @@
 - Skill / Agent のテンプレート例: `ai/claude_code/global/.claude/skills/<name>/SKILL.md`（global）、`ai/claude_code/project/` 配下（project）。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
-- 自然言語ドキュメントの作成・編集は `document-authoring` に従う。Skill / Agent / CLAUDE.md・AGENTS.md など AI 向け指示は `ai-instruction-authoring` も使う。
-- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
+- 自然言語ドキュメントの作成・編集は `document-authoring` に従う。Skill / Agent / 運用憲法など AI 向け指示は `ai-instruction-authoring` も使う。
+- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名や固有資産名に依存する記述をしない。
 
 ## 検証
 
@@ -147,6 +147,24 @@
 - まず、このリポジトリの `package.json`、lockfile、設定、import、既存使用例を確認する。
 - Web 検索、公式ドキュメントの fetch、MCP（`context7` 等）が利用可能なら、公式ドキュメント・公式リポジトリ・changelog・型定義の一次情報確認に活用する。
 - 外部情報を根拠にした場合は、参照元または確認した対象を簡潔に示す。
+
+## 外部サービスの操作
+
+### AWS
+
+- AWS へのアクセスは AWS MCP Server を使う。
+- AWS CLI、AWS SDK、絶対パス・相対パスでの AWS CLI 実行、その他の迂回経路は使わない。
+- リソースの作成・更新・削除・起動・停止・デプロイ・権限変更など状態変更は行わない。必要な変更は実行せずユーザーへ提示する。
+
+### GitHub
+
+- GitHub API 操作は公式 GitHub MCP Server を使う。GitHub CLI（`gh`）は直接使わない。
+- 明示依頼があれば自動で行ってよい: Issue / PR / CI の参照、Issue 作成・通常編集、Issue・PR へのコメント、PR 作成・通常編集、feature branch への通常 push。
+- 既存 Issue の更新は、ユーザーから明示的に依頼された場合のみ行う。依頼されていない Issue の close、状態変更、大幅な本文変更は行わない。
+- 既存 PR についても同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更は行わない。
+- 禁止: PR merge、PR review 提出、main/master への直接 push、force push、protected branch の削除、Actions workflow の手動実行、Repository / Ruleset / Branch Protection の変更。
+
+詳細: `ai/EXTERNAL_SERVICES_SECURITY.md`
 
 ## Shell
 

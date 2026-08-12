@@ -22,12 +22,13 @@
 | 区分                       | 場所                                                                    | 役割                     | デフォルト     |
 | -------------------------- | ----------------------------------------------------------------------- | ------------------------ | -------------- |
 | **A テンプレート正本**     | `ai/<tool>/{global\|multi_service_parent\|project}/`                    | コピー配布する推奨設定   | **編集対象**   |
-| **B リポジトリ生ファイル** | ルート直下（`CLAUDE.md`、`AGENTS.md`、`.claude/`、`.cursor/` 等）       | この repo 自身の運用設定 | 明示依頼時のみ |
+| **B リポジトリ生ファイル** | ルート直下（本ファイル、`.claude/`、`.cursor/` 等） | この repo 自身の運用設定 | 明示依頼時のみ |
 | **C ホーム生ファイル**     | `~/.claude/`、`~/.cursor/`、`~/.codex/`、`~/.gemini/`、`~/.codeium/` 等 | マシン上の配布先         | 明示依頼時のみ |
 
 - 依頼対象が特定階層・ツールに紐づかなければ、まず `ai/` 配下のテンプレートを Read で探し、そこを編集する。
 - B / C には書き込まず、配布先の変更を A へ逆流させない。反映は `./scripts/sync-*-to-home.sh` をユーザーが実行する。
 - ユーザーが「ルートの `CLAUDE.md` を直して」等と B / C を明示した場合のみ、そこを編集する。
+- **`ai/` 配下の運用憲法テンプレートはコピー用。** テンプレ内のプレースホルダやサンプル文言をこのリポジトリの現行方針として適用しない。ルートの本ファイルと「編集境界」を優先する。
 - `ai/` の 3 階層: `global/` = マシン / ユーザー全体、`multi_service_parent/` = モノレポ親、`project/` = 単一サービス。
 
 詳細は `ai/README.md`（テンプレート設計）と `scripts/README.md`（配布先マッピング）。
@@ -70,8 +71,8 @@
 - Skill 本文の置き場は、テンプレートなら `ai/claude_code/global/.claude/skills/<name>/SKILL.md`、この repo 自身の運用なら `.claude/skills/<name>/SKILL.md`。ルーターや補助設定に本文を複製しない。
 - Agent / Skill の description と Trigger Keywords は自動マッチに使われるため、責務や対象パスを具体的に書く。
 - JSON、YAML、Markdown は既存の formatter / linter / schema に合わせ、検証を弱めて通さない。
-- 自然言語ドキュメントの作成・編集は `document-authoring` に従う。Skill / Agent / CLAUDE.md・AGENTS.md など AI 向け指示は `ai-instruction-authoring` も使う。
-- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名（CLAUDE.md / AGENTS.md 等）や固有資産名に依存する記述をしない。
+- 自然言語ドキュメントの作成・編集は `document-authoring` に従う。Skill / Agent / 運用憲法など AI 向け指示は `ai-instruction-authoring` も使う。
+- グローバル配布資産（`ai/*/global/`、`ai/common/`）はツール中立にする。特定ツールのルールファイル名や固有資産名に依存する記述をしない。
 
 ## 環境とコマンド
 
@@ -122,6 +123,24 @@
 - まず `package.json`、lockfile、設定、import、既存使用例、型定義を確認する。
 - 必要なら `context7` 等の一次情報系 MCP、または WebFetch / WebSearch で公式ドキュメント・changelog を確認する。
 - 根拠（URL、ファイルパス、コミット）と、必要に応じて確認日・対象バージョンを示す。
+
+## 外部サービスの操作
+
+### AWS
+
+- AWS へのアクセスは AWS MCP Server を使う（プラグインまたは MCP 設定のどちらか一方）。
+- AWS CLI、AWS SDK、絶対パス・相対パスでの AWS CLI 実行、その他の迂回経路は使わない。
+- リソースの作成・更新・削除・起動・停止・デプロイ・権限変更など状態変更は行わない。必要な変更は実行せずユーザーへ提示する。
+
+### GitHub
+
+- GitHub API 操作は公式 GitHub MCP Server を使う。GitHub CLI（`gh`）は直接使わない。
+- 明示依頼があれば自動で行ってよい: Issue / PR / CI の参照、Issue 作成・通常編集、Issue・PR へのコメント、PR 作成・通常編集、feature branch への通常 push。
+- 既存 Issue の更新は、ユーザーから明示的に依頼された場合のみ行う。依頼されていない Issue の close、状態変更、大幅な本文変更は行わない。
+- 既存 PR についても同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更は行わない。
+- 禁止: PR merge、PR review 提出、main/master への直接 push、force push、protected branch の削除、Actions workflow の手動実行、Repository / Ruleset / Branch Protection の変更。
+
+詳細: `ai/EXTERNAL_SERVICES_SECURITY.md`
 
 ## コンテキスト衛生
 

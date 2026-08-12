@@ -13,7 +13,7 @@ description: >
 
 ```
 @.claude/agents/implementer.md @.claude/skills/contract-implementer/SKILL.md
-@[要件ドキュメント] @AGENTS.md @TEST_CONTRACT.md
+@[要件ドキュメント] @CLAUDE.md @TEST_CONTRACT.md
 
 [機能名] のみ実装。tests/ は変更禁止。
 ```

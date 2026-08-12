@@ -1,0 +1,12 @@
+---
+description: AWS/GitHub 操作の安全方針（Cloud Agent 含む）
+alwaysApply: true
+---
+
+# 外部サービス安全
+
+- AWS は AWS MCP Server 経由のみ。raw `aws` CLI / SDK は使わない。状態変更はしない。
+- GitHub API は公式 GitHub MCP 経由。`gh` は直接使わない。
+- 明示依頼があれば: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
+- 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
+- 禁止: PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動、Ruleset/設定変更。

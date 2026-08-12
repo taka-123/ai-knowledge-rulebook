@@ -13,9 +13,21 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = [["terraform", "kubectl", "helm", "vercel", "flyctl", "netlify", "aws", "gcloud", "az"]],
+    pattern = [["terraform", "kubectl", "helm", "vercel", "flyctl", "netlify", "gcloud", "az"]],
     decision = "prompt",
     justification = "Deploy/infra changes require approval.",
+)
+
+prefix_rule(
+    pattern = ["aws"],
+    decision = "forbidden",
+    justification = "Use AWS MCP Server instead of aws CLI.",
+)
+
+prefix_rule(
+    pattern = ["gh"],
+    decision = "forbidden",
+    justification = "Use GitHub MCP Server instead of gh CLI.",
 )
 
 prefix_rule(

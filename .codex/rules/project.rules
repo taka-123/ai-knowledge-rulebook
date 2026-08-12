@@ -87,7 +87,7 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = [["terraform", "kubectl", "helm", "serverless", "vercel", "flyctl", "netlify", "aws", "gcloud", "az"]],
+    pattern = [["terraform", "kubectl", "helm", "serverless", "vercel", "flyctl", "netlify", "gcloud", "az"]],
     decision = "prompt",
     justification = "Infra and deploy related operations require explicit confirmation.",
     match = ["terraform apply", "kubectl apply -f k8s.yml", "vercel deploy"],
@@ -100,14 +100,21 @@ prefix_rule(
     match = ["prisma migrate deploy", "alembic upgrade head"],
 )
 
+# forbidden: high-risk commands from validate-bash deny policy
 prefix_rule(
-    pattern = ["gh"],
-    decision = "prompt",
-    justification = "GitHub CLI can read credentials and mutate remote state.",
-    match = ["gh pr view 1", "gh pr comment 1 -b \"...\""],
+    pattern = ["aws"],
+    decision = "forbidden",
+    justification = "Use AWS MCP Server instead of aws CLI.",
+    match = ["aws s3 ls", "aws ec2 describe-instances"],
 )
 
-# forbidden: high-risk commands from validate-bash deny policy
+prefix_rule(
+    pattern = ["gh"],
+    decision = "forbidden",
+    justification = "Use GitHub MCP Server instead of gh CLI.",
+    match = ["gh pr view 1", "gh issue list"],
+)
+
 prefix_rule(
     pattern = ["sudo"],
     decision = "forbidden",
@@ -154,7 +161,21 @@ prefix_rule(
     pattern = ["git", "push", "--force"],
     decision = "forbidden",
     justification = "Force push is forbidden for safety.",
-    match = ["git push --force", "git push --force-with-lease"],
+    match = ["git push --force"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "--force-with-lease"],
+    decision = "forbidden",
+    justification = "Force push is forbidden for safety.",
+    match = ["git push --force-with-lease"],
+)
+
+prefix_rule(
+    pattern = ["git", "push", "-f"],
+    decision = "forbidden",
+    justification = "Force push is forbidden for safety.",
+    match = ["git push -f"],
 )
 
 prefix_rule(
@@ -197,13 +218,6 @@ prefix_rule(
     decision = "forbidden",
     justification = "Direct database CLI usage is forbidden in this project profile.",
     match = ["psql postgresql://...", "mysql -u root -p"],
-)
-
-prefix_rule(
-    pattern = [["aws", "gcloud", "az"], ["delete", "terminate", "rm"]],
-    decision = "forbidden",
-    justification = "Cloud destructive operations are forbidden.",
-    match = ["aws ec2 terminate-instances ...", "gcloud compute instances delete ..."],
 )
 
 prefix_rule(
