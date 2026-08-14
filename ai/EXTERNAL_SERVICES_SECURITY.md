@@ -19,7 +19,7 @@ AI エージェントから AWS・GitHub を使うときの推奨構成。
 ### 方針
 
 - AI は AWS MCP Server（Agent Toolkit）経由のみ。
-- raw `aws` CLI / SDK / 絶対パス迂回は禁止（テンプレートの deny・hook で抑止）。
+- raw `aws` CLI / SDK / 絶対パス迂回は禁止。CLI 起動は deny・hook で抑止し、SDK は IAM が止める。
 - 状態変更は原則しない。変更案はユーザーへ提示する。
 - 最終境界は AWS 側。同じ Developer Role を使い、MCP 経由だけ弱くする。
   - 人間の直接 CLI/API → 通常権限

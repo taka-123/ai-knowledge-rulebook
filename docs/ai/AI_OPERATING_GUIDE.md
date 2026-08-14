@@ -52,6 +52,7 @@
 | `.cursor/agents/`               | `npm run cursor-agents:check` | —                                           |
 | `.codex/`                       | `npm run codex-wiring:check`  | —                                           |
 | レビュールーティング            | `npm run routing:check`       | —                                           |
+| AWS/GitHub CLI hook             | `npm run hooks:check`         | `.cursor/hooks/` 等の guard 変更時          |
 | 上記複数または不確実            | `npm run agent:check`         | —                                           |
 
 **注意**: CI（`.github/workflows/ci.yml`）は `npm run check` のみ。`agent:check` はローカルで実行する。

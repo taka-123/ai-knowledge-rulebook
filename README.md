@@ -78,6 +78,7 @@ npm run claude-agents:check
 npm run cursor-agents:check
 npm run codex-wiring:check
 npm run routing:check
+npm run hooks:check
 ```
 
 ## 日常運用フロー

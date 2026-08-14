@@ -23,7 +23,8 @@
     "cursor-agents:check": "node scripts/validate-cursor-agents.mjs",
     "codex-wiring:check": "node .claude/skills/codex-wiring-doctor/scripts/check-codex-wiring.mjs",
     "routing:check": "node scripts/validate-routing.mjs",
-    "agent:check": "npm run skills:check && npm run global-skills:check && npm run description:check && npm run claude-agents:check && npm run cursor-agents:check && npm run codex-wiring:check && npm run routing:check",
+    "hooks:check": "bash scripts/validate-external-service-hooks.sh",
+    "agent:check": "npm run skills:check && npm run global-skills:check && npm run description:check && npm run claude-agents:check && npm run cursor-agents:check && npm run codex-wiring:check && npm run routing:check && npm run hooks:check",
     "lint:staged": "lint-staged",
     "prepare": "husky"
   },
