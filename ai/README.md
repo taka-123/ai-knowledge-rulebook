@@ -3,7 +3,7 @@
 - **用途**: AIアシスタント向けルールテンプレートの提供と、階層適用・優先順位の解説
 - **対象読者**: AI ツールを導入したい開発者、複数ツールを併用する開発者
 - **適用対象**: OpenAI Codex CLI / Windsurf / Claude Code / Cursor
-- **最終更新日**: 2025-10-21
+- **最終更新日**: 2026-08-14
 - **前提OS**: macOS 14.x（Apple Silicon）/ VS Code Stable 最新
 
 ---
@@ -18,7 +18,7 @@
 
 ### テンプレートが解決する課題
 
-1. **保守負荷の削減**: AGENTS.md 統一で複数AIツールの設定を一元管理（60-70%削減）
+1. **ツール横断の一貫性**: `AGENTS.md`（Codex / Cursor / Windsurf）と `CLAUDE.md`（Claude Code）に同じ本質を載せ、ハーネスごとに自己完結させる
 2. **マルチレポ精度向上**: 3層構造（global / multi_service_parent / project）で親ディレクトリから開いても子サービスのルールを確実に適用
 
 AWS / GitHub を AI から安全に使う方針・MCP・Hooks の正本は [EXTERNAL_SERVICES_SECURITY.md](./EXTERNAL_SERVICES_SECURITY.md)。Local は global、Cloud では project 資産の二重化が必要。
@@ -95,18 +95,10 @@ AWS / GitHub を AI から安全に使う方針・MCP・Hooks の正本は [EXTE
 - **単一サービスプロジェクト**: `ai/common/project/AGENTS.md` を使用
 - **マルチサービス構成**: 親ディレクトリに `ai/common/multi_service_parent/AGENTS.md`、各サービスに `ai/common/project/AGENTS.md` を配置
 
-**Windsurf 専用設定（保守性を高める運用）**:
+**Windsurf**:
 
-> **2025-10-21 補足**: Windsurf は `AGENTS.md` を**ネイティブサポート**している可能性が高いことが実証されました（公式ドキュメントには未記載）。実際の検証では、`.windsurfrules` なしでも `AGENTS.md` が Rules タブに表示され、ルールとして認識されることを確認。ただし、完全な動作保証のため、以下の方法も併用可能です。
-
-- `.windsurfrules` を作成し、以下を記載することで `AGENTS.md` を参照可能:
-
-  ```markdown
-  - @AGENTS.md に従う
-  ```
-
-- これにより、複数ツールで同じルール（`AGENTS.md`）を共有でき、保守性が向上します
-- **推奨**: まずは `AGENTS.md` のみで運用し、問題があれば `.windsurfrules` による明示的参照を追加
+- プロジェクトルートの `AGENTS.md` を配置すれば、多くの環境で Rules として認識される（2025-10 実証。公式保証は未確認）。
+- `.windsurfrules` は**不要が原則**。Windsurf 固有の追記だけ必要なときに使う。
 
 **Cursor 専用設定**:
 
@@ -124,9 +116,9 @@ AWS / GitHub を AI から安全に使う方針・MCP・Hooks の正本は [EXTE
 
 ### 1.4) 保守性を高める運用方針
 
-- **複数ツール利用者**: `AGENTS.md` に共通ルールを集約し、各ツールから参照する方式を推奨（Windsurf は `@AGENTS.md`、Cursor は設定UIまたはglobで読み込み）
-- **単一ツール利用者**: Windsurf のみ使う場合は `.windsurfrules` に直接記載してもOK
-- **ルール変更時**: 1ファイル（`AGENTS.md`）を更新すれば全ツールに反映されるため、保守コストが低減します
+- **複数ツール利用**: 方針変更時は `AGENTS.md` と `CLAUDE.md` の両方を更新する（同じ本質・必要なら文言を書き分け）
+- **第三ファイル**: 長文・低頻度の共通ポリシーは第三ファイルへ切り出し、両憲法から参照する
+- **単一ツール**: 使うハーネスに対応する憲法だけ配備すればよい
 
 ---
 
@@ -227,7 +219,7 @@ alwaysApply: false
 - Reactは関数コンポーネントのみ
 ```
 
-**Claude Code（ルートから分割読み込み）**
+**Claude Code（ルートから分割読み込み — 同一ツール内の階層）**
 
 ```markdown
 # CLAUDE.md
