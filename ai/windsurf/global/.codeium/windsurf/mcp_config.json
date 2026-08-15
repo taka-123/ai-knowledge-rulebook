@@ -13,9 +13,11 @@
         "mcp-proxy-for-aws==1.6.4",
         "https://aws-mcp.us-east-1.api.aws/mcp",
         "--metadata",
-        "AWS_REGION=us-west-2",
-        "--read-only"
-      ]
+        "AWS_REGION=ap-northeast-1"
+      ],
+      "env": {
+        "AWS_REGION": "ap-northeast-1"
+      }
     },
     "context7": {
       "command": "npx",

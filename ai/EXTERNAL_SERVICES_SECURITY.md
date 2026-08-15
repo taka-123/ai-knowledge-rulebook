@@ -86,7 +86,7 @@ IAM Identity Center 利用時は、各アカウントの `AWSReservedSSO_...` Ro
 1. 資格情報を用意する（`aws login` 等）。
 2. 推奨: `aws configure agent-toolkit`（CLI 2.35+）。
 3. Claude Code は `/plugin install aws-core@claude-plugins-official` **または** テンプレートの `aws-mcp` のどちらか一方。
-4. 他ツールは各 MCP 設定の `aws-mcp`（SigV4 + `mcp-proxy-for-aws`）。`AWS_REGION` を環境に合わせ、**`--read-only` を付ける**（書込み Tool をエージェントから隠す）。IAM/SCP と二重化する。
+4. 他ツールは各 MCP 設定の `aws-mcp`（SigV4 + `mcp-proxy-for-aws`）。作業リージョンは `--metadata` と `env.AWS_REGION` を揃える。**`--read-only` は付けない**（`run_script` が消え、CloudWatch 等の参照ができなくなる）。更新・削除は IAM/SCP の `aws:CalledViaAWSMCP` で止める。
 5. ホーム反映は明示時のみ `./scripts/sync-*-to-home.sh --include-mcp`。
 
 ### GitHub 資格情報
