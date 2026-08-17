@@ -8,9 +8,9 @@
 
 commit / push / PR は明示依頼がなければしない。
 
-リポジトリへのコード反映だけでは目的は完成しない。コードは「AI に `aws` / `gh` を使わせない」ところまでである。参照を通すには各ツールへ MCP を登録する。更新削除を止めるには既存 IAM へポリシーを足す。この2つは実装者が実行せず、完了報告の必須項目としてユーザーへ渡す。
+リポジトリへのコード反映だけでは目的は完成しない。コードは「AI に `aws` / `gh` を使わせない」ところまでである。参照を通すには各ツールへ MCP を登録する。更新削除を止めるには既存 IAM へポリシーを足す。default / protected branch は、同等の Rulesets または branch protection があることをユーザーが確認する。これらは実装者が実行せず、完了報告の必須項目としてユーザーへ渡す。
 
-作業リージョンの既定は東京 `ap-northeast-1`。ユーザーが別リージョンを明示したら、`--metadata` と `env.AWS_REGION` の両方をその値に揃える。MCP 接続 URL の `us-east-1` は変えない。
+作業リージョンの既定は東京 `ap-northeast-1`。ユーザーが別リージョンを明示したら、`--metadata AWS_REGION` だけをその値にする。MCP 接続 URL の `us-east-1` は変えない。`env.AWS_REGION` は必須ではない。
 
 ---
 
@@ -23,7 +23,7 @@ AI には次を同時に満たさせる。
 - AWS のリソース設定、CloudWatch、ログなど参照はできる
 - AWS の作成・更新・削除・起動停止・デプロイ・権限変更はしない（間違って消さない）
 - GitHub は Issue / PR / CI の参照、Issue 作成、コメント、PR 作成、feature branch の通常 push まで
-- PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動、Ruleset 変更は禁止
+- PR merge、review 提出、`main` / `master` / `develop` / `deploy` への直接 push、force push、Actions 手動起動、Ruleset 変更は禁止
 - `gh` は使わない。GitHub 公式 MCP を使う
 - raw `aws` CLI / SDK / 絶対パス迂回は使わない。AWS 公式 MCP を使う
 
@@ -42,18 +42,18 @@ AI 専用の弱い IAM User は作らない。今使っている Developer Role 
 
 同じ IAM 主体でも、条件キー `aws:CalledViaAWSMCP` が付く MCP 経路だけ Deny が効く。人の `aws` CLI は今までどおり。
 
-| やりたいこと                                                     | 人の `aws` / `gh` / `git` | AI（コード + MCP + IAM 完了後） |
-| ---------------------------------------------------------------- | ------------------------- | ------------------------------- |
-| EC2 / RDS / ELB / ASG / ECS / ECR の参照                         | 今までどおり              | MCP でできる                    |
-| CloudWatch・ログの参照                                           | 今までどおり              | MCP でできる                    |
-| `sts:GetCallerIdentity`                                          | 今までどおり              | MCP でできる                    |
-| AWS の作成・更新・削除・起動停止・デプロイ・権限変更             | 今までどおりできる        | IAM でできない                  |
-| S3 オブジェクト取得、Secrets Manager、SSM Parameter、KMS Decrypt | Role 次第                 | 初期 IAM ではできない           |
-| シェルの `aws` / `gh`                                            | 使う                      | hook / deny で止める            |
-| Issue / PR / CI 参照、Issue 作成、コメント、PR 作成・通常編集    | できる                    | 明示依頼があれば MCP でできる   |
-| feature branch の通常 `git push`                                 | できる                    | できる                          |
-| PR merge、review 提出、Actions 手動実行、ファイル直 push         | 権限があればできる        | MCP に tool を渡さない          |
-| `main` / force push                                              | Rulesets が最終防衛       | hook で止める                   |
+| やりたいこと                                                     | 人の `aws` / `gh` / `git` | AI（必要なユーザー作業完了後） |
+| ---------------------------------------------------------------- | ------------------------- | ------------------------------ |
+| EC2 / RDS / ELB / ASG / ECS / ECR の参照                         | 今までどおり              | MCP でできる                   |
+| CloudWatch・ログの参照                                           | 今までどおり              | MCP でできる                   |
+| `sts:GetCallerIdentity`                                          | 今までどおり              | MCP でできる                   |
+| AWS の作成・更新・削除・起動停止・デプロイ・権限変更             | 今までどおりできる        | IAM でできない                 |
+| S3 オブジェクト取得、Secrets Manager、SSM Parameter、KMS Decrypt | Role 次第                 | 初期 IAM ではできない          |
+| シェルの `aws` / `gh`                                            | 使う                      | hook / deny で止める           |
+| Issue / PR / CI 参照、Issue 作成、コメント、PR 作成・通常編集    | できる                    | 明示依頼があれば MCP でできる  |
+| feature branch の通常 `git push`                                 | できる                    | できる                         |
+| PR merge、review 提出、Actions 手動実行、ファイル直 push         | 権限があればできる        | MCP に tool を渡さない         |
+| `main` / `master` / `develop` / `deploy` / force push            | Rulesets が最終防衛       | hook で止める                  |
 
 IAM を付けるまで、AI の MCP `run_script` は Role が許す範囲で更新・削除も呼べる。
 
@@ -63,19 +63,20 @@ IAM を付けるまで、AI の MCP `run_script` は Role が許す範囲で更�
 
 見た目で判断して削ったり足したりしない。
 
-| 判断しがちなこと                                                   | 実際                                     | 理由                                                                      |
-| ------------------------------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `--read-only` を付ければ参照専用になる                             | **付けるな**                             | 参照に使う `aws___run_script` まで消える。参照専用は IAM で作る           |
-| AWS が MCP 経由を最初から参照専用にしてくれる                      | **しない。ポリシーを自分で作って付ける** | AWS が自動で付けるのは条件キーだけ。Deny は自分で書く                     |
-| IAM 例や「ユーザーがやること」はコードと無関係だから文書に書かない | **書け**                                 | コードだけでは参照も Write 抑止も完成しない                               |
-| hook だけで十分。憲法の外部サービス節は重複                        | **両方書け**                             | hook は CLI の補助。MCP の tool は hook を通らない                        |
-| GitHub は default toolset でよい                                   | **allowlist だけ**                       | merge や Actions 起動が残る                                               |
-| `X-MCP-Tools` があるから PAT は広くてよい                          | **PAT も最小**                           | allowlist は MCP 経路だけ                                                 |
-| URL の `us-east-1` を作業リージョンに変える                        | **変えるな**                             | MCP サーバーの接続先                                                      |
-| `env.AWS_REGION` は `--metadata` と重複だから片方でよい            | **両方書け**                             | metadata はリモートの作業リージョン。env は手元プロキシの credential 更新 |
-| ホームの MCP までリポジトリに実トークンで書く                      | **書くな**                               | 秘密を git に入れない                                                     |
-| Cursor User Rules に「GitHub は `gh`」と残す                       | **MCP に直せ**                           | hook と憲法が `gh` を止める                                               |
-| `AGENTS.md` から `CLAUDE.md` を読め（またはその逆）                | **するな**                               | 平行憲法。同じ本質を各自に自己完結で書く。重複は問題にしない              |
+| 判断しがちなこと                                                   | 実際                                          | 理由                                                                      |
+| ------------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------- |
+| `--read-only` を付ければ参照専用になる                             | **付けるな**                                  | 参照に使う `aws___run_script` まで消える。参照専用は IAM で作る           |
+| AWS が MCP 経由を最初から参照専用にしてくれる                      | **しない。ポリシーを自分で作って付ける**      | AWS が自動で付けるのは条件キーだけ。Deny は自分で書く                     |
+| IAM 例や「ユーザーがやること」はコードと無関係だから文書に書かない | **書け**                                      | コードだけでは参照も Write 抑止も完成しない                               |
+| hook だけで十分。憲法の外部サービス節は重複                        | **両方書け**                                  | hook は CLI の補助。MCP の tool は hook を通らない                        |
+| GitHub は default toolset でよい                                   | **allowlist だけ。既存の広い toolset は除去** | 併用すると加算される。最終的に見える tool が allowlist だけになるまで直す |
+| GitHub MCP にも read-only を付ければ安全                           | **付けるな**                                  | write tool が全部消え、Issue/PR 作成まで使えなくなる                      |
+| `X-MCP-Tools` があるから PAT は広くてよい                          | **PAT も最小**                                | allowlist は MCP 経路だけ                                                 |
+| URL の `us-east-1` を作業リージョンに変える                        | **変えるな**                                  | MCP サーバーの接続先                                                      |
+| `env.AWS_REGION` は `--metadata` と必ず同値にしろ                  | **するな。metadata だけ必須**                 | metadata はリモートの作業リージョン。env は手元プロキシ用で必須ではない   |
+| ホームの MCP までリポジトリに実トークンで書く                      | **書くな**                                    | 秘密を git に入れない                                                     |
+| Cursor User Rules に「GitHub は `gh`」と残す                       | **MCP に直せ**                                | hook と憲法が `gh` を止める                                               |
+| `AGENTS.md` から `CLAUDE.md` を読め（またはその逆）                | **するな**                                    | 平行憲法。同じ本質を各自に自己完結で書く。重複は問題にしない              |
 
 ### AWS MCP に `--read-only` を付けない
 
@@ -119,7 +120,7 @@ AI から直接やってはならないもの:
 
 作業リージョンは既定で東京 `ap-northeast-1`。MCP サーバー接続先 URL の `us-east-1` は変えない。これは AWS が MCP サーバーを置いている場所であり、自分の EC2 の場所ではない。公式が提供する接続先は `us-east-1` と `eu-central-1` だけである。
 
-`--metadata AWS_REGION=ap-northeast-1` はリモート MCP の作業リージョン。`env.AWS_REGION` は手元プロキシが credential を更新するときのリージョン。両方とも同じ作業リージョンにする。
+`--metadata AWS_REGION=ap-northeast-1` はリモート MCP が AWS API を操作する既定リージョンである。公式の設定例はこれだけを置く。`env.AWS_REGION` は手元プロキシ / botocore の region provider であり、作業リージョンではない。必須にしない。`aws login` 後に `NoRegionError` が出たときだけ、ユーザーがホーム設定へ足してよい。その値を作業リージョンと揃えろ、とはしない。metadata の値は変えない。
 
 資格情報は JSON に書かない。人間が先に `aws login` し、boto3 チェーンで拾う。`uvx` が必要。
 
@@ -128,7 +129,9 @@ Claude Code は次のどちらか一方。両方は入れない。
 - `/plugin install aws-core@claude-plugins-official`
 - 下記 `aws-mcp` ブロック
 
-実装者はホームの MCP を編集しない。次の完成形を運用説明と完了報告にそのまま載せる。既存の context7 / exa / playwright / drawio 等は消さない。`aws-mcp` と `github` を下記方針で足すか更新する。`--read-only` は付けない。
+実装者はホームの MCP を編集しない。次の完成形を運用説明と完了報告にそのまま載せる。既存の context7 / exa / playwright / drawio 等は消さない。AWS MCP に `--read-only` は付けない。GitHub MCP に read-only モードも付けない。
+
+GitHub MCP の完成は「設定に allowlist が書いてある」ではない。エージェントに見えている GitHub MCP tool が、下記 14 個だけであること。既存の `X-MCP-Toolsets`、default toolset、URL で tool を足す指定は除去する。`X-MCP-Tools` を足すだけでは、広い toolset は残る。
 
 Cursor / Windsurf 向け（秘密はプレースホルダ）:
 
@@ -149,16 +152,13 @@ Cursor / Windsurf 向け（秘密はプレースホルダ）:
         "https://aws-mcp.us-east-1.api.aws/mcp",
         "--metadata",
         "AWS_REGION=ap-northeast-1"
-      ],
-      "env": {
-        "AWS_REGION": "ap-northeast-1"
-      }
+      ]
     }
   }
 }
 ```
 
-Claude のユーザー設定は GitHub を `Bearer ${GITHUB_PAT}` にする（環境変数）。AWS ブロックは上と同じ（`--read-only` なし、作業リージョン、`env.AWS_REGION`）。type が要るなら GitHub は `http`、AWS は `stdio`。
+Claude のユーザー設定は GitHub を `Bearer ${GITHUB_PAT}` にする（環境変数）。AWS ブロックは上と同じ（`--read-only` なし、`--metadata` の作業リージョン。`env.AWS_REGION` は必須ではない）。type が要るなら GitHub は `http`、AWS は `stdio`。
 
 Codex の `~/.codex/config.toml` 例:
 
@@ -193,7 +193,6 @@ args = [
   "--metadata",
   "AWS_REGION=ap-northeast-1",
 ]
-env = { AWS_REGION = "ap-northeast-1" }
 default_tools_approval_mode = "writes"
 ```
 
@@ -201,7 +200,9 @@ default_tools_approval_mode = "writes"
 
 AWS に「MCP は参照専用」というデフォルト設定はない。MCP 経由のリクエストには条件キー `aws:CalledViaAWSMCP`（値: `aws-mcp.amazonaws.com`）が自動で付くだけである。その印を見て Deny するポリシーは、自分で作って、AI が使っているのと同じ IAM 主体に付ける。新しい IAM ユーザーやロールは作らない。
 
-実装者はコンソールを操作しない。特定のアカウント名・ユーザー名・グループ名・既存ポリシー名は書かない。付ける先は「その環境で `aws sts get-caller-identity` が返す主体」と書く。
+実装者はコンソールを操作しない。特定のアカウント名・ユーザー名・グループ名・既存ポリシー名は書かない。
+
+`aws sts get-caller-identity` は、今どの identity で動いているかを特定する材料である。返ってきた Arn にポリシーを付けない。AssumedRole / SSO の session ARN（`arn:aws:sts::...:assumed-role/...`）は添付先ではない。下にある IAM Role、または Identity Center の Permission Set を特定してそこに付ける。
 
 **ポリシー名（推奨）:** `DenyWriteViaAWSMCP`
 
@@ -217,9 +218,10 @@ Deny non-read actions when CalledViaAWSMCP. Does not affect direct CLI.
 2. JSON タブを選び、下記をそのまま貼る。ビジュアルエディタで「全サービス拒否」から作り直さない（参照まで落ちる）
 3. 確認画面でサービス数が多く見えても、JSON に `NotAction` と `"aws:CalledViaAWSMCP": "aws-mcp.amazonaws.com"` が残っていればよい。条件値が `mcp.amazonaws.com` だけに短縮されていたら JSON を直す
 4. 名前と説明を上記どおり入れて作成する
-5. 付ける先を決める。新しい主体は作らない
+5. 付ける先を決める。新しい主体は作らない。`get-caller-identity` の Arn が session なら、Role 名または Permission Set まで辿る
    - IAM ユーザーでログインしている → そのユーザー、または開発者グループ
-   - IAM Identity Center → 各アカウントの予約ロールは触らず、Permission Set に足す（その Set を使うメンバー全員に効く）
+   - IAM Role を Assume している → その Role
+   - IAM Identity Center → 各アカウントの予約ロール（`AWSReservedSSO_...`）は触らず、Permission Set に足す（その Set を使うメンバー全員に効く）
 6. 「ポリシーをアタッチ」する。既存の広い Allow（管理者相当を含む）は外さなくてよい。Deny の方が強い。条件が付くのは MCP 経由のときだけなので、人間の `aws` CLI は今までどおり
 
 チーム: ポリシーはアカウントに1つ作り、各自の主体または共通 Permission Set / グループに付ける。
@@ -298,15 +300,17 @@ MCP の JSON では権限は決まらない。
 
 - PR merge
 - PR review 提出
-- main/master 直接 push
+- `main` / `master` / `develop` / `deploy` への直接 push
 - force push
 - protected branch の削除
 - Actions workflow の手動実行
 - Repository / Ruleset / Branch Protection の変更
 
+review 提出の機械的境界は、GitHub MCP に `pull_request_review_write` を渡さないことである。Fine-grained PAT に Pull requests: Write があると、REST では review 提出が権限上可能なので、憲法でも禁止する。トークン経路まで絶対に封じるなら credential 隔離が別途必要である。
+
 ### 4.3 MCP Tool Allowlist
 
-default toolset を丸ごと有効にしない。次だけを `X-MCP-Tools`（および Codex の `enabled_tools`）に書く。
+default toolset を丸ごと有効にしない。GitHub MCP の read-only モードも付けない（許可した Issue/PR の write まで消える）。次の 14 個だけを `X-MCP-Tools`（および Codex の `enabled_tools`）に書く。既存の `X-MCP-Toolsets` や default / URL 修飾子は除去する。完成条件は、エージェントに見えている GitHub MCP tool がこの集合と一致することである。
 
 ```text
 get_me,issue_read,list_issues,search_issues,issue_write,add_issue_comment,pull_request_read,list_pull_requests,search_pull_requests,create_pull_request,update_pull_request,actions_list,actions_get,get_job_logs
@@ -331,9 +335,9 @@ update_pull_request_branch
 
 PAT を使うなら Fine-grained で対象 repo と権限を最小にする。Issues Read and write、Pull requests Read and write、Actions Read-only。Contents / Administration / Secrets は付けない。`X-MCP-Tools` で絞っても、トークンが広いと別経路の被害が大きい。Cursor は OAuth（MCP のブラウザ認証）でもよい。その場合 JSON の Authorization はプレースホルダのままでよい。
 
-### 4.4 Rulesets（ユーザーが GitHub で行う）
+### 4.4 Rulesets（ユーザーが GitHub で行う。実装者は触らない）
 
-default branch に最低限:
+既存保護があることを仮定しない。ユーザーが default / protected branch に、次と同等の Rulesets または branch protection があることを確認する。無ければユーザーが設定する。
 
 - Require a pull request
 - Require approvals
@@ -342,15 +346,15 @@ default branch に最低限:
 - Block deletion
 - AI や通常開発者を不用意に bypass にしない
 
-これなら `git push origin main` が hook を抜けても GitHub 側で拒否される。
+これなら `git push origin main` が hook を抜けても GitHub 側で拒否される。hook は `--all` / `--mirror` など、ブランチ名がコマンドに出ない入力は止めない。
 
 ---
 
 ## 5. 憲法に書く文（自己完結。相手の憲法ファイル名で委譲しない）
 
-プロジェクトルートの `AGENTS.md`（無ければ作成）と、Claude を使うなら `CLAUDE.md`（無ければ作成）に、次のブロックを**それぞれ自己完結で**入れる。片方を省略しない。同じ本質の重複は問題にしない。一方から他方を「読め / に従え」と書かない。毎ターン読む憲法本文に、相手のファイル名も出さない。
+プロジェクトルートの `AGENTS.md` と `CLAUDE.md` は常設する。今 Claude を使っていなくても両方置く。無いファイルは作成する。次のブロックを**それぞれ自己完結で**入れる。片方を省略しない。同じ本質の重複は問題にしない。一方から他方を「読め / に従え」と書かない。毎ターン読む憲法本文に、相手のファイル名も出さない。
 
-既存ファイルがあるときは、既存の見出し構成を壊さず「外部サービスの操作」を追加または置換する。ファイル全体を無関係な内容で上書きしない。
+既存ファイルがあるときは、既存の見出し構成を壊さず「外部サービスの操作」を追加または置換する。ファイル全体を無関係な内容で上書きしない。同じファイル内の別節に `aws` / `gh` / GitHub API の競合指示（例: 「GitHub は `gh` を使う」）があれば、その競合部分だけ直す。
 
 ```markdown
 ## 外部サービスの操作
@@ -367,7 +371,7 @@ default branch に最低限:
 - 明示依頼があれば自動で行ってよい: Issue / PR / CI の参照、Issue 作成・通常編集、Issue・PR へのコメント、PR 作成・通常編集、feature branch の通常 push。
 - 既存 Issue の更新は、ユーザーから明示的に依頼された場合のみ行う。依頼されていない Issue の close、状態変更、大幅な本文変更は行わない。
 - 既存 PR についても同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更は行わない。
-- 禁止: PR merge、PR review 提出、main/master への直接 push、force push、protected branch の削除、Actions workflow の手動実行、Repository / Ruleset / Branch Protection の変更。
+- 禁止: PR merge、PR review 提出、`main` / `master` / `develop` / `deploy` への直接 push、force push、protected branch の削除、Actions workflow の手動実行、Repository / Ruleset / Branch Protection の変更。
 ```
 
 Claude 向け `CLAUDE.md` では AWS の先頭を次にしてよい。
@@ -382,9 +386,9 @@ Claude 向け `CLAUDE.md` では AWS の先頭を次にしてよい。
 
 ## 6. ツール別の補助制御
 
-Cloud エージェントはユーザーのホームを読めない。hook・憲法・Cursor rules はリポジトリ内に置く。ホームだけに置かない。command パスはプロジェクト相対にする。
+Cloud エージェントはユーザーのホームを読めない。hook・憲法・Cursor rules はリポジトリ内に置く。ホームだけに置かない。command パスはプロジェクト相対にする。AWS / GitHub の MCP 接続は、この文書ではホーム設定を案内する。Cloud 側に account / project MCP を置ける製品ならユーザーがそこで登録する。置けない環境では、その Cloud agent では AWS / GitHub MCP は使えない（禁止だけが効く）。実装者はホームにも Cloud 設定にも書き込まない。
 
-Cursor / Claude / Windsurf の hook は、今そのツールを使っていなくても全部置く。第 9 節のテストが三系統を見る。Codex の rules だけ、使う場合に足す。
+標準は全クライアント対応を常設する。Cursor / Claude / Windsurf の hook と、`AGENTS.md` / `CLAUDE.md` は、今そのツールを使っていなくても全部置く。第 9 節のテストが三系統を見る。Codex の rules だけ、使う場合に足す。既存の `.claude/settings.json` があるときは deny と PreToolUse をマージする。同じガードを二重登録しない。
 
 ### 6.1 Claude Code
 
@@ -490,7 +494,7 @@ alwaysApply: true
 - GitHub API は公式 GitHub MCP 経由。`gh` は直接使わない。
 - 明示依頼があれば: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
 - 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
-- 禁止: PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動、Ruleset/設定変更。
+- 禁止: PR merge、review 提出、`main` / `master` / `develop` / `deploy` 直接 push、force push、Actions 手動起動、Ruleset/設定変更。
 ```
 
 `.cursor/permissions.json` は使わない。
@@ -520,7 +524,7 @@ alwaysApply: true
 
 ### 6.5 Gemini / Antigravity（使う場合のみ。ユーザーのホーム作業）
 
-MCP JSON は Cursor と同じ（`--read-only` なし、作業リージョン、`env.AWS_REGION`）。置き場は `~/.gemini/antigravity/mcp_config.json`。実装者はホームへ書かない。完了報告に載せる。
+MCP JSON は Cursor と同じ（`--read-only` なし、`--metadata` の作業リージョン。`env.AWS_REGION` は必須ではない）。置き場は `~/.gemini/antigravity/mcp_config.json`。実装者はホームへ書かない。完了報告に載せる。
 
 ---
 
@@ -783,7 +787,7 @@ exit 0
 | ファイル                                     | 内容                                                              |
 | -------------------------------------------- | ----------------------------------------------------------------- |
 | `AGENTS.md`                                  | 第 5 節の外部サービス節                                           |
-| `CLAUDE.md`                                  | 同じ本質（Claude 向け一文を足してよい）                           |
+| `CLAUDE.md`                                  | 同じ本質（Claude 向け一文を足してよい）。常設                     |
 | `docs/AI_EXTERNAL_SERVICES.md`               | 第 1・3・4 節と第 11 節のユーザー作業を、この文書の本文どおり写す |
 | `.claude/settings.json`                      | deny に `Bash(aws *)` `Bash(gh *)`、PreToolUse がガードを呼ぶ     |
 | `.claude/hooks/pretooluse_guard.sh`          | 第 7.3 節                                                         |
@@ -801,7 +805,7 @@ exit 0
 
 ## 9. hook の自動テスト
 
-`scripts/validate-external-service-hooks.sh` を次の内容で置く。テストランナーのコマンドラインに `aws` / `gh` を出さない（stdin JSON で hook を叩く）。`package.json` があるなら `"hooks:check": "bash scripts/validate-external-service-hooks.sh"` を足す。無いなら完了時に `bash scripts/validate-external-service-hooks.sh` を実行する。
+`scripts/validate-external-service-hooks.sh` を次の内容で置く。テストランナーのコマンドラインに `aws` / `gh` を出さない（stdin JSON で hook を叩く）。`jq --arg` は名前と値を別引数にする。`--arg cwd="$cwd"` は使わない（JSON が `null` になり、deny 検証が壊れる）。`package.json` があるなら `"hooks:check": "bash scripts/validate-external-service-hooks.sh"` を足す。無いなら完了時に `bash scripts/validate-external-service-hooks.sh` を実行する。
 
 ```bash
 #!/usr/bin/env bash
@@ -829,7 +833,7 @@ fail() {
 
 cursor_perm() {
   local cmd="$1" cwd="${2:-$tmp_feature}"
-  jq -n --arg c "$cmd" --arg cwd="$cwd" '{command:$c, cwd:$cwd}' \
+  jq -n --arg c "$cmd" --arg cwd "$cwd" '{command:$c, cwd:$cwd}' \
     | bash "$CURSOR_HOOK" \
     | jq -r '.permission'
 }
@@ -837,7 +841,7 @@ cursor_perm() {
 claude_code() {
   local cmd="$1" cwd="${2:-$tmp_feature}"
   local json code
-  json="$(jq -n --arg c "$cmd" --arg cwd="$cwd" '{tool_name:"Bash", tool_input:{command:$c}, cwd:$cwd}')"
+  json="$(jq -n --arg c "$cmd" --arg cwd "$cwd" '{tool_name:"Bash", tool_input:{command:$c}, cwd:$cwd}')"
   set +e
   printf '%s' "$json" | bash "$CLAUDE_HOOK" >/dev/null 2>&1
   code=$?
@@ -848,7 +852,7 @@ claude_code() {
 windsurf_code() {
   local cmd="$1" cwd="${2:-$tmp_feature}"
   local json code
-  json="$(jq -n --arg c "$cmd" --arg cwd="$cwd" '{tool_info:{command_line:$c, cwd:$cwd}, cwd:$cwd}')"
+  json="$(jq -n --arg c "$cmd" --arg cwd "$cwd" '{tool_info:{command_line:$c, cwd:$cwd}, cwd:$cwd}')"
   set +e
   printf '%s' "$json" | bash "$WINDSURF_HOOK" >/dev/null 2>&1
   code=$?
@@ -943,33 +947,46 @@ jq と bash が必要。無い検証は「未検証」とコマンドを報告�
 
 ## 11. 完了報告で必ず伝えること（コード完了 ≠ 目的完了）
 
-実装者は IAM もホーム MCP も触らない。完了報告の先頭近くに次をそのまま書く。
+実装者は IAM もホーム MCP も GitHub Rulesets も触らない。完了報告の先頭近くに、次の3項目をそれぞれ **未完 / 確認済み** で書く。
 
-**今のコードだけで起きること**
+### 今のコードだけで起きること
 
 - AI は `aws` / `gh` を使えない（hook・deny・憲法）
 - そのため CLI 経由の誤更新・誤削除は起きにくい
 - 同時に、MCP が未登録なら AWS / GitHub の参照もできない。使えなくなるだけで、参照専用にはなっていない
+- IAM 未設定なら、MCP 登録後の `run_script` は Role が許す範囲で更新・削除も呼べる
+- Rulesets 未確認なら、hook を抜けた `main` / `master` / `develop` / `deploy` / force 系 push を GitHub 側で止められないことがある
 
-**参照を通すためにユーザーがやること（個人の MCP 登録）**
+### 1. 参照を通す（MCP 登録）— ユーザー作業
 
-コード編集だけでは足りない。使う AI ツールごとに、ホーム側へ GitHub MCP と AWS MCP を通す。リポジトリに実トークンを埋め込まない。既存の他 MCP は消さない。
+使う AI ツールごとに GitHub MCP と AWS MCP を通す。リポジトリに実トークンを埋め込まない。既存の他 MCP は消さない。GitHub は最終的に見えている tool が第 4.3 節の 14 個だけになるまで、既存の広い toolset を除去する。AWS / GitHub ともに read-only モードは付けない。
+
+**Local**
 
 - Cursor: `~/.cursor/mcp.json`。GitHub は OAuth 再認証、またはホーム側だけ PAT
 - Claude Code: プラグインかユーザー設定の `aws-mcp` のどちらか一方。`GITHUB_PAT` を環境変数で入れる
 - Codex: `~/.codex/config.toml` の `[mcp_servers.github]` と `[mcp_servers.aws-mcp]`。`GITHUB_PAT` を環境変数
-- Windsurf: `~/.codeium/windsurf/mcp_config.json`。Cursor と同じ JSON（`--read-only` なし、作業リージョン、`env`）
+- Windsurf: `~/.codeium/windsurf/mcp_config.json`。Cursor と同じ JSON（`--read-only` なし、`--metadata` の作業リージョン。`env.AWS_REGION` は必須ではない）
 - `aws login` と `aws sts get-caller-identity`、`uvx` の導入、ツール再起動
+- 再起動後、エージェントに見えている GitHub MCP tool が allowlist と一致することを確認する
 
-これが終わるまで、AI に「東京の EC2 を見て」と頼んでも届かない。
+Local の MCP が終わるまで、ローカル AI に「東京の EC2 を見て」と頼んでも届かない。
 
-**更新・削除を止めるためにユーザーがやること（既存 IAM へのポリシー作成）**
+**Cloud**
 
-AWS は MCP を最初から参照専用にしない。第 3.3 節の手順でポリシー `DenyWriteViaAWSMCP` を作り、`aws sts get-caller-identity` が示す既存の主体に付ける。新しいユーザーやロールは作らない。これをやるまで、MCP 登録後の `run_script` は IAM が許す範囲で更新・削除も呼べる。
+hook・憲法はリポジトリにあるので禁止は効く。MCP 接続はホーム設定では届かない。製品が account / project MCP を持てるならユーザーがそこで同じ方針（allowlist、`--read-only` なし、`--metadata` の作業リージョン）を登録する。持てない環境では、その Cloud agent では AWS / GitHub MCP は利用不可と報告する。
 
-任意: default branch の GitHub Rulesets（PR 必須、force push 禁止、削除禁止）。
+PAT を環境変数へ置く構成では、エージェントのシェルからトークンが見えることがある。MCP に review / merge / file write を渡さなくても、REST 直叩きは hook では止まない。憲法で禁止する。絶対隔離が必要なら別途設計する。
 
-**確認用の聞き方（MCP 登録後）**
+### 2. 更新・削除を止める（IAM）— ユーザー作業
+
+AWS は MCP を最初から参照専用にしない。第 3.3 節の手順でポリシー `DenyWriteViaAWSMCP` を作り、`get-caller-identity` で特定した IAM User / Role / Permission Set に付ける。session ARN には付けない。新しいユーザーやロールは作らない。
+
+### 3. GitHub の最終防衛（Rulesets）— ユーザー作業
+
+第 4.4 節と同等の保護が default / protected branch にあることをユーザーが確認する。無ければユーザーが設定する。実装者は触らない。既存保護を仮定しない。
+
+### 確認用の聞き方（Local の MCP 登録後）
 
 「今の AWS アカウントの東京リージョンについて、動いている EC2 と RDS を名前と状態だけ教えて。」
 成功: シェルの `aws` を使わず、実データ（0 件でもよい）が返る。失敗: ドキュメントだけ、または `aws ec2 describe-instances` をシェル実行しようとする。
@@ -984,4 +1001,4 @@ AWS は MCP を最初から参照専用にしない。第 3.3 節の手順でポ
 - Markdown を行長のために途中改行しない
 - 憲法同士を相互参照しない
 
-完了報告: 変更ファイル、検証結果、ユーザーがやる IAM / Rulesets / ホーム MCP、残リスク（hook は補助、IAM 未設定なら MCP 経由の Write が通る）。
+完了報告: 変更ファイル、検証結果、ユーザー作業（MCP / IAM / Rulesets）の未完または確認済み、残リスク（hook は補助、IAM 未設定なら MCP 経由の Write が通る、Cloud は MCP 未登録なら参照不可）。
