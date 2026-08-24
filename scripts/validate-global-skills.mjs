@@ -8,6 +8,9 @@ const skillsDir = path.join(root, 'ai', 'claude_code', 'global', '.claude', 'ski
 /** Rule-style skills applied on edit; no trigger description required */
 const RULE_ONLY_SKILLS = new Set(['markdown-line-length'])
 
+/** Vendored third-party skills kept unmodified (upstream body); house description format not enforced */
+const VENDORED_SKILLS = new Set(['frontend-design'])
+
 const procedureHeading = /^##\s+(Procedure|手順|進め方|いつ使うか|目的|振る舞い|生成プロトコル)/m
 
 function listSkillFiles(dir) {
@@ -93,7 +96,7 @@ for (const file of files) {
     errors.push(`${rel}: missing description`)
   }
 
-  if (!RULE_ONLY_SKILLS.has(fm.name)) {
+  if (!RULE_ONLY_SKILLS.has(fm.name) && !VENDORED_SKILLS.has(fm.name)) {
     if (!hasThreeElementDescription(fm.description)) {
       errors.push(
         `${rel}: description must be 3-element format (Use when / When NOT to use / Trigger Keywords)`
