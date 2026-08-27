@@ -9,7 +9,6 @@ description: |
 # prompt-evolution
 
 曖昧な要望を **Contract Style の最適化プロンプト** へ変換する。
-ブラウザ版 Project / Gems に置いているプロンプト設計アシスタントの **Skill 版**。
 
 ## 設計原則
 

@@ -14,15 +14,7 @@ description: |
 
 ## 目的
 
-AI 向け指示（Skill、Agent、ルール、`CLAUDE.md`、`AGENTS.md` など）の書き方。
-文章の短さ・一貫性・見直しタイミングは `document-authoring` に従い、
-本 Skill は **AI 指示固有の決めごと**だけを扱う。
-
-## いつ起動するか
-
-- **自発（狭い）**: 上記パスの Skill / Agent / 憲法・ルールを新規作成・編集するとき。
-- **明示**: `/ai-instruction-authoring`、または「スキルを作って」「指示を整えて」など。
-- 一般の共有ドキュメントだけなら `document-authoring`。両方該当するなら両方 Read する。
+AI 向け指示（Skill、Agent、ルール、`CLAUDE.md`、`AGENTS.md` など）の書き方。文章の短さ・一貫性・見直しタイミングは `document-authoring` に従い、本 Skill は **AI 指示固有の決めごと**だけを扱う。一般の共有ドキュメントと両方該当するなら、`document-authoring` も Read する。
 
 ## 書いてよいこと
 

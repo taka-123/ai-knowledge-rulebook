@@ -23,6 +23,8 @@
 - 多い Filter で成立する
 - 空データで成立する
 - Overflow と折り返しが意図どおり
+- 固定 / Sticky 要素が本文や Focus を隠さない
+- Modal / Drawer が内容量に対して適切なサイズ
 
 ## 状態
 
@@ -38,9 +40,11 @@
 - Active
 - Focus
 
-機能に関係するすべての状態を確認する。
+機能に関係するすべての状態を確認する。状態変化が色だけに頼らず理解できることを確認する。
 
 ## Responsive
+
+関係するすべての Viewport を確認する。
 
 - Desktop
 - 狭い Desktop / Tablet
@@ -49,13 +53,15 @@
 
 ## Accessibility
 
+全 Surface で最低限確認する。
+
 - Keyboard だけで主要フローが完了する
 - Focus が見える
-- Focus が隠れない
+- Focus が Overlay や Sticky 要素に隠れない
 - Label がある
 - エラーが入力と関連付いている
 - Status が伝わる
-- Contrast が十分
+- Contrast（テキストと UI）が十分
 - 色だけに意味を持たせていない
 - 十分なターゲットサイズ
 - Reduced motion に対応

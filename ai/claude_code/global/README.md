@@ -1,8 +1,6 @@
 # Claude Code グローバル設定テンプレート
 
-本ディレクトリはテンプレートライブラリです。実環境 `~/.claude/` へはユーザーが手動でコピーまたはシンボリックリンクして反映してください。
-
-> **重要**: Claude が `~/.claude/` を直接変更することは禁止です（セキュリティ上の理由 + Git 管理外のため差分追跡不可）。変更はこのリポジトリのテンプレートに対して行い、ユーザーが実環境へ反映します。
+`~/.claude/` へコピーまたはシンボリックリンクして使う。変更は本ディレクトリに対して行い、実環境への反映はユーザーが行う。`~/.claude/` は Git 管理外で差分追跡できず、セキュリティ上も直接変更しない。
 
 ## 配置先
 
@@ -18,14 +16,9 @@
 ~/.claude/
   CLAUDE.md          # グローバル設定
   settings.json      # パーミッション等
-  skills/            # スキル定義（推奨形式）
-    decide-tool/
-      SKILL.md
-    external-peer-review/
-      SKILL.md
-    ...
-  agents/            # エージェント定義
-  hooks/             # フック定義
+  skills/            # document-authoring 等
+  agents/            # codebase-explorer / tech-researcher
+  hooks/             # フック
 ```
 
-> **Note**: `.claude/commands/` (旧 slash commands) は `.claude/skills/` に統合済みです。新規作成は skills 形式で行ってください。
+`.claude/commands/`（旧 slash commands）は `skills/` に統合済み。新規は skills 形式で作る。

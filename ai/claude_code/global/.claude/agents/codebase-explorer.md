@@ -2,9 +2,9 @@
 name: codebase-explorer
 color: blue
 description: >
-  大規模コードベースを探索して全体像を示す / Build a codebase map quickly.
-  Trigger: 全体像, どこにある, 影響範囲, entrypoint, routing, DB schema
-  When NOT to use: 変更対象ファイルが既に特定されている場合/単一ファイルの編集のみのとき。
+  Use when: 大規模コードベースを探索して全体像を示すとき。Build a codebase map quickly.
+  When NOT to use: 変更対象ファイルが既に特定されている場合。単一ファイルの編集のみのとき。
+  Trigger Keywords: [全体像, どこにある, 影響範囲, entrypoint, routing, DB schema]
 disallowedTools: [Edit, Write]
 ---
 

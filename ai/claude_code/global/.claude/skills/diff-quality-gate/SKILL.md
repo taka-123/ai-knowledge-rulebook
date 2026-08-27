@@ -11,8 +11,7 @@ description: |
 未コミット差分（staged 含む）**全体**の品質ゲート。指摘のみ。**コミット・amend・push はしない**。
 本スキルは**静的レビューのみ**（差分の読取）。lint / 型チェック / テスト実行は行わない（別途依頼）。
 
-差分に共有 Markdown（README、`docs/`、`ai/**/*.md` 等）が含まれるときは、
-その範囲で **`document-authoring` の SKILL.md を Read して準用**する（ルールは再掲しない）。
+差分に共有 Markdown（README、`docs/`、`ai/**/*.md` 等）が含まれるときは、その範囲で **`document-authoring` の SKILL.md を Read して準用**する（ルールは再掲しない）。
 AI 向け指示ファイルが主なら `ai-instruction-authoring` も Read する。
 
 ## Procedure

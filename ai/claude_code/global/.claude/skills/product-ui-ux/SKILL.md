@@ -16,7 +16,7 @@ description: |
 2. 画面の仕事を理解し、既存UIとコードを調査し、見た目より先にUX構造を設計する
 3. 重要な `EXPLORE` では、Reference から原則を抽出し、2〜3案の方向を提案して人間の選択を待つ
 4. Design Plan を確定し、既存の技術スタックで実装し、実際の描画結果で仕上げる
-5. 完了前に Visual / 状態 / Accessibility の QA を行う
+5. 完了前に `references/qa-checklist.md` を Read して QA する
 
 ## 1. 優先順位
 
@@ -190,37 +190,17 @@ Task completion、UX、状態、Accessibility、プロジェクト制約の責�
 
 Design Mode 等の視覚編集ツールは有用なら使ってよいが、QA の代替にしない。
 
-## 14. Visual QA
+## 14. 完了前の QA
 
-関係するすべての Viewport を確認する。最低限: Desktop、狭い Desktop / Tablet、対象なら Mobile。
+完了前に `references/qa-checklist.md` を Read し、Task completion / 情報階層 / データ耐性 / 状態 / Responsive / Accessibility / Visual / 回帰を確認する。
 
-現実的なデータで確認する: 長いラベル、長いテキスト、多い行、多い Filter、Overflow、折り返し、固定 / Sticky 要素、Modal / Drawer のサイズ。
+追加の判定:
 
-## 15. 状態とインタラクションの QA
+- `USER_FACING` は、プロジェクト要件が優先しない限り WCAG 2.2 Level AA を目標にする
+- Task completion より先に Visual の新しさを最適化しない
+- 意味のある修正の後は、描画結果を再確認する
 
-関係する状態を確認する: Loading / Empty / Error / Validation error / Success / Disabled / Read only / 権限なし / Hover / Active / Focus。
-
-状態変化が色だけに頼らず理解できることを確認する。
-
-## 16. Accessibility
-
-`USER_FACING` は、プロジェクト要件が優先しない限り WCAG 2.2 Level AA を目標にする。
-
-全 Surface で最低限確認する: Keyboard だけで主要フローが完了する、Focus が見える、Focus が Overlay や Sticky 要素に隠れない、テキストとUIの Contrast、Label とエラー表示、Status メッセージ、十分なターゲットサイズ、Reduced motion、Zoom / 狭い Viewport での挙動。
-
-## 17. 完了前の批評
-
-次の順で批評する。
-
-1. Task completion
-2. 情報の階層
-3. 一貫性と密度
-4. 状態と Accessibility
-5. Visual の独自性
-
-Task completion より先に Visual の新しさを最適化しない。意味のある修正の後は、描画結果を再確認する。
-
-## 18. 代表利用者での検証
+## 15. 代表利用者での検証
 
 重要またはリスクの高い画面では、代表的な利用者による短い検証を提案する。
 
@@ -228,7 +208,7 @@ Task completion より先に Visual の新しさを最適化しない。意味�
 
 観察した難しさを、ドメイン知識によるもの、UI・情報設計によるもの、通常の不慣れ、に分けて評価する。UI自体が実質的な混乱を生んでいたら、タスクフローまたは情報構造へ戻る。
 
-## 19. 基準への昇格
+## 16. 基準への昇格
 
 `EXPLORE` の成功は自動的に新基準にならない。昇格は次を満たした後だけ行う。
 
@@ -240,9 +220,7 @@ Task completion より先に Visual の新しさを最適化しない。意味�
 
 昇格後は、再利用できる決定だけをプロジェクトの UI Guidelines、Tokens、Components へ抽出する。以降の画面は通常 `ALIGN` を使う。
 
-## 20. 参照資料
+## 17. 参照資料
 
-必要なときに読む。
-
-- `references/brief-template.md`: 依頼テンプレの構成
-- `references/qa-checklist.md`: 完了前の QA チェックリスト
+- `references/qa-checklist.md`: 完了前の QA（手順 14 で Read する）
+- `references/brief-template.md`: 重要な刷新・新機能の依頼テンプレ。局所改善では使わない

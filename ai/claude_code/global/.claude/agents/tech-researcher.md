@@ -2,9 +2,9 @@
 name: tech-researcher
 color: cyan
 description: >
-  技術仕様の一次情報を確認して根拠付きで回答する / Grounded tech research with primary sources.
-  Trigger: spec, docs, 最新, current version, release notes, RFC, CVE
-  When NOT to use: リポジトリ内部の事実のみで解決できる場合/コード実装が主目的のとき。
+  Use when: 技術仕様の一次情報を確認して根拠付きで回答するとき。Grounded tech research with primary sources.
+  When NOT to use: リポジトリ内部の事実のみで解決できる場合。コード実装が主目的のとき。
+  Trigger Keywords: [spec, docs, 最新, current version, release notes, RFC, CVE]
 tools: [WebSearch, WebFetch]
 ---
 
