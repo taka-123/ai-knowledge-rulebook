@@ -68,8 +68,15 @@ def validate(path: Path) -> list[str]:
     if "charset=\"utf-8\"" not in text.lower() and "charset='utf-8'" not in text.lower():
         errors.append("UTF-8 charset指定がありません")
 
+    # style 内の [open] などをプレースホルダーと誤検出しない
+    visible = re.sub(
+        r"<style\b[^>]*>.*?</style>|<script\b[^>]*>.*?</script>",
+        " ",
+        text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
     for pattern in PLACEHOLDER_PATTERNS:
-        match = pattern.search(text)
+        match = pattern.search(visible)
         if match:
             errors.append(f"プレースホルダーらしい文字列が残っています: {match.group(0)}")
             break
