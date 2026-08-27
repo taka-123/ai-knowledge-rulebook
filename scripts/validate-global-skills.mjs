@@ -9,7 +9,7 @@ const skillsDir = path.join(root, 'ai', 'claude_code', 'global', '.claude', 'ski
 const RULE_ONLY_SKILLS = new Set(['markdown-line-length'])
 
 /** Vendored third-party skills kept unmodified (upstream body); house description format not enforced */
-const VENDORED_SKILLS = new Set(['frontend-design'])
+const VENDORED_SKILLS = new Set(['frontend-design', 'show-me'])
 
 const procedureHeading = /^##\s+(Procedure|手順|進め方|いつ使うか|目的|振る舞い|生成プロトコル)/m
 
@@ -112,7 +112,7 @@ for (const file of files) {
     }
   }
 
-  if (!/^#\s+/m.test(text)) {
+  if (!VENDORED_SKILLS.has(fm.name) && !/^#\s+/m.test(text)) {
     errors.push(`${rel}: missing top-level heading`)
   }
 

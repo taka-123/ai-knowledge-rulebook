@@ -41,8 +41,8 @@ PRESET_CLOUD_BASIC_AGENTS=(
   tech-researcher
 )
 PRESET_CLOUD_HANDOFF_SKILLS=(
-  conversation-visualizer
-  conversation-graphic-recorder
+  handoff-html-digest
+  one-page-graphic-recorder
 )
 PRESET_CLOUD_HANDOFF_AGENTS=()
 

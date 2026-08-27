@@ -1,12 +1,12 @@
 ---
-name: conversation-visualizer
+name: handoff-html-digest
 description: |
-  Use when: ユーザーが、現在の会話・指定資料・Git差分について、最終結論、決定事項、実際の変更点、影響、次の行動を単一の自己完結HTMLで可視化するよう明示したとき。会話整理、差分要約、比較資料、変更内容の説明を1つのSkillで扱う。
-  When NOT to use: 単なる短い要約、品質レビューだけ、コミット作成、正本Markdownの作成、1枚のグラレコ可視化。グラレコ（画像または SVG ポスター）は conversation-graphic-recorder、差分品質判定は diff-quality-gate を使う。
-  Trigger Keywords: [conversation-visualizer, 会話をHTML化, 最終結論を可視化, 差分をHTML化, 変更内容を可視化, ブラウザで見たい, HTMLで整理]
+  Use when: ユーザーが、現在の会話・指定資料・Git差分の確定内容や実変更点を、共有・引き継ぎ・記録のための単一の自己完結HTML文書へまとめるよう明示したとき。会話整理、差分要約、比較資料、変更内容の説明を1つのSkillで扱う。
+  When NOT to use: その場の理解が目的の図解・最小の図（show-me が担当）。単なる短い要約、品質レビューだけ、コミット作成、正本Markdownの作成。1枚のグラレコ（画像または SVG ポスター）は one-page-graphic-recorder、差分品質判定は diff-quality-gate を使う。
+  Trigger Keywords: [handoff-html-digest, 会話をHTML化, 差分をHTML化, HTMLで引き継ぎ, HTML資料に, 決定事項をHTMLに]
 ---
 
-# conversation-visualizer
+# handoff-html-digest
 
 現在利用できる会話、資料、またはGit差分から、確定内容と実変更点を抽出し、**ブラウザで単独閲覧できる1つの自己完結HTML**へ変換する。
 
@@ -42,11 +42,11 @@ description: |
 例:
 
 ```text
-/conversation-visualizer conversation
-/conversation-visualizer diff
-/conversation-visualizer staged output .work/artifacts/staged-changes.html
-/conversation-visualizer range main..HEAD
-/conversation-visualizer file docs/decision.md
+/handoff-html-digest conversation
+/handoff-html-digest diff
+/handoff-html-digest staged output .work/artifacts/staged-changes.html
+/handoff-html-digest range main..HEAD
+/handoff-html-digest file docs/decision.md
 ```
 
 ツールによって直接呼び出し記法が異なる場合も、同じ引数の意味で扱う。
@@ -324,10 +324,11 @@ HTML全文を会話へ再掲しない。
 
 ## 他Skillとの境界
 
-| Skill                           | 責務                                                |
-| ------------------------------- | --------------------------------------------------- |
-| `conversation-visualizer`       | 確定内容または実変更点をHTMLで理解しやすくする      |
-| `conversation-graphic-recorder` | 同じ情報を1枚のグラレコ（画像、なければ SVG）で示す |
-| `diff-quality-gate`             | 差分の品質、残骸、機密、明らかな欠陥を評価する      |
-| `diff-review-commit`            | レビュー後にコミットまで行う                        |
-| `document-authoring`            | 正本となる自然言語文書を作成・編集する              |
+| Skill                       | 責務                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| `handoff-html-digest`       | 確定内容または実変更点を、引き継ぎ・記録用のHTML文書にする   |
+| `show-me`                   | 今の論点をその場で理解するための最小の図・スケッチ（会話内） |
+| `one-page-graphic-recorder` | 同じ情報を1枚のグラレコ（画像、なければ SVG）として残す      |
+| `diff-quality-gate`         | 差分の品質、残骸、機密、明らかな欠陥を評価する               |
+| `diff-review-commit`        | レビュー後にコミットまで行う                                 |
+| `document-authoring`        | 正本となる自然言語文書を作成・編集する                       |
