@@ -47,7 +47,7 @@ Cloud Agent や「この repo 単体でも同じ手順を使いたい」とき�
 
 - **cloud-basic**: 無人連続作業で成果物（文書・整形・調査）を残すもの。ライブ対話・チャット貼り付けは含めない。
 - **cloud-handoff**: 人間への引き継ぎ成果物（HTML / グラレコ）。必要時だけ追加。
-- **含めない（個別追加可）**: `grill-me`、`chatwork-formatter`、コミット系。
+- **含めない（個別追加可）**: `grill-me`、`show-me`、`chatwork-formatter`、コミット系。
 
 ## キット一覧
 
@@ -64,6 +64,7 @@ Cloud Agent や「この repo 単体でも同じ手順を使いたい」とき�
 | handoff-html-digest         | no          | yes           | 引き継ぎ用 HTML 文書         |
 | one-page-graphic-recorder   | no          | yes           | グラレコ                     |
 | grill-me                    | no          | no            | ライブ対話。個別追加可       |
+| show-me                     | no          | no            | その場理解。個別追加可       |
 | diff-quality-gate           | no          | no            | 個別追加可                   |
 | diff-review-commit          | no          | no            | 個別追加可（依存スキルあり） |
 | commit-message-suggester    | no          | no            | 個別追加可                   |
