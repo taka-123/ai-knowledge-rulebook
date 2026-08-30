@@ -32,12 +32,39 @@ git_push_command() {
   grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
+gh_subcmd() {
+  local sub="$1"
+  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
 if cli_command aws; then
   deny "Use AWS MCP Server instead of aws CLI."
 fi
 
 if cli_command gh; then
-  deny "Use GitHub MCP Server instead of gh CLI."
+  if gh_subcmd 'pr[[:space:]]+(merge|review)'; then
+    deny "Forbidden gh command: pr merge/review."
+  fi
+  if gh_subcmd 'workflow[[:space:]]+run'; then
+    deny "Forbidden gh command: workflow run."
+  fi
+  if gh_subcmd 'run[[:space:]]+rerun'; then
+    deny "Forbidden gh command: run rerun."
+  fi
+  if gh_subcmd 'repo[[:space:]]+(delete|archive|edit)'; then
+    deny "Forbidden gh command: repository admin."
+  fi
+  if gh_subcmd 'auth[[:space:]]+(token|login|logout|refresh)'; then
+    deny "Forbidden gh command: auth token/login/logout/refresh."
+  fi
+  if gh_subcmd 'api'; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+      deny "Mutating gh api is forbidden."
+    fi
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      deny "Mutating gh api is forbidden."
+    fi
+  fi
 fi
 
 if git_push_command; then

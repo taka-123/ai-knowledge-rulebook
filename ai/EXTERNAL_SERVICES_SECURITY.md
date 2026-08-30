@@ -5,14 +5,15 @@ AI エージェントから AWS・GitHub を使うときの推奨構成。
 
 ## 層構造
 
-| 層                           | 役割                             | 信頼度 |
-| ---------------------------- | -------------------------------- | ------ |
-| AWS IAM/SCP・GitHub Rulesets | 本当のセキュリティ境界           | 最重要 |
-| MCP の機能制限               | AI に危険な道具を見せない        | 重要   |
-| Hooks・Permissions・Rules    | 誤操作・迂回の抑止               | 補助   |
-| `AGENTS.md` / `CLAUDE.md`    | 行動規範（境界そのものではない） | 補助   |
+| 層                                 | 役割                             | 信頼度 |
+| ---------------------------------- | -------------------------------- | ------ |
+| AWS IAM/SCP・GitHub Rulesets       | 本当のセキュリティ境界           | 最重要 |
+| GitHub 側 credential 権限          | Cloud / CI では特に重要          | 重要   |
+| MCP tool 制限 / Agent command deny | 危険な能力を減らす               | 補助   |
+| `AGENTS.md` / `CLAUDE.md` / Skill  | 行動規範（境界そのものではない） | 補助   |
 
-人間はこれまでどおり `aws` / `gh` を使う。AI は MCP 経由に寄せる。
+人間はこれまでどおり `aws` / `gh` を使う。
+AWS は AI を MCP 経由に限定する。GitHub は MCP と `gh` のどちらも使ってよい。GitHub MCP を使うこと自体はセキュリティ境界ではない。
 
 ## AWS
 
@@ -91,20 +92,23 @@ IAM Identity Center 利用時は、各アカウントの `AWSReservedSSO_...` Ro
 
 ### GitHub 資格情報
 
-GitHub MCP 用は可能な限り Fine-grained PAT（または同等の最小権限トークン）を使い、対象 Repository と Permission を必要最小限に限定する。`X-MCP-Tools` で能力を絞っても、トークン自体が広いと別経路での被害が大きくなる。
+GitHub MCP を使う場合は、可能な限り Fine-grained PAT（または同等の最小権限トークン）を使い、対象 Repository と Permission を必要最小限に限定する。`X-MCP-Tools` で能力を絞っても、トークン自体が広いと別経路での被害が大きくなる。
+ローカルの対話型 Agent では、人間用と AI 専用の `gh` credential を必須分離しない。既存の `gh auth` を使ってよい。Cloud / CI / 無人実行では人間のローカル credential を共有せず、GitHub App / 製品連携 / Fine-grained PAT 等の machine 向け資格情報を使う。
 
 ## GitHub
 
 ### 方針
 
-- AI は公式 GitHub MCP。`gh` は直接使わない。
+- GitHub 操作には公式 GitHub MCP または `gh` を使ってよい。一方が使えなければ他方を試す。GitHub MCP 未登録だけでは GitHub 操作不可とはしない。
 - 明示依頼があれば自動: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
 - 既存 Issue の更新は明示依頼時のみ。依頼のない close / 状態変更 / 大幅本文変更はしない。
 - 既存 PR も同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更はしない（`update_pull_request` はそれらも可能なため）。
-- Tool 自体を渡さない: `merge_pull_request`、`pull_request_review_write`、`actions_run_trigger`、`create_or_update_file`、`push_files`、`delete_file`、`create_repository`、`update_pull_request_branch`。
+- 禁止: PR merge、PR review 提出、default / protected branch への直接 push、force push、Actions 手動実行・rerun、Repository / Ruleset / Branch Protection の変更、認証情報の表示・変更。
+- GitHub MCP を使う場合は、次の tool を渡さない: `merge_pull_request`、`pull_request_review_write`、`actions_run_trigger`、`create_or_update_file`、`push_files`、`delete_file`、`create_repository`、`update_pull_request_branch`。
+- `gh` では同等の危険操作（`gh pr merge`、`gh pr review`、`gh workflow run`、`gh run rerun`、`gh repo delete/archive/edit`、`gh auth token/login/logout/refresh`、mutating `gh api`）を hook / deny で止める。
 - 勝手な close 等が実害になったら、その時点で Hook 化する（初期は ask しない）。
 
-### MCP Tool Allowlist
+### MCP Tool Allowlist（GitHub MCP を使う場合）
 
 ```text
 get_me,issue_read,list_issues,search_issues,issue_write,add_issue_comment,

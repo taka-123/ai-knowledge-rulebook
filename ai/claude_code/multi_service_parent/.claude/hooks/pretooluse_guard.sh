@@ -62,7 +62,7 @@ if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$
   fi
 fi
 
-# コマンド位置の aws/gh を抑止（引用符は剥がさない。SDK は対象外）
+# コマンド位置の aws を抑止。gh は危険サブコマンドだけ止める（引用符は剥がさない。SDK は対象外）
 cli_command() {
   local name="$1"
   grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
@@ -72,12 +72,39 @@ git_push_command() {
   grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
+gh_subcmd() {
+  local sub="$1"
+  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
 if cli_command aws; then
   block "aws CLI (use AWS MCP Server)"
 fi
 
 if cli_command gh; then
-  block "gh CLI (use GitHub MCP Server)"
+  if gh_subcmd 'pr[[:space:]]+(merge|review)'; then
+    block "dangerous gh command (pr merge/review)"
+  fi
+  if gh_subcmd 'workflow[[:space:]]+run'; then
+    block "dangerous gh command (workflow run)"
+  fi
+  if gh_subcmd 'run[[:space:]]+rerun'; then
+    block "dangerous gh command (run rerun)"
+  fi
+  if gh_subcmd 'repo[[:space:]]+(delete|archive|edit)'; then
+    block "dangerous gh command (repo admin)"
+  fi
+  if gh_subcmd 'auth[[:space:]]+(token|login|logout|refresh)'; then
+    block "dangerous gh command (auth)"
+  fi
+  if gh_subcmd 'api'; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+  fi
 fi
 
 if git_push_command; then

@@ -45,7 +45,17 @@
   `ssh *`
   `scp *`
   `aws *`
-  `gh *`
+  `gh pr merge *`
+  `gh pr review *`
+  `gh workflow run *`
+  `gh run rerun *`
+  `gh repo delete *`
+  `gh repo archive *`
+  `gh repo edit *`
+  `gh auth token *`
+  `gh auth login *`
+  `gh auth logout *`
+  `gh auth refresh *`
   `terraform *`
   `kubectl *`
   `git push --force *`

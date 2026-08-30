@@ -17,7 +17,7 @@ description: |
 ## 手順
 
 1. 対象 PR を特定する。明示された URL / 番号を優先し、無ければ現在 branch から推定する。特定できなければ停止して確認する。
-2. GitHub 操作は公式 GitHub MCP で行う。`gh` CLI は使わない。
+2. GitHub 操作は公式 GitHub MCP または `gh` で行う。一方が使えなければ他方を試す。merge / review 提出 / Actions 手動実行はしない。
 3. 行動前に最新状態を取る: HEAD SHA、changed files、review comments / threads / decision、CI / checks、mergeability / conflict。
 4. Cursor Cloud Agent で PR / CI Subscription が使えるなら、polling よりそれを使う。event 本文だけで判断せず、再開時は PR 全体を取り直す。使えない環境では継続監視できるふりをせず、取得できた最新状態まで処理して残りを返す。
 5. 未対応の指摘と CI 失敗を `AUTO_FIX` / `ASK_HUMAN` / `IGNORE_WITH_REASON` に分類する。

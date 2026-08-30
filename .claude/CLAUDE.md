@@ -29,9 +29,9 @@
 
 ### GitHub
 
-- GitHub API 操作は公式 GitHub MCP Server を使う。GitHub CLI（`gh`）は直接使わない。
+- GitHub 操作には、公式 GitHub MCP Server または GitHub CLI（`gh`）を使用してよい。一方が利用できない場合は、可能であれば他方を試す。
 - 明示依頼があれば自動で行ってよい: Issue / PR / CI の参照、Issue 作成・通常編集、Issue・PR へのコメント、PR 作成・通常編集、feature branch への通常 push。
 - 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
-- 禁止: PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動、Ruleset/設定変更。
+- 禁止: PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動・rerun、Ruleset/設定変更、認証情報の表示・変更。
 
 詳細: `ai/EXTERNAL_SERVICES_SECURITY.md`

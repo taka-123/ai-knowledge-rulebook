@@ -201,9 +201,39 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh"],
+    pattern = ["gh", "pr", "merge"],
     decision = "forbidden",
-    justification = "GitHub操作はGitHub MCP Serverを使用してください。",
+    justification = "PR merge は人間が行います。",
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "review"],
+    decision = "forbidden",
+    justification = "PR review 提出は人間が行います。",
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", "run"],
+    decision = "forbidden",
+    justification = "Actions の手動実行は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["gh", "run", "rerun"],
+    decision = "forbidden",
+    justification = "Actions の rerun は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["delete", "archive", "edit"]],
+    decision = "forbidden",
+    justification = "Repository 管理操作は禁止します。",
+)
+
+prefix_rule(
+    pattern = ["gh", "auth", ["token", "login", "logout", "refresh"]],
+    decision = "forbidden",
+    justification = "GitHub 認証情報の表示・変更は禁止します。",
 )
 
 prefix_rule(

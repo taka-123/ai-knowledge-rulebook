@@ -109,10 +109,45 @@ prefix_rule(
 )
 
 prefix_rule(
-    pattern = ["gh"],
+    pattern = ["gh", "pr", "merge"],
     decision = "forbidden",
-    justification = "Use GitHub MCP Server instead of gh CLI.",
-    match = ["gh pr view 1", "gh issue list"],
+    justification = "PR merge is reserved for humans.",
+    match = ["gh pr merge 1"],
+)
+
+prefix_rule(
+    pattern = ["gh", "pr", "review"],
+    decision = "forbidden",
+    justification = "PR review submission is reserved for humans.",
+    match = ["gh pr review 1 --approve"],
+)
+
+prefix_rule(
+    pattern = ["gh", "workflow", "run"],
+    decision = "forbidden",
+    justification = "Manual Actions dispatch is forbidden.",
+    match = ["gh workflow run build.yml"],
+)
+
+prefix_rule(
+    pattern = ["gh", "run", "rerun"],
+    decision = "forbidden",
+    justification = "Actions rerun is forbidden.",
+    match = ["gh run rerun 123"],
+)
+
+prefix_rule(
+    pattern = ["gh", "repo", ["delete", "archive", "edit"]],
+    decision = "forbidden",
+    justification = "Repository admin operations are forbidden.",
+    match = ["gh repo edit owner/repo"],
+)
+
+prefix_rule(
+    pattern = ["gh", "auth", ["token", "login", "logout", "refresh"]],
+    decision = "forbidden",
+    justification = "GitHub credential display or mutation is forbidden.",
+    match = ["gh auth token"],
 )
 
 prefix_rule(
