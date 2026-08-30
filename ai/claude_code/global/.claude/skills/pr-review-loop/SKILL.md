@@ -2,8 +2,8 @@
 name: pr-review-loop
 description: |
   Use when: ユーザーが明示的に、対象PRのレビュー指摘とCIを収束させる、または pr-review-loop / PRレビュー収束 / レビュー対応を継続するよう依頼したとき。妥当な指摘を直し、review-clean + CI green + mergeable まで進める。
-  When NOT to use: 本 Skill の発見・参照だけ。PR作成前の通常実装。単発のコードレビューだけ。merge判断だけ。仕様・設計そのものを決めるとき。
-  Trigger Keywords: [pr-review-loop, PRレビュー収束, レビュー対応を継続, review-clean]
+  When NOT to use: 本 Skill の発見・参照だけ。PR作成前の通常実装。単発のコードレビューだけ。merge判断だけ。仕様・設計そのものを決めるとき。公式 babysit-pr を単体で起動して merge まで監視するとき。
+  Trigger Keywords: [pr-review-loop, PRレビュー収束, レビュー対応を継続, review-clean, babysit-pr]
 ---
 
 # pr-review-loop
@@ -12,18 +12,47 @@ description: |
 
 人間をレビュー結果の中継係にせず、actionable な指摘と branch 起因の CI 失敗を直して **review-clean + CI green + mergeable** まで進める。そこで止め、merge 判断を人間へ返す。merge はしない。
 
-ユーザーが本 Skill を使って対象 PR を収束させるよう明示的に依頼した場合に限り、その PR の head branch への通常の commit と push を許可する。Skill の発見・参照だけでは許可しない。force push、default branch への push、Actions の手動 rerun は許可に含まない。
+監視・polling・review/CI 取得・push 後の watch 再開・CI 診断は OpenAI 公式 `babysit-pr` が正本。本 Skill は、その watcher の上に乗るこの環境の薄い policy wrapper である。公式より自作を優先しない。公式が優れている挙動は簡略再実装しない。
+
+ユーザーが本 Skill を使って対象 PR を収束させるよう明示的に依頼した場合に限り、その PR の head branch への通常の commit と push を許可する。Skill の発見・参照だけでは許可しない。force push、default branch への push、`gh workflow run`、Agent が直接行う `gh run rerun` は許可に含まない。
+
+## 役割分担
+
+```text
+OpenAI公式 babysit-pr
+→ PR監視・polling・review/CI取得・push後のwatch再開・CI診断の正本
+
+pr-review-loop
+→ この環境固有の薄いpolicy wrapper
+```
+
+正本の置き場（未改変 vendor）:
+
+- 本文: 本 Skill ディレクトリの `vendor/openai-codex-babysit-pr/SKILL.md`
+- 監視スクリプト: `vendor/openai-codex-babysit-pr/scripts/gh_pr_watch.py`
+- 判定 heuristic: `vendor/openai-codex-babysit-pr/references/heuristics.md`
+- provenance: 本 Skill ディレクトリの `UPSTREAM.md`
+
+公式 Skill 本文の `.codex/skills/babysit-pr/...` は openai/codex リポジトリ相対パスである。この rulebook の global Skill 正本は `ai/claude_code/global/.claude/skills/` にあり、同期先は `~/.claude/skills/` や `<project>/.claude/skills/` になる。**公式コマンドを cwd 相対で実行しない。** watcher は次の launcher だけを使う。
+
+```bash
+python3 <this-skill>/scripts/run-gh-pr-watch.py --pr auto --watch
+python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --once
+python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-failed-now
+```
+
+`<this-skill>` は、この `SKILL.md` があるディレクトリ（portable copy 後は `.claude/skills/pr-review-loop`）。先に公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read し、監視 loop / stop / review 公開判定 / CI 分類 / flaky retry の本文に従う。path だけ launcher に置き換える。
 
 ## 手順
 
 1. 対象 PR を特定する。明示された URL / 番号を優先し、無ければ現在 branch から推定する。特定できなければ停止して確認する。
-2. GitHub 操作は公式 GitHub MCP または `gh` で行う。一方が使えなければ他方を試す。merge / review 提出 / Actions 手動実行はしない。
-3. 行動前に最新状態を取る: HEAD SHA、changed files、review comments / threads / decision、CI / checks、mergeability / conflict。
-4. Cursor Cloud Agent で PR / CI Subscription が使えるなら、polling よりそれを使う。event 本文だけで判断せず、再開時は PR 全体を取り直す。使えない環境では継続監視できるふりをせず、取得できた最新状態まで処理して残りを返す。
-5. 未対応の指摘と CI 失敗を `AUTO_FIX` / `ASK_HUMAN` / `IGNORE_WITH_REASON` に分類する。
-6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。
-7. `AUTO_FIX` の変更があるときだけ、コミットメッセージは `commit-message-suggester` を Read して準用し、PR head branch にだけ commit + push する。
-8. 新しい HEAD の review / CI を待つ、または再取得する。完了条件に達するか、非収束で `ASK_HUMAN` するまで繰り返す。push は完了ではない。reviewer 側に push-trigger の自動再レビューがある場合はそれを優先する。
+2. 公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read する。監視は継続タスクとして扱う。`--watch` を使い、一時的な `idle` や「review comment が今ない」だけでは終了しない。ユーザーへ「続きを監視しますか」と毎回確認しない。同じ PR に複数 watcher を並走させない。
+3. GitHub 操作は公式 GitHub MCP または `gh` で行う。一方が使えなければ他方を試す。watcher は `gh` 前提のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
+4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
+5. 未対応の指摘を `AUTO_FIX` / `ASK_HUMAN` / `IGNORE_WITH_REASON` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX / ASK_HUMAN を満たすものだけ直す。
+6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄し、launcher で `--watch` を新 HEAD に対して即再開する。
+7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。flaky で watcher が `retry_failed_checks` を出した場合だけ、launcher の `--retry-failed-now` を公式 retry budget（最大 3 cycle）内で使う。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
+8. current HEAD について完了条件をすべて満たすまで繰り返す。満たしたら watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
 上位の repository / tool policy を本手順より優先する。触るのは PR head branch だけ。同じ PR に複数の修正 Agent を並走させない。別の人・Agent が新しい commit を push したら、最新状態を読み直してから動く。
 
@@ -34,9 +63,7 @@ description: |
 - 指摘が明確に妥当
 - 現在の PR の目的・scope 内
 - 修正が局所的で安全
-- product / UX / architecture / policy の新しい意思決定を必要としない
-
-典型: 明確な bug / regression、security 欠陥、race、stale state / error handling 漏れ、boundary / null / async 不具合、現在の変更が原因の test / build / lint 失敗、再現可能な false positive / false negative。
+- product / UX / architecture / security policy の新しい意思決定を必要としない
 
 bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の妥当性で独立に判断する。妥当なら必要十分な修正をする。実害（secret leak、data loss、別入力の誤処理など）は severity が低くても重く扱う。無条件には従わない。
 
@@ -50,14 +77,9 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - 指摘の妥当性を判断しきれない
 - destructive operation、merge
 - 人間 reviewer への回答・交渉
-- CI / dependency / infrastructure 自体の変更が current PR の scope 外
-- branch と無関係な CI 失敗（flaky / runner / network / registry / 外部サービス）
-  - terminal で CI green を阻害している
-  - 上位 policy 上許可された回復・再実行手段がない
-  - コードは変えない
 - 下記の非収束
 
-返すときは未確定点と推奨判断だけ示す。人間 reviewer のコメントへ返信せず、thread を resolve しない。
+返すときは未確定点と推奨判断だけ示す。人間 reviewer のコメントへ返信せず、人間の review thread を resolve しない。公式 babysit-pr が「依頼者または Codex bot の thread は resolve してよい」としていても、本環境ではこの禁止を優先する。
 
 ## IGNORE_WITH_REASON
 
@@ -76,14 +98,43 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - 修正が scope / architecture へ波及する
 - 複数 round 連続で新規 actionable 指摘が出続け、収束傾向がない
 
+## review-clean
+
+**現在 HEAD に対する review が完了したことを確認するまで、review-clean と判定しない。**
+
+一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。
+
+Codex Review を primary reviewer として扱う repo では、次を区別する。
+
+- current HEAD（review の `commit_id` が現在 SHA）に対する Codex の actionable review comment
+- current HEAD について no-issues であることを示す repo 上の Codex 完了 signal（同じ SHA に紐づく published review）
+
+AUTO_FIX 後に push した場合は、それ以前の review-clean を無効化し、新 HEAD について review cycle を開始する。repo で push-trigger の Codex 自動再レビューが確実に動くならそれを待つ。保証されない場合は、許可された PR comment として `@codex review` を使い、人間を再レビュー開始の中継係にしない。
+
 ## 完了
 
-次をすべて満たしたら止める。PR が open でも「merge可能」と報告する。
+公式 babysit-pr は green + mergeable + review-clean でも PR が open なら watch を続ける。本環境のタスク完了はここだけ異なる。
 
-- 現在 HEAD の CI が green
-- 未対応の actionable review がない
-- merge conflict がない
-- PR が mergeable
-- 人間判断待ちの blocker がない
+current HEAD について次をすべて確認したら watch を終了してよい。
 
-報告は次だけ: 最終 HEAD、CI status、対応した指摘、未対応 / 人間判断待ち、mergeability、次の行動（通常は人間の merge 判断）。
+- review 完了確認済み（上記 review-clean）
+- 未対応の actionable review なし
+- CI green
+- merge conflict なし
+- mergeable
+- ASK_HUMAN blocker なし
+
+そこで止め、次の一文で返す。
+
+```text
+merge可能。最終merge判断は人間。
+```
+
+報告は次だけ: 最終 HEAD、CI status、対応した指摘、未対応 / 人間判断待ち、mergeability、次の行動（通常は人間の merge 判断）。merge しない。
+
+## GitHub 操作の境界
+
+- 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
+- 信頼する公式 watcher が flaky/unrelated と分類し `retry_failed_checks` を出したときだけ、launcher 経由の `--retry-failed-now`（内部の `gh run rerun --failed`）を公式 default 最大 3 cycle まで許可する。
+- Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。
+- 人間 reviewer への返信、人間 review thread の resolve、PR merge はしない。

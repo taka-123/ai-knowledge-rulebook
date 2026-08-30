@@ -79,6 +79,7 @@ npm run cursor-agents:check
 npm run codex-wiring:check
 npm run routing:check
 npm run hooks:check
+npm run pr-review-loop:check
 ```
 
 ## 日常運用フロー
