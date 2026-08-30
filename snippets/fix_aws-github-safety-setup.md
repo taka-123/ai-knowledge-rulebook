@@ -170,7 +170,9 @@ gh workflow run
 gh run rerun
 ```
 
-既存方針どおり、Actionsの手動起動は行わない。
+Agent が直接行う `gh workflow run` と `gh run rerun` は禁止のまま。
+例外は、信頼する OpenAI 公式 babysit-pr watcher が current PR の failed checks を flaky/unrelated と分類し、公式 retry budget（最大 3 cycle）内で rerun する場合だけ。
+一般的な Actions 手動実行権限は広げない。
 
 ### Repository管理操作
 
@@ -199,16 +201,18 @@ Agent自身に認証状態を変更させたり、tokenを標準出力へ表示�
 
 ### mutating `gh api`
 
-GET中心の参照は許可するが、
+GET中心の参照は許可する。次は禁止する。
 
 ```text
 -X POST
 -X PUT
 -X PATCH
 -X DELETE
+--input
 ```
 
-や、`-f` / `--field`等によって状態変更を行うAPI呼び出しは原則禁止する。
+`-f` / `--field` は、明示的な `-X GET` / `--method GET` の query パラメータなら許可する（OpenAI 公式 babysit-pr watcher が使う）。
+method 未指定の `-f`（`gh api graphql -f` 等）と `--input` は禁止のまま。
 
 必要なwrite操作は、明示的に許可している高水準の`gh`コマンドまたはGitHub MCP toolを使用する。
 

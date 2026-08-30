@@ -10,3 +10,4 @@ alwaysApply: true
 - 明示依頼があれば: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
 - 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
 - 禁止: PR merge、review 提出、main/master 直接 push、force push、Actions 手動起動・rerun、Ruleset/設定変更、認証情報の表示・変更。
+- Agent 直下の `gh workflow run` / `gh run rerun` は禁止。例外は公式 babysit-pr watcher による current PR の flaky/unrelated failed checks の bounded rerun（最大 3 cycle）のみ。

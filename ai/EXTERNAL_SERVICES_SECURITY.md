@@ -104,8 +104,9 @@ GitHub MCP を使う場合は、可能な限り Fine-grained PAT（または同�
 - 既存 Issue の更新は明示依頼時のみ。依頼のない close / 状態変更 / 大幅本文変更はしない。
 - 既存 PR も同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更はしない（`update_pull_request` はそれらも可能なため）。
 - 禁止: PR merge、PR review 提出、default / protected branch への直接 push、force push、Actions 手動実行・rerun、Repository / Ruleset / Branch Protection の変更、認証情報の表示・変更。
+- Agent が直接行う `gh workflow run` / `gh run rerun` は禁止のまま。例外は、信頼する OpenAI 公式 babysit-pr watcher が current PR の failed checks を flaky/unrelated と分類し、公式 retry budget（最大 3 cycle）内で rerun する場合だけ。一般的な Actions 手動実行権限は広げない。
 - GitHub MCP を使う場合は、次の tool を渡さない: `merge_pull_request`、`pull_request_review_write`、`actions_run_trigger`、`create_or_update_file`、`push_files`、`delete_file`、`create_repository`、`update_pull_request_branch`。
-- `gh` では同等の危険操作（`gh pr merge`、`gh pr review`、`gh workflow run`、`gh run rerun`、`gh repo delete/archive/edit`、`gh auth token/login/logout/refresh`、mutating `gh api`）を hook / deny で止める。
+- `gh` では同等の危険操作（`gh pr merge`、`gh pr review`、`gh workflow run`、`gh run rerun`、`gh repo delete/archive/edit`、`gh auth token/login/logout/refresh`、mutating `gh api`）を hook / deny で止める。明示的な `-X GET -f` は query パラメータであり、mutating ではない。
 - 勝手な close 等が実害になったら、その時点で Hook 化する（初期は ask しない）。
 
 ### MCP Tool Allowlist（GitHub MCP を使う場合）

@@ -24,6 +24,7 @@ AI には次を同時に満たさせる。
 - AWS の作成・更新・削除・起動停止・デプロイ・権限変更はしない（間違って消さない）
 - GitHub は Issue / PR / CI の参照、Issue 作成、コメント、PR 作成、feature branch の通常 push まで
 - PR merge、review 提出、`main` / `master` / `develop` / `deploy` への直接 push、force push、Actions 手動起動・rerun、Ruleset 変更は禁止
+- Agent 直下の `gh workflow run` / `gh run rerun` は禁止。例外は公式 babysit-pr watcher による current PR の flaky/unrelated failed checks の bounded rerun（最大 3 cycle）のみ
 - GitHub は公式 MCP または `gh` を使ってよい。一方が使えなければ他方を試す。GitHub MCP を必須経路にしない
 - raw `aws` CLI / SDK / 絶対パス迂回は使わない。AWS 公式 MCP を使う
 
@@ -549,6 +550,7 @@ alwaysApply: true
 - 明示依頼があれば: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
 - 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
 - 禁止: PR merge、review 提出、`main` / `master` / `develop` / `deploy` 直接 push、force push、Actions 手動起動・rerun、Ruleset/設定変更、認証情報の表示・変更。
+- Agent 直下の `gh workflow run` / `gh run rerun` は禁止。例外は公式 babysit-pr watcher による current PR の flaky/unrelated failed checks の bounded rerun（最大 3 cycle）のみ。
 ```
 
 `.cursor/permissions.json` は使わない。
@@ -661,8 +663,15 @@ if cli_command gh; then
     if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
+    fi
+    # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
+      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
+        deny "Mutating gh api is forbidden."
+      fi
     fi
   fi
 fi
@@ -752,8 +761,15 @@ if cli_command gh; then
     if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       block "mutating gh api"
+    fi
+    # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
+      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
     fi
   fi
 fi
@@ -881,8 +897,15 @@ if cli_command gh; then
     if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       block "mutating gh api"
+    fi
+    # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
+      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
     fi
   fi
 fi
@@ -1049,13 +1072,16 @@ allow_all "gh pr view 1"
 allow_all "/usr/local/bin/gh issue list"
 allow_all "gh pr checks 1"
 allow_all "gh api repos/owner/repo/pulls/1"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -f head_sha=abc -f per_page=100"
 deny_all "gh pr merge 1"
 deny_all "gh pr review 1 --approve"
 deny_all "gh workflow run build.yml"
 deny_all "gh run rerun 123"
+deny_all "gh run rerun 123 --failed"
 deny_all "gh repo edit owner/repo"
 deny_all "gh auth token"
 deny_all "gh api repos/owner/repo/pulls/1 -X DELETE"
+deny_all "gh api graphql -f query=foo"
 allow_all "rg 'gh '"
 allow_all "echo 'aws s3 ls'"
 allow_all 'git commit -m "use aws cli"'

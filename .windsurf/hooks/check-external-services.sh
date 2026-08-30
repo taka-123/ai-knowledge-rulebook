@@ -56,8 +56,15 @@ if cli_command gh; then
     if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       block "mutating gh api"
+    fi
+    # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
+    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
+      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
     fi
   fi
 fi

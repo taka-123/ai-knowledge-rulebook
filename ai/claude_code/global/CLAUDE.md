@@ -41,6 +41,7 @@
 - 既存 Issue の更新は、ユーザーから明示的に依頼された場合のみ行う。依頼されていない Issue の close、状態変更、大幅な本文変更は行わない。
 - 既存 PR についても同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更は行わない。
 - 禁止: PR merge、PR review 提出、default / protected branch への直接 push、force push、protected branch の削除、Actions workflow の手動実行・rerun、Repository / Ruleset / Branch Protection の変更。
+- Agent が直接行う `gh workflow run` / `gh run rerun` は禁止のまま。例外は、信頼する OpenAI 公式 babysit-pr watcher が current PR の failed checks を flaky/unrelated と分類し、公式 retry budget（最大 3 cycle）内で rerun する場合だけ。
 - GitHub 認証情報の表示・変更は行わない。
 
 ## 外部 CLI 委任
