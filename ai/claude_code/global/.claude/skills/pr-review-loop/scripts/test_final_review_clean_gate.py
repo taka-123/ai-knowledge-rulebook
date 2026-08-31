@@ -11,6 +11,7 @@ MODULE_SPEC.loader.exec_module(gate)
 
 evaluate_review_clean = gate.evaluate_review_clean
 eligible_codex_resolve_threads = gate.eligible_codex_resolve_threads
+is_codex_review_request = gate.is_codex_review_request
 is_codex_reviewer = gate.is_codex_reviewer
 normalize_codex_completion_signals = gate.normalize_codex_completion_signals
 normalize_issue_comments = gate.normalize_issue_comments
@@ -82,6 +83,8 @@ def thread(**overrides):
         "url": "",
     }
     item.update(overrides)
+    if "authors" not in overrides:
+        item["authors"] = [item["author"]] if item.get("author") else []
     return item
 
 
@@ -335,6 +338,7 @@ def test_normalize_threads_keeps_commit_and_unresolved():
     assert threads[0]["original_commit_id"] == OLD
     assert threads[0]["resolved"] is False
     assert threads[0]["node_id"].startswith("PRRT_")
+    assert threads[0]["authors"] == ["coderabbitai[bot]"]
 
 
 def test_current_head_codex_thumbs_up_is_clean():
@@ -508,3 +512,164 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
     assert is_codex_reviewer(signals[0]["author"]) is True
     result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
     assert result["review_clean"] is True
+
+
+def test_codex_review_request_requires_explicit_review_word():
+    assert is_codex_review_request("@codex review") is True
+    assert is_codex_review_request(f"@codex review\nhead: {HEAD}") is True
+    assert is_codex_review_request("@CODEX REVIEW") is True
+    assert is_codex_review_request("@codex") is False
+    assert is_codex_review_request("@codex address that feedback") is False
+    assert is_codex_review_request("@codex fix this") is False
+
+
+def test_non_review_comment_codex_thumbs_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 11,
+                "user": {"login": "cursor[bot]"},
+                "body": f"@codex\nhead: {HEAD}",
+            },
+            {
+                "id": 12,
+                "user": {"login": "cursor[bot]"},
+                "body": f"@codex address that feedback\nhead: {HEAD}",
+            },
+            {
+                "id": 13,
+                "user": {"login": "cursor[bot]"},
+                "body": f"@codex fix this\nhead: {HEAD}",
+            },
+        ],
+        HEAD,
+    )
+    reactions = {
+        "11": [{"id": 1, "content": "+1", "user": {"login": "chatgpt-codex-connector[bot]"}}],
+        "12": [{"id": 2, "content": "+1", "user": {"login": "chatgpt-codex-connector[bot]"}}],
+        "13": [{"id": 3, "content": "+1", "user": {"login": "chatgpt-codex-connector[bot]"}}],
+    }
+    signals = normalize_codex_completion_signals(comments, reactions, HEAD)
+    assert signals == []
+    result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_only_thread_is_eligible_after_push():
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_only",
+    )
+    eligible, rejected = eligible_codex_resolve_threads(
+        [bot], ["PRRT_codex_only"], HEAD, HEAD
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_codex_only"]
+
+
+def test_codex_thread_with_later_human_is_not_eligible():
+    mixed = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice"],
+        node_id="PRRT_codex_then_human",
+    )
+    eligible, rejected = eligible_codex_resolve_threads(
+        [mixed], ["PRRT_codex_then_human"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["node_id"] == "PRRT_codex_then_human"
+
+
+def test_human_then_codex_thread_is_not_eligible():
+    mixed = thread(
+        author="alice",
+        authors=["alice", "chatgpt-codex-connector[bot]"],
+        node_id="PRRT_human_then_codex",
+    )
+    eligible, rejected = eligible_codex_resolve_threads(
+        [mixed], ["PRRT_human_then_codex"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["authors"] == ["alice", "chatgpt-codex-connector[bot]"]
+
+
+def test_human_only_thread_is_not_eligible():
+    human = thread(author="alice", authors=["alice"], node_id="PRRT_human_only")
+    eligible, rejected = eligible_codex_resolve_threads(
+        [human], ["PRRT_human_only"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["author"] == "alice"
+
+
+def test_non_codex_bot_thread_is_not_eligible():
+    rabbit = thread(
+        author="coderabbitai[bot]",
+        authors=["coderabbitai[bot]"],
+        node_id="PRRT_rabbit",
+    )
+    eligible, rejected = eligible_codex_resolve_threads(
+        [rabbit], ["PRRT_rabbit"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["author"] == "coderabbitai[bot]"
+
+
+def test_resolve_before_push_is_rejected():
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex1",
+    )
+    with pytest.raises(ValueError, match="commit \\+ push"):
+        eligible_codex_resolve_threads([bot], ["PRRT_codex1"], "", HEAD)
+
+
+def test_resolve_head_mismatch_is_rejected():
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex1",
+    )
+    with pytest.raises(ValueError, match="commit \\+ push"):
+        eligible_codex_resolve_threads([bot], ["PRRT_codex1"], HEAD, OLD)
+
+
+def test_normalize_threads_keeps_all_comment_authors():
+    threads = normalize_threads(
+        [
+            {
+                "id": "PRRT_mixed",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": {
+                    "nodes": [
+                        {
+                            "databaseId": 1,
+                            "body": "Please fix.",
+                            "path": "a.py",
+                            "author": {"login": "chatgpt-codex-connector[bot]"},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                        {
+                            "databaseId": 2,
+                            "body": "I agree, please fix.",
+                            "path": "a.py",
+                            "author": {"login": "alice"},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                    ]
+                },
+            }
+        ]
+    )
+    assert threads[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
+    eligible, rejected = eligible_codex_resolve_threads(
+        threads, ["PRRT_mixed"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]

@@ -30,7 +30,7 @@ ACTIONABLE_MARKERS = (
 )
 PENDING = "PENDING"
 THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
-CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex(?:\s+review)?\b", re.IGNORECASE)
+CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex\s+review\b", re.IGNORECASE)
 HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
 SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b", re.IGNORECASE)
 THREADS_QUERY = """
@@ -297,12 +297,20 @@ def normalize_threads(payload):
         author = first.get("author") if isinstance(first, dict) else {}
         commit = first.get("commit") if isinstance(first, dict) else {}
         original = first.get("originalCommit") if isinstance(first, dict) else {}
+        authors = []
+        for comment in comments or []:
+            if not isinstance(comment, dict):
+                continue
+            login = extract_login(comment.get("author"))
+            if login:
+                authors.append(login)
         out.append(
             {
                 "kind": "review_thread",
                 "id": str((first or {}).get("databaseId") or ""),
                 "node_id": str(thread.get("id") or ""),
                 "author": extract_login(author),
+                "authors": authors,
                 "author_association": "",
                 "state": "",
                 "commit_id": str((commit or {}).get("oid") or ""),
@@ -395,6 +403,18 @@ def thread_ids(item):
     } - {""}
 
 
+def thread_authors(item):
+    raw = item.get("authors")
+    if not isinstance(raw, list):
+        return []
+    return [str(login) for login in raw if str(login or "")]
+
+
+def is_codex_only_thread(item):
+    authors = thread_authors(item)
+    return bool(authors) and all(is_codex_reviewer(login) for login in authors)
+
+
 def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, current_head_sha):
     if not pushed_head_sha or pushed_head_sha != current_head_sha:
         raise ValueError("resolve Codex threads only after commit + push of current HEAD")
@@ -409,7 +429,7 @@ def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, curr
             continue
         if item.get("resolved") is True:
             continue
-        if is_codex_reviewer(item.get("author")):
+        if is_codex_only_thread(item):
             eligible.append(item)
         else:
             rejected.append(item)
