@@ -29,6 +29,8 @@ ACTIONABLE_MARKERS = (
     "changes requested",
 )
 PENDING = "PENDING"
+DISMISSED = "DISMISSED"
+VALID_PROOF_REVIEW_STATES = {"COMMENTED", "APPROVED"}
 THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
 CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex\s+review\b", re.IGNORECASE)
 HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
@@ -261,7 +263,7 @@ def normalize_reviews(payload):
         if not isinstance(item, dict):
             continue
         state = str(item.get("state") or "").upper()
-        if state == PENDING:
+        if state in {PENDING, DISMISSED}:
             continue
         out.append(
             {
@@ -449,7 +451,12 @@ def is_codex_completion_proof(item, head_sha):
     if not is_codex_reviewer(item.get("author")):
         return False
     kind = item.get("kind")
-    if kind == "review" and not is_summary_only(item.get("body"), item.get("path")):
+    if kind == "review":
+        state = str(item.get("state") or "").upper()
+        if state not in VALID_PROOF_REVIEW_STATES:
+            return False
+        if is_summary_only(item.get("body"), item.get("path")):
+            return False
         return True
     if kind == "codex_thumbs_up" and str(item.get("content") or "") in THUMBS_UP:
         return True

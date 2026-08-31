@@ -177,6 +177,24 @@ def test_contributor_external_reviewer_is_not_dropped():
     assert result["actionable"][0]["author_association"] == "CONTRIBUTOR"
 
 
+def test_dismissed_codex_review_is_not_proof():
+    raw = [
+        {
+            "id": 88,
+            "state": "DISMISSED",
+            "commit_id": HEAD,
+            "user": {"login": "chatgpt-codex-connector[bot]"},
+            "body": "No issues found.",
+        }
+    ]
+    reviews = normalize_reviews(raw)
+    result = evaluate_review_clean(HEAD, reviews, [], [])
+    assert reviews == []
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "no_current_head_review_proof"
+
+
 def test_pending_review_and_its_comments_are_ignored():
     raw_reviews = [
         {"id": 99, "state": "PENDING", "commit_id": HEAD, "user": {"login": "human"}, "body": "draft"}

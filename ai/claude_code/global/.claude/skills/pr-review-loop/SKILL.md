@@ -116,7 +116,7 @@ gate は GitHub から published review / review comments / unresolved threads /
 
 Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。
 
-- current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review
+- current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review（`DISMISSED` / `PENDING` は使わない）
 - current HEAD に対応付けた `@codex review` request への Codex 👍（`+1`）。old HEAD や無関係な reaction は使わない
 
 `@codex review` を書くときは current HEAD を本文に含める（`head: <sha>`）。gate はその SHA と Codex 👍 を対応付ける。
