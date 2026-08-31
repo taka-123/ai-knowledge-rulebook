@@ -93,8 +93,8 @@ if cli_command gh; then
       if grep -Eq '[?*[]' <<<"$cmd"; then
         block "mutating gh api"
       fi
-      # Fail closed: ANSI-C quotes ($'X') can assemble -X after shell parse.
-      if grep -Eq "\\\$'" <<<"$cmd"; then
+      # Fail closed: ANSI-C $'X' or locale $"X" quotes can assemble -X after shell parse.
+      if grep -Eq "\\\$['\"]" <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
