@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from urllib.parse import urlparse
@@ -28,12 +29,17 @@ ACTIONABLE_MARKERS = (
     "changes requested",
 )
 PENDING = "PENDING"
+THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
+CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex(?:\s+review)?\b", re.IGNORECASE)
+HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
+SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b", re.IGNORECASE)
 THREADS_QUERY = """
 query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
       reviewThreads(first: 100) {
         nodes {
+          id
           isResolved
           isOutdated
           comments(first: 20) {
@@ -49,6 +55,13 @@ query($owner: String!, $name: String!, $number: Int!) {
         }
       }
     }
+  }
+}
+"""
+RESOLVE_THREAD_MUTATION = """
+mutation($id: ID!) {
+  resolveReviewThread(input: {threadId: $id}) {
+    thread { id isResolved }
   }
 }
 """
@@ -138,6 +151,39 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
     }
 
 
+def is_codex_reviewer(login):
+    lower = str(login or "").lower()
+    return bool(lower) and "codex" in lower and "[bot]" in lower
+
+
+def is_codex_review_request(body):
+    return bool(CODEX_REVIEW_REQUEST_RE.search(body or ""))
+
+
+def canonicalize_sha(value, head_sha=""):
+    raw = str(value or "").strip()
+    head = str(head_sha or "").strip()
+    if not raw:
+        return ""
+    if head and (raw.lower() == head.lower() or (len(raw) >= 7 and head.lower().startswith(raw.lower()))):
+        return head
+    return raw.lower()
+
+
+def extract_bound_sha(body, head_sha=""):
+    text = body or ""
+    field = HEAD_FIELD_RE.search(text)
+    if field:
+        return canonicalize_sha(field.group(1), head_sha)
+    if head_sha and head_sha.lower() in text.lower():
+        return head_sha
+    matches = SHA_RE.findall(text)
+    full = [item for item in matches if len(item) == 40]
+    if len(full) == 1:
+        return canonicalize_sha(full[0], head_sha)
+    return ""
+
+
 def is_summary_only(body, path=None):
     if path:
         return False
@@ -212,11 +258,13 @@ def normalize_review_comments(payload, pending_review_ids):
     return out
 
 
-def normalize_issue_comments(payload):
+def normalize_issue_comments(payload, head_sha=""):
     out = []
     for item in payload or []:
         if not isinstance(item, dict):
             continue
+        body = str(item.get("body") or "")
+        commit_id = extract_bound_sha(body, head_sha) if is_codex_review_request(body) else ""
         out.append(
             {
                 "kind": "issue_comment",
@@ -224,13 +272,13 @@ def normalize_issue_comments(payload):
                 "author": extract_login(item.get("user")),
                 "author_association": str(item.get("author_association") or ""),
                 "state": "",
-                "commit_id": "",
+                "commit_id": commit_id,
                 "original_commit_id": "",
                 "path": None,
                 "line": None,
                 "resolved": None,
                 "outdated": None,
-                "body": str(item.get("body") or ""),
+                "body": body,
                 "url": str(item.get("html_url") or ""),
             }
         )
@@ -253,6 +301,7 @@ def normalize_threads(payload):
             {
                 "kind": "review_thread",
                 "id": str((first or {}).get("databaseId") or ""),
+                "node_id": str(thread.get("id") or ""),
                 "author": extract_login(author),
                 "author_association": "",
                 "state": "",
@@ -266,6 +315,47 @@ def normalize_threads(payload):
                 "url": "",
             }
         )
+    return out
+
+
+def normalize_codex_completion_signals(issue_comments, reactions_by_comment_id, head_sha=""):
+    out = []
+    for comment in issue_comments or []:
+        if not isinstance(comment, dict):
+            continue
+        body = str(comment.get("body") or "")
+        if not is_codex_review_request(body):
+            continue
+        comment_id = str(comment.get("id") or "")
+        bound = extract_bound_sha(body, head_sha) or str(comment.get("commit_id") or "")
+        for reaction in reactions_by_comment_id.get(comment_id, []) or []:
+            if not isinstance(reaction, dict):
+                continue
+            content = str(reaction.get("content") or "")
+            author = extract_login(reaction.get("user")) or str(reaction.get("author") or "")
+            if content not in THUMBS_UP:
+                continue
+            if not is_codex_reviewer(author):
+                continue
+            out.append(
+                {
+                    "kind": "codex_thumbs_up",
+                    "id": str(reaction.get("id") or ""),
+                    "author": author,
+                    "author_association": "",
+                    "state": "",
+                    "commit_id": bound,
+                    "original_commit_id": "",
+                    "path": None,
+                    "line": None,
+                    "resolved": None,
+                    "outdated": None,
+                    "body": body,
+                    "url": str(comment.get("url") or comment.get("html_url") or ""),
+                    "content": "+1",
+                    "request_id": comment_id,
+                }
+            )
     return out
 
 
@@ -284,12 +374,57 @@ def bound_to_head(item, head_sha):
     return bool(head_sha) and commit_id == head_sha
 
 
-def evaluate_review_clean(head_sha, reviews, comments, threads, issue_comments=None):
+def is_codex_completion_proof(item, head_sha):
+    if not bound_to_head(item, head_sha):
+        return False
+    if not is_codex_reviewer(item.get("author")):
+        return False
+    kind = item.get("kind")
+    if kind == "review" and not is_summary_only(item.get("body"), item.get("path")):
+        return True
+    if kind == "codex_thumbs_up" and str(item.get("content") or "") in THUMBS_UP:
+        return True
+    return False
+
+
+def thread_ids(item):
+    return {
+        str(item.get("node_id") or ""),
+        str(item.get("id") or ""),
+        str(item.get("database_id") or ""),
+    } - {""}
+
+
+def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, current_head_sha):
+    if not pushed_head_sha or pushed_head_sha != current_head_sha:
+        raise ValueError("resolve Codex threads only after commit + push of current HEAD")
+    wanted = {str(item) for item in requested_ids or [] if str(item)}
+    if not wanted:
+        raise ValueError("resolve Codex threads requires explicit --thread-id values")
+    eligible = []
+    rejected = []
+    for item in threads or []:
+        ids = thread_ids(item)
+        if not (ids & wanted):
+            continue
+        if item.get("resolved") is True:
+            continue
+        if is_codex_reviewer(item.get("author")):
+            eligible.append(item)
+        else:
+            rejected.append(item)
+    return eligible, rejected
+
+
+def evaluate_review_clean(
+    head_sha, reviews, comments, threads, issue_comments=None, completion_signals=None
+):
     issue_comments = issue_comments or []
+    completion_signals = completion_signals or []
     current = []
     old = []
     unbound = []
-    for item in [*reviews, *comments, *issue_comments]:
+    for item in [*reviews, *comments, *issue_comments, *completion_signals]:
         commit_id = str(item.get("commit_id") or "")
         if bound_to_head(item, head_sha):
             current.append(item)
@@ -308,12 +443,7 @@ def evaluate_review_clean(head_sha, reviews, comments, threads, issue_comments=N
         if is_actionable_text(item.get("body"), item.get("path"), item.get("state")):
             actionable.append(item)
 
-    current_reviews = [
-        item
-        for item in current
-        if item.get("kind") == "review" and not is_summary_only(item.get("body"), item.get("path"))
-    ]
-    proof = current_reviews[0] if current_reviews else None
+    proof = next((item for item in current if is_codex_completion_proof(item, head_sha)), None)
 
     if actionable:
         reason = "actionable_review_on_current_head"
@@ -362,19 +492,51 @@ def fetch_review_threads(owner, name, number):
     return nodes.get("nodes") or []
 
 
+def resolve_review_thread(node_id):
+    if not node_id:
+        raise GhCommandError("missing GraphQL thread id")
+    return gh_json(
+        [
+            "api",
+            "graphql",
+            "-f",
+            f"query={RESOLVE_THREAD_MUTATION}",
+            "-f",
+            f"id={node_id}",
+        ]
+    )
+
+
+def fetch_comment_reactions(repo, comment_id):
+    return gh_api_list(f"repos/{repo}/issues/comments/{comment_id}/reactions") or []
+
+
 def collect_gate_inputs(pr):
     repo = pr["repo"]
     number = pr["number"]
+    head_sha = pr["head_sha"]
     raw_reviews = gh_api_list(f"repos/{repo}/pulls/{number}/reviews")
     raw_comments = gh_api_list(f"repos/{repo}/pulls/{number}/comments")
     raw_issue_comments = gh_api_list(f"repos/{repo}/issues/{number}/comments")
     raw_threads = fetch_review_threads(pr["owner"], pr["name"], number)
     pending = pending_review_ids(raw_reviews)
+    reactions_by_comment_id = {}
+    for item in raw_issue_comments or []:
+        if not isinstance(item, dict):
+            continue
+        body = str(item.get("body") or "")
+        comment_id = str(item.get("id") or "")
+        if comment_id and is_codex_review_request(body):
+            reactions_by_comment_id[comment_id] = fetch_comment_reactions(repo, comment_id)
+    issue_comments = normalize_issue_comments(raw_issue_comments, head_sha)
     return {
         "reviews": normalize_reviews(raw_reviews),
         "comments": normalize_review_comments(raw_comments, pending),
-        "issue_comments": normalize_issue_comments(raw_issue_comments),
+        "issue_comments": issue_comments,
         "threads": normalize_threads(raw_threads),
+        "completion_signals": normalize_codex_completion_signals(
+            issue_comments, reactions_by_comment_id, head_sha
+        ),
     }
 
 
@@ -398,6 +560,7 @@ def main(argv=None):
             fetched["comments"],
             fetched["threads"],
             fetched["issue_comments"],
+            fetched["completion_signals"],
         )
         result["pr"] = {"number": pr["number"], "repo": pr["repo"], "url": pr["url"]}
     except (GhCommandError, ValueError, json.JSONDecodeError) as err:

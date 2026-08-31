@@ -66,6 +66,7 @@ if (wrapper) {
     '@codex review',
     'final_review_clean_gate.py',
     'commit_id',
+    'resolve_codex_threads.py',
   ]
   for (const item of required) {
     if (!wrapper.includes(item)) errors.push(`pr-review-loop SKILL.md missing policy: ${item}`)
@@ -124,6 +125,25 @@ if (gate) {
   }
   if (!gate.includes('reviewThreads') || !gate.includes('"graphql"')) {
     errors.push('final_review_clean_gate.py must re-fetch published reviews and unresolved threads')
+  }
+  if (!gate.includes('codex_thumbs_up') || !gate.includes('is_codex_reviewer')) {
+    errors.push('final_review_clean_gate.py must treat bound Codex thumbs-up as completion proof')
+  }
+}
+
+const resolver = read('scripts/resolve_codex_threads.py')
+if (resolver) {
+  if (
+    !resolver.includes('eligible_codex_resolve_threads') ||
+    !resolver.includes('resolveReviewThread')
+  ) {
+    errors.push('resolve_codex_threads.py must resolve only eligible Codex threads')
+  }
+  if (resolver.includes('pulls/') && resolver.includes('--approve')) {
+    errors.push('resolve_codex_threads.py must not submit reviews')
+  }
+  if (resolver.includes('gh_pr_watch')) {
+    errors.push('resolve_codex_threads.py must not import the vendored watcher')
   }
 }
 

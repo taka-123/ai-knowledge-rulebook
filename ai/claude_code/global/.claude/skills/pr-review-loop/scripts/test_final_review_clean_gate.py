@@ -1,6 +1,8 @@
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 MODULE_PATH = Path(__file__).with_name("final_review_clean_gate.py")
 MODULE_SPEC = importlib.util.spec_from_file_location("final_review_clean_gate", MODULE_PATH)
 gate = importlib.util.module_from_spec(MODULE_SPEC)
@@ -8,6 +10,10 @@ assert MODULE_SPEC.loader is not None
 MODULE_SPEC.loader.exec_module(gate)
 
 evaluate_review_clean = gate.evaluate_review_clean
+eligible_codex_resolve_threads = gate.eligible_codex_resolve_threads
+is_codex_reviewer = gate.is_codex_reviewer
+normalize_codex_completion_signals = gate.normalize_codex_completion_signals
+normalize_issue_comments = gate.normalize_issue_comments
 normalize_review_comments = gate.normalize_review_comments
 normalize_reviews = gate.normalize_reviews
 normalize_threads = gate.normalize_threads
@@ -62,6 +68,7 @@ def thread(**overrides):
     item = {
         "kind": "review_thread",
         "id": "30",
+        "node_id": "PRRT_codex_or_bot",
         "author": "coderabbitai[bot]",
         "author_association": "",
         "state": "",
@@ -73,6 +80,28 @@ def thread(**overrides):
         "outdated": False,
         "body": "Please rename this.",
         "url": "",
+    }
+    item.update(overrides)
+    return item
+
+
+def thumbs(**overrides):
+    item = {
+        "kind": "codex_thumbs_up",
+        "id": "40",
+        "author": "chatgpt-codex-connector[bot]",
+        "author_association": "",
+        "state": "",
+        "commit_id": HEAD,
+        "original_commit_id": "",
+        "path": None,
+        "line": None,
+        "resolved": None,
+        "outdated": None,
+        "body": f"@codex review\nhead: {HEAD}",
+        "url": "",
+        "content": "+1",
+        "request_id": "99",
     }
     item.update(overrides)
     return item
@@ -284,6 +313,7 @@ def test_normalize_threads_keeps_commit_and_unresolved():
     threads = normalize_threads(
         [
             {
+                "id": "PRRT_kwtest",
                 "isResolved": False,
                 "isOutdated": False,
                 "comments": {
@@ -304,3 +334,177 @@ def test_normalize_threads_keeps_commit_and_unresolved():
     assert threads[0]["commit_id"] == HEAD
     assert threads[0]["original_commit_id"] == OLD
     assert threads[0]["resolved"] is False
+    assert threads[0]["node_id"].startswith("PRRT_")
+
+
+def test_current_head_codex_thumbs_up_is_clean():
+    result = evaluate_review_clean(HEAD, [], [], [], [], [thumbs()])
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["proof"]["kind"] == "codex_thumbs_up"
+    assert result["proof"]["commit_id"] == HEAD
+    assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
+
+
+def test_old_head_codex_thumbs_up_is_not_clean():
+    result = evaluate_review_clean(HEAD, [], [], [], [], [thumbs(commit_id=OLD)])
+    assert result["review_clean"] is False
+    assert result["reason"] == "only_old_head_reviews"
+    assert result["proof"] is None
+    assert result["old_head_items"][0]["kind"] == "codex_thumbs_up"
+
+
+def test_unrelated_reaction_is_not_codex_completion_proof():
+    human_plus = thumbs(author="alice", content="+1")
+    heart = thumbs(content="heart")
+    result = evaluate_review_clean(HEAD, [], [], [], [], [human_plus, heart])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "no_current_head_review_proof"
+
+
+def test_human_commented_review_is_not_codex_completion_proof():
+    result = evaluate_review_clean(
+        HEAD,
+        [review(author="alice", author_association="MEMBER", body="Looks fine.")],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "no_current_head_review_proof"
+    assert result["actionable"] == []
+
+
+def test_coderabbit_review_is_not_codex_completion_proof():
+    result = evaluate_review_clean(
+        HEAD,
+        [review(author="coderabbitai[bot]", body="Looks good to me.")],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "no_current_head_review_proof"
+
+
+def test_codex_bot_unresolved_thread_blocks():
+    result = evaluate_review_clean(
+        HEAD,
+        [review()],
+        [],
+        [thread(author="chatgpt-codex-connector[bot]", node_id="PRRT_codex1")],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["unresolved_threads"][0]["author"] == "chatgpt-codex-connector[bot]"
+
+
+def test_resolving_codex_bot_thread_after_fix_unblocks():
+    open_thread = thread(author="chatgpt-codex-connector[bot]", node_id="PRRT_codex1")
+    blocked = evaluate_review_clean(HEAD, [review()], [], [open_thread])
+    assert blocked["review_clean"] is False
+    eligible, rejected = eligible_codex_resolve_threads(
+        [open_thread],
+        requested_ids=["PRRT_codex1"],
+        pushed_head_sha=HEAD,
+        current_head_sha=HEAD,
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_codex1"]
+    resolved = thread(
+        author="chatgpt-codex-connector[bot]", node_id="PRRT_codex1", resolved=True
+    )
+    clean = evaluate_review_clean(HEAD, [review()], [], [resolved])
+    assert clean["review_clean"] is True
+    assert clean["unresolved_threads"] == []
+
+
+def test_human_unresolved_thread_is_not_auto_resolved():
+    human = thread(author="alice", author_association="MEMBER", node_id="PRRT_human")
+    eligible, rejected = eligible_codex_resolve_threads(
+        [human],
+        requested_ids=["PRRT_human"],
+        pushed_head_sha=HEAD,
+        current_head_sha=HEAD,
+    )
+    assert eligible == []
+    assert rejected[0]["author"] == "alice"
+    result = evaluate_review_clean(HEAD, [review()], [], [human])
+    assert result["review_clean"] is False
+    assert result["unresolved_threads"][0]["author"] == "alice"
+
+
+def test_resolve_requires_pushed_current_head():
+    bot = thread(author="chatgpt-codex-connector[bot]", node_id="PRRT_codex1")
+    with pytest.raises(ValueError, match="commit \\+ push"):
+        eligible_codex_resolve_threads(
+            [bot],
+            requested_ids=["PRRT_codex1"],
+            pushed_head_sha=OLD,
+            current_head_sha=HEAD,
+        )
+
+
+def load_resolve_helper():
+    path = Path(__file__).with_name("resolve_codex_threads.py")
+    spec = importlib.util.spec_from_file_location("resolve_codex_threads", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_resolve_helper_does_not_resolve_human_threads(monkeypatch):
+    helper = load_resolve_helper()
+    human = thread(author="alice", node_id="PRRT_human")
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: [human])
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    called = []
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: called.append(nid))
+    code = helper.main(["--pr", "8", "--head", HEAD, "--thread-id", "PRRT_human"])
+    assert code == 2
+    assert called == []
+
+
+def test_normalize_codex_thumbs_binds_request_head_sha():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 99,
+                "user": {"login": "cursor[bot]"},
+                "body": f"@codex review\nhead: {HEAD}",
+                "html_url": "https://example.test/99",
+            }
+        ],
+        HEAD,
+    )
+    assert comments[0]["commit_id"] == HEAD
+    signals = normalize_codex_completion_signals(
+        comments,
+        {
+            "99": [
+                {"id": 1, "content": "+1", "user": {"login": "chatgpt-codex-connector[bot]"}},
+                {"id": 2, "content": "heart", "user": {"login": "chatgpt-codex-connector[bot]"}},
+                {"id": 3, "content": "+1", "user": {"login": "alice"}},
+            ]
+        },
+        HEAD,
+    )
+    assert len(signals) == 1
+    assert signals[0]["commit_id"] == HEAD
+    assert is_codex_reviewer(signals[0]["author"]) is True
+    result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
+    assert result["review_clean"] is True

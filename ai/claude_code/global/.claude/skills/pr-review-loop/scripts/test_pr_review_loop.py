@@ -158,6 +158,7 @@ def test_wrapper_policy_strings():
         "ASK_HUMAN",
         "final_review_clean_gate.py",
         "commit_id",
+        "resolve_codex_threads.py",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
