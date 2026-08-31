@@ -696,6 +696,10 @@ if cli_command gh; then
       if grep -Eq '\\' <<<"$cmd"; then
         deny "Mutating gh api is forbidden."
       fi
+      # Fail closed: unquoted ? * [ can glob-expand to -X (e.g. ?X -> -X).
+      if grep -Eq '[?*[]' <<<"$cmd"; then
+        deny "Mutating gh api is forbidden."
+      fi
     fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
@@ -830,6 +834,10 @@ if cli_command gh; then
       fi
       # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
       if grep -Eq '\\' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      # Fail closed: unquoted ? * [ can glob-expand to -X (e.g. ?X -> -X).
+      if grep -Eq '[?*[]' <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
@@ -1004,6 +1012,10 @@ if cli_command gh; then
       fi
       # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
       if grep -Eq '\\' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      # Fail closed: unquoted ? * [ can glob-expand to -X (e.g. ?X -> -X).
+      if grep -Eq '[?*[]' <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
@@ -1218,6 +1230,8 @@ deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE -\X P\
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE --\method POST'
 deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -'X' POST -f event=APPROVE"
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -"X" POST -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET ?X POST -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET *X POST -f event=APPROVE'
 deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
 deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
