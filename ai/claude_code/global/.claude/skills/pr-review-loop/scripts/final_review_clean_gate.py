@@ -301,17 +301,24 @@ def is_approval_only(body):
     return bool(APPROVAL_ONLY_RE.match((body or "").strip()))
 
 
+def has_actionable_marker(body):
+    lower = (body or "").lower()
+    return any(marker in lower for marker in ACTIONABLE_MARKERS)
+
+
 def is_actionable_text(body, path=None, review_state=None, kind=None, author=None):
     if is_disposition_reply(body):
         return False
-    if str(review_state or "").upper() == "CHANGES_REQUESTED":
+    state = str(review_state or "").upper()
+    if state == "CHANGES_REQUESTED":
         return True
+    if has_actionable_marker(body):
+        return True
+    if state == "APPROVED":
+        return False
     if is_summary_only(body, path):
         return False
     if path:
-        return True
-    lower = (body or "").lower()
-    if any(marker in lower for marker in ACTIONABLE_MARKERS):
         return True
     if kind != "review" or is_codex_reviewer(author):
         return False

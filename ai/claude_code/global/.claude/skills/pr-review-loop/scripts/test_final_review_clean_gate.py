@@ -312,6 +312,81 @@ def test_changes_requested_beats_summary_markers():
     assert result["actionable"][0]["author"] == "human-reviewer"
 
 
+def test_actionable_marker_beats_summary_markers():
+    body = (
+        "Walkthrough\n"
+        "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) "
+        "Please fix the public API before merge."
+    )
+    assert is_actionable_text(body, review_state="COMMENTED", kind="review") is True
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="12",
+                author="human-reviewer",
+                state="COMMENTED",
+                body=body,
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["author"] == "human-reviewer"
+
+
+def test_approved_review_with_extra_prose_is_not_actionable():
+    body = "Approved — nice work on the tests."
+    assert is_actionable_text(body, review_state="APPROVED", kind="review") is False
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="13",
+                author="alice",
+                author_association="MEMBER",
+                state="APPROVED",
+                body=body,
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+
+
+def test_approved_review_with_actionable_marker_still_blocks():
+    body = (
+        "Approved overall.\n"
+        "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) "
+        "Still fix the public API."
+    )
+    assert is_actionable_text(body, review_state="APPROVED", kind="review") is True
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="14",
+                author="alice",
+                author_association="MEMBER",
+                state="APPROVED",
+                body=body,
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+
+
 def test_coderabbit_changes_requested_on_current_head_blocks():
     result = evaluate_review_clean(
         HEAD,
