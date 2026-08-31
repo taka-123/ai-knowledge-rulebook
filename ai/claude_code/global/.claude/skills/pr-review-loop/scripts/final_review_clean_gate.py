@@ -535,6 +535,9 @@ def latest_reviews_per_reviewer_commit(reviews):
         new_state = str((item or {}).get("state") or "").upper()
         if prev_state == "CHANGES_REQUESTED" and new_state not in CHANGES_REQUESTED_CLEARED_BY:
             continue
+        if prev_state == "COMMENTED" and new_state == "COMMENTED":
+            passthrough.append(item)
+            continue
         chosen[key] = (item, index)
     kept = [pair[0] for pair in sorted(chosen.values(), key=lambda pair: pair[1])]
     return kept + passthrough

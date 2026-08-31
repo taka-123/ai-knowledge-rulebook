@@ -23,13 +23,23 @@ VENDOR_WATCHER = (
 )
 
 
+RETRY_OPTION = "--retry-failed-now"
+
+
 def watcher_path() -> Path:
     return VENDOR_WATCHER
 
 
+def is_retry_mode_arg(arg: str) -> bool:
+    if arg == RETRY_OPTION:
+        return True
+    # argparse unique prefixes: --retry-f / --retry-failed-n / --ret ...
+    return arg.startswith("--ret") and RETRY_OPTION.startswith(arg)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
-    if "--retry-failed-now" in args:
+    if any(is_retry_mode_arg(arg) for arg in args):
         sys.stderr.write(
             "refusing --retry-failed-now: vendor does not verify flaky/unrelated classification\n"
         )

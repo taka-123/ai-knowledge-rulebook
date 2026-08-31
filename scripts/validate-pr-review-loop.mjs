@@ -75,6 +75,8 @@ if (wrapper) {
     'head=<sha>',
     '対象 thread を再取得して comments_complete',
     'launcher は `--retry-failed-now` を拒否する',
+    'vendor argparse の短縮形も拒否する',
+    '以前の actionable な `COMMENTED` review も捨てない',
   ]
   if (wrapper.includes('cursor / cursor[bot]') || wrapper.includes('cursor[bot]')) {
     errors.push('pr-review-loop SKILL.md must not name Cursor GitHub actors as trusted helpers')
@@ -99,8 +101,13 @@ if (launcher) {
   if (launcher.includes('recommend_actions') || launcher.includes('fetch_new_review_items')) {
     errors.push('launcher must not reimplement watcher logic')
   }
-  if (!launcher.includes('refusing --retry-failed-now')) {
-    errors.push('launcher must refuse --retry-failed-now without verified flaky classification')
+  if (
+    !launcher.includes('refusing --retry-failed-now') ||
+    !launcher.includes('is_retry_mode_arg')
+  ) {
+    errors.push(
+      'launcher must refuse --retry-failed-now and argparse prefixes without verified classification'
+    )
   }
 }
 

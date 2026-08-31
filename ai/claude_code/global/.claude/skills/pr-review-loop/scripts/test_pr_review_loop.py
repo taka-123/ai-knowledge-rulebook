@@ -82,6 +82,13 @@ def test_launcher_refuses_retry_failed_now(capsys):
     assert "refusing --retry-failed-now" in capsys.readouterr().err
 
 
+def test_launcher_refuses_retry_option_prefixes(capsys):
+    for flag in ("--retry-f", "--retry-failed-n", "--retry-failed", "--ret"):
+        code = launcher.main(["--pr", "8", flag])
+        assert code == 2, flag
+    assert "refusing --retry-failed-now" in capsys.readouterr().err
+
+
 def test_upstream_files_are_unpatched():
     official = OFFICIAL_SKILL.read_text(encoding="utf-8")
     assert "python3 .codex/skills/babysit-pr/scripts/gh_pr_watch.py" in official
@@ -177,6 +184,8 @@ def test_wrapper_policy_strings():
         "指摘本文に disposition marker を埋め込んだだけでは除外しない",
         "対象 thread を再取得して comments_complete",
         "launcher は `--retry-failed-now` を拒否する",
+        "以前の actionable な `COMMENTED` review も捨てない",
+        "vendor argparse の短縮形も拒否する",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []

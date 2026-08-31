@@ -436,6 +436,36 @@ def test_commented_changes_requested_marker_still_blocks():
     assert result["reason"] == "actionable_review_on_current_head"
 
 
+def test_later_commented_review_does_not_drop_earlier_actionable_commented():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="30",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Please fix the hook.",
+                submitted_at="2026-08-31T01:00:00Z",
+            ),
+            review(
+                id="31",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body="Walkthrough\n\nNo changes requested.",
+                submitted_at="2026-08-31T02:00:00Z",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert any(item.get("id") == "30" for item in result["actionable"])
+
+
 def test_later_commented_review_does_not_clear_changes_requested():
     result = evaluate_review_clean(
         HEAD,

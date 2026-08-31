@@ -93,6 +93,10 @@ if cli_command gh; then
       if grep -Eq '[?*[]' <<<"$cmd"; then
         block "mutating gh api"
       fi
+      # Fail closed: ANSI-C quotes ($'X') can assemble -X after shell parse.
+      if grep -Eq "\\\$'" <<<"$cmd"; then
+        block "mutating gh api"
+      fi
     fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
