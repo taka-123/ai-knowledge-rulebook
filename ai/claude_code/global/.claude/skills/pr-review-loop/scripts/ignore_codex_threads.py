@@ -69,14 +69,16 @@ def main(argv=None):
             node_id = str(item.get("node_id") or "")
             fingerprint = gate.finding_fingerprint(item)
             body = gate.format_ignore_reply(args.reason, fingerprint, args.head)
-            gate.require_current_head(pr, args.head)
-            gate.reply_review_thread(node_id, body)
-            resolved = bool(item.get("resolved"))
+            fresh = gate.require_fresh_ignore_thread(pr, node_id, args.head, gh_user=gh_user)
+            gate.reply_review_thread(str(fresh.get("node_id") or node_id), body)
+            resolved = bool(fresh.get("resolved"))
             resolve_error = None
             if not args.no_resolve and not resolved:
                 try:
-                    gate.require_current_head(pr, args.head)
-                    gate.resolve_review_thread(node_id)
+                    fresh = gate.require_fresh_ignore_thread(
+                        pr, node_id, args.head, gh_user=gh_user
+                    )
+                    gate.resolve_review_thread(str(fresh.get("node_id") or node_id))
                     resolved = True
                 except gate.GhCommandError as err:
                     resolve_error = str(err)

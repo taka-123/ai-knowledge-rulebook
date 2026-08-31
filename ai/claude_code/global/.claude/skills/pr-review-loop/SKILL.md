@@ -38,7 +38,7 @@ pr-review-loop
 ```bash
 python3 <this-skill>/scripts/run-gh-pr-watch.py --pr auto --watch
 python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --once
-python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-failed-now
+# --retry-failed-now は launcher が拒否する（vendor は flaky 分類を検証しない）
 ```
 
 `<this-skill>` は、この `SKILL.md` があるディレクトリ（portable copy 後は `.claude/skills/pr-review-loop`）。先に公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read し、監視 loop / stop / review 公開判定 / CI 分類 / flaky retry の本文に従う。path だけ launcher に置き換える。
@@ -51,7 +51,7 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-fai
 4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
 5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。同一 fingerprint ですでに IGNORE_WITH_REASON 処理済みの指摘は、新しい未処理指摘として扱わない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
 6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
-7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。flaky で watcher が `retry_failed_checks` を出した場合だけ、launcher の `--retry-failed-now` を公式 retry budget（最大 3 cycle）内で使う。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
+7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。launcher は `--retry-failed-now` を拒否する。vendor の `retry_failed_checks` は flaky 分類を検証しない。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
 8. watcher の `idle` / `ready_to_merge` だけでは完了しない。完了判定の直前に `scripts/final_review_clean_gate.py` を current HEAD で実行する。gate が `review_clean: false` なら watch を続ける。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
 上位の repository / tool policy を本手順より優先する。触るのは PR head branch だけ。同じ PR に複数の修正 Agent を並走させない。別の人・Agent が新しい commit を push したら、最新状態を読み直してから動く。
@@ -158,9 +158,9 @@ merge可能。最終merge判断は人間。
 
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
 - 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 👍 を再取得する。Agent が直接 GraphQL を叩く必要はない。
-- AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、`--head` と不一致なら fail closed する。
-- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `resolveReviewThread` を呼ぶ。各 mutation の直前に `headRefOid` を再取得し、`--head` と不一致なら fail closed する。
+- AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、対象 thread を再取得して comments_complete と参加者が引き続き Codex-only であることを確認する。不一致なら fail closed する。
+- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `resolveReviewThread` を呼ぶ。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。不一致なら fail closed する。
 - 人間 thread の resolve、人間 / CodeRabbit 等への自動返信、review 提出、任意 GraphQL mutation は禁止のまま。ASK_HUMAN の指摘は GitHub 上で反論・resolve しない。
-- 信頼する公式 watcher が flaky/unrelated と分類し `retry_failed_checks` を出したときだけ、launcher 経由の `--retry-failed-now`（内部の `gh run rerun --failed`）を公式 default 最大 3 cycle まで許可する。
+- launcher は `--retry-failed-now` を拒否する。vendor は `retry_failed_checks` を出しても flaky/unrelated 分類を検証せず failed runs を rerun するため。分類を機械的に確認できるまで retry mode は使わない。
 - Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。
 - 人間 reviewer への返信、人間 review thread の resolve、PR merge はしない。

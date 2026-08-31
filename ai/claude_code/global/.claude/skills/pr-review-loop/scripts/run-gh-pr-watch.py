@@ -29,6 +29,11 @@ def watcher_path() -> Path:
 
 def main(argv: list[str] | None = None) -> int:
     args = sys.argv[1:] if argv is None else argv
+    if "--retry-failed-now" in args:
+        sys.stderr.write(
+            "refusing --retry-failed-now: vendor does not verify flaky/unrelated classification\n"
+        )
+        return 2
     watcher = watcher_path()
     if not watcher.is_file():
         sys.stderr.write(f"vendored gh_pr_watch.py not found: {watcher}\n")

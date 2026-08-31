@@ -2250,6 +2250,111 @@ def test_ignore_helper_keeps_reply_if_resolve_is_forbidden(monkeypatch, capsys):
     assert "Resource not accessible" in payload["ignored"][0]["resolve_error"]
 
 
+def test_resolve_helper_does_not_resolve_if_human_joins_before_mutation(monkeypatch, capsys):
+    helper = load_resolve_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_then_human",
+    )
+    mixed = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice"],
+        node_id="PRRT_codex_then_human",
+    )
+    seen = {"n": 0}
+
+    def fake_fetch(*_a, **_k):
+        seen["n"] += 1
+        return [bot] if seen["n"] == 1 else [mixed]
+
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", fake_fetch)
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
+    called = []
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: called.append(nid))
+    code = helper.main(["--pr", "8", "--head", HEAD, "--thread-id", "PRRT_codex_then_human"])
+    assert code == 2
+    assert called == []
+    assert "thread participants changed before mutation" in capsys.readouterr().err
+
+
+def test_ignore_helper_does_not_reply_if_human_joins_before_mutation(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_ignore_then_human",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    mixed = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice"],
+        node_id="PRRT_codex_ignore_then_human",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    seen = {"n": 0}
+
+    def fake_fetch(*_a, **_k):
+        seen["n"] += 1
+        return [bot] if seen["n"] == 1 else [mixed]
+
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", fake_fetch)
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_authenticated_login", lambda: HELPER_LOGIN)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_codex_ignore_then_human",
+        ]
+    )
+    assert code == 2
+    assert replies == []
+    assert resolved == []
+    assert "thread participants changed before mutation" in capsys.readouterr().err
+
+
 def test_auto_fix_helper_still_does_not_call_reply(monkeypatch):
     helper = load_resolve_helper()
     bot = thread(

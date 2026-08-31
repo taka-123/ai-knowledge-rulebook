@@ -73,6 +73,8 @@ if (wrapper) {
     '修正しました',
     'AIエージェントによる対応:',
     'head=<sha>',
+    '対象 thread を再取得して comments_complete',
+    'launcher は `--retry-failed-now` を拒否する',
   ]
   if (wrapper.includes('cursor / cursor[bot]') || wrapper.includes('cursor[bot]')) {
     errors.push('pr-review-loop SKILL.md must not name Cursor GitHub actors as trusted helpers')
@@ -96,6 +98,9 @@ if (launcher) {
   }
   if (launcher.includes('recommend_actions') || launcher.includes('fetch_new_review_items')) {
     errors.push('launcher must not reimplement watcher logic')
+  }
+  if (!launcher.includes('refusing --retry-failed-now')) {
+    errors.push('launcher must refuse --retry-failed-now without verified flaky classification')
   }
 }
 
@@ -209,8 +214,8 @@ if (resolver) {
   if (resolver.includes('gh_pr_watch')) {
     errors.push('resolve_codex_threads.py must not import the vendored watcher')
   }
-  if (!resolver.includes('require_current_head')) {
-    errors.push('resolve_codex_threads.py must re-check PR HEAD before each mutation')
+  if (!resolver.includes('require_fresh_resolve_thread')) {
+    errors.push('resolve_codex_threads.py must re-check thread participants before each mutation')
   }
 }
 
@@ -231,8 +236,8 @@ if (ignorer) {
   if (ignorer.includes('gh_pr_watch')) {
     errors.push('ignore_codex_threads.py must not import the vendored watcher')
   }
-  if (!ignorer.includes('require_current_head')) {
-    errors.push('ignore_codex_threads.py must re-check PR HEAD before each mutation')
+  if (!ignorer.includes('require_fresh_ignore_thread')) {
+    errors.push('ignore_codex_threads.py must re-check thread participants before each mutation')
   }
 } else {
   errors.push('missing: ignore_codex_threads.py')

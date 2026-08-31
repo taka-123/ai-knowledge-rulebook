@@ -984,6 +984,36 @@ def require_current_head(pr, expected_head):
     return latest
 
 
+def load_live_threads(pr):
+    return normalize_threads(fetch_review_threads(pr["owner"], pr["name"], pr["number"]))
+
+
+def require_fresh_resolve_thread(pr, thread_id, expected_head):
+    require_current_head(pr, expected_head)
+    threads = load_live_threads(pr)
+    eligible, rejected = eligible_codex_resolve_threads(
+        threads, [thread_id], expected_head, expected_head
+    )
+    if rejected or not eligible:
+        raise GhCommandError(
+            "thread participants changed before mutation or thread is no longer Codex-only"
+        )
+    return eligible[0]
+
+
+def require_fresh_ignore_thread(pr, thread_id, expected_head, gh_user=""):
+    require_current_head(pr, expected_head)
+    threads = load_live_threads(pr)
+    eligible, rejected = eligible_codex_ignore_threads(
+        threads, [thread_id], expected_head, expected_head, gh_user=gh_user
+    )
+    if rejected or not eligible:
+        raise GhCommandError(
+            "thread participants changed before mutation or thread is no longer eligible"
+        )
+    return eligible[0]
+
+
 def resolve_review_thread(node_id):
     if not node_id:
         raise GhCommandError("missing GraphQL thread id")

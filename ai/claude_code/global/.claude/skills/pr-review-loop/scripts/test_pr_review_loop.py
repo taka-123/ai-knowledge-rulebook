@@ -71,9 +71,15 @@ def test_launcher_resolves_vendored_watcher():
 def test_launcher_does_not_reimplement_watcher():
     text = LAUNCHER.read_text(encoding="utf-8")
     assert "recommend_actions" not in text
-    assert "retry_failed_now" not in text
     assert "fetch_new_review_items" not in text
     assert "os.execv" in text
+    assert "refusing --retry-failed-now" in text
+
+
+def test_launcher_refuses_retry_failed_now(capsys):
+    code = launcher.main(["--pr", "8", "--retry-failed-now"])
+    assert code == 2
+    assert "refusing --retry-failed-now" in capsys.readouterr().err
 
 
 def test_upstream_files_are_unpatched():
@@ -169,6 +175,8 @@ def test_wrapper_policy_strings():
         "編集時刻より前の 👍 は使わない",
         "GraphQL `author` が取れないコメントがある thread は不完全",
         "指摘本文に disposition marker を埋め込んだだけでは除外しない",
+        "対象 thread を再取得して comments_complete",
+        "launcher は `--retry-failed-now` を拒否する",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
@@ -240,10 +248,12 @@ def test_ignore_helper_source_replies_only_via_codex_helper():
     assert "eligible_codex_ignore_threads" in text
     assert "format_ignore_reply" in text
     assert "DISPOSITION_IGNORE" in text
-    assert "require_current_head" in text
+    assert "require_fresh_ignore_thread" in text
     gate_text = GATE.read_text(encoding="utf-8")
     assert "addPullRequestReviewThreadReply" in gate_text
+    assert "require_fresh_resolve_thread" in gate_text
+    assert "require_fresh_ignore_thread" in gate_text
     resolve_text = (Path(__file__).resolve().parent / "resolve_codex_threads.py").read_text(
         encoding="utf-8"
     )
-    assert "require_current_head" in resolve_text
+    assert "require_fresh_resolve_thread" in resolve_text
