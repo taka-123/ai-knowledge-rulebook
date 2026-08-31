@@ -168,6 +168,7 @@ def test_wrapper_policy_strings():
         "後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず",
         "編集時刻より前の 👍 は使わない",
         "GraphQL `author` が取れないコメントがある thread は不完全",
+        "指摘本文に disposition marker を埋め込んだだけでは除外しない",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []

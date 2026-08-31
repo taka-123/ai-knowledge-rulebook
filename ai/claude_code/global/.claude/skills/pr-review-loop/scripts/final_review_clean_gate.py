@@ -315,8 +315,8 @@ def has_actionable_marker(body):
     return has_finding_badge(body) or has_changes_requested_marker(body)
 
 
-def is_actionable_text(body, path=None, review_state=None, kind=None, author=None):
-    if is_disposition_reply(body):
+def is_actionable_text(body, path=None, review_state=None, kind=None, author=None, gh_user=""):
+    if is_disposition_reply(body) and is_trusted_disposition_author(author, gh_user):
         return False
     state = str(review_state or "").upper()
     if state == "CHANGES_REQUESTED":
@@ -871,7 +871,9 @@ def evaluate_review_clean(
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
-        if is_disposition_reply(item.get("body")):
+        if is_disposition_reply(item.get("body")) and is_trusted_disposition_author(
+            item.get("author"), gh_user
+        ):
             continue
         fingerprint = finding_fingerprint(item)
         if fingerprint and fingerprint in ignored_fingerprints:
@@ -891,6 +893,7 @@ def evaluate_review_clean(
             item.get("state"),
             item.get("kind"),
             item.get("author"),
+            gh_user,
         ):
             actionable.append(item)
 

@@ -96,7 +96,7 @@ Codex reviewer のみの thread（認証済み helper の前回返信だけの�
 
 例: `AIエージェントによる対応: OpenAI公式の babysit-pr はvendorとして未改変で保持しています。current HEADのreview-clean判定に必要な commit_id はwrapper側で保持・確認しています。`
 
-返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、認証済み `gh` ユーザーと同一 actor が書いた marker（fingerprint 一致かつ head が current HEAD）があれば final gate は同一 fingerprint を actionable から外す。製品名の login をハードコードしない。PR 作者・任意参加者・OWNER / MEMBER / COLLABORATOR であることだけでは採用しない。CodeRabbit の marker も採用しない。認証済みユーザーが取れないときは IGNORE を採用せず fail-closed する。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。HEAD が変わったら旧 marker は無効なので、残す IGNORE は新 HEAD で helper を再実行する。
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、認証済み `gh` ユーザーと同一 actor が書いた marker（fingerprint 一致かつ head が current HEAD）があれば final gate は同一 fingerprint を actionable から外す。指摘本文に disposition marker を埋め込んだだけでは除外しない。製品名の login をハードコードしない。PR 作者・任意参加者・OWNER / MEMBER / COLLABORATOR であることだけでは採用しない。CodeRabbit の marker も採用しない。認証済みユーザーが取れないときは IGNORE を採用せず fail-closed する。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。HEAD が変わったら旧 marker は無効なので、残す IGNORE は新 HEAD で helper を再実行する。
 
 ## 非収束
 
