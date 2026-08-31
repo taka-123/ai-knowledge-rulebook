@@ -242,7 +242,7 @@ def test_coderabbit_changes_requested_on_current_head_blocks():
     )
     assert result["review_clean"] is False
     assert result["reason"] == "actionable_review_on_current_head"
-    assert result["actionable"][0]["author"] == "coderabbitai[bot"]
+    assert result["actionable"][0]["author"] == "coderabbitai[bot]"
     assert result["actionable"][0]["commit_id"] == HEAD
 
 

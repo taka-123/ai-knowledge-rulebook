@@ -122,7 +122,7 @@ if (gate) {
       'final_review_clean_gate.py must keep commit_id / original_commit_id for HEAD binding'
     )
   }
-  if (!gate.includes('reviewThreads') || !gate.includes('api graphql')) {
+  if (!gate.includes('reviewThreads') || !gate.includes('"graphql"')) {
     errors.push('final_review_clean_gate.py must re-fetch published reviews and unresolved threads')
   }
 }
