@@ -669,12 +669,12 @@ if cli_command gh; then
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
     # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
       grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
     fi
     # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
       if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
@@ -707,7 +707,7 @@ if cli_command gh; then
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
-      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+      if grep -Eq '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
         _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
         if [ "${_method_n:-0}" -gt 1 ]; then
           deny "Mutating gh api is forbidden."
@@ -811,12 +811,12 @@ if cli_command gh; then
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
     # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
       grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       block "mutating gh api"
     fi
     # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
       if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
@@ -849,7 +849,7 @@ if cli_command gh; then
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
-      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+      if grep -Eq '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
         _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
         if [ "${_method_n:-0}" -gt 1 ]; then
           block "mutating gh api"
@@ -991,12 +991,12 @@ if cli_command gh; then
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
     # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
       grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       block "mutating gh api"
     fi
     # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
       if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
@@ -1029,7 +1029,7 @@ if cli_command gh; then
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
-      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+      if grep -Eq '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
         _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
         if [ "${_method_n:-0}" -gt 1 ]; then
           block "mutating gh api"
@@ -1205,6 +1205,7 @@ allow_all "/usr/local/bin/gh issue list"
 allow_all "gh pr checks 1"
 allow_all "gh api repos/owner/repo/pulls/1"
 allow_all "gh api repos/owner/repo/actions/runs -X GET -f head_sha=abc -f per_page=100"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -fhead_sha=abc -fper_page=100"
 deny_all "gh pr merge 1"
 deny_all "gh pr review 1 --approve"
 deny_all "gh workflow run build.yml"
@@ -1239,6 +1240,8 @@ deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -"X" POST -f event=APPR
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET ?X POST -f event=APPROVE'
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET *X POST -f event=APPROVE'
 deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -\$'X' POST -f event=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -Fevent=APPROVE"
 deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
 deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
