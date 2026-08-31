@@ -47,7 +47,7 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-fai
 
 1. 対象 PR を特定する。明示された URL / 番号を優先し、無ければ現在 branch から推定する。特定できなければ停止して確認する。
 2. 公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read する。監視は継続タスクとして扱う。`--watch` を使い、一時的な `idle` や「review comment が今ない」だけでは終了しない。ユーザーへ「続きを監視しますか」と毎回確認しない。同じ PR に複数 watcher を並走させない。
-3. GitHub 操作は公式 GitHub MCP または `gh` で行う。一方が使えなければ他方を試す。watcher は `gh` 前提のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
+3. GitHub 操作は公式 GitHub MCP または `gh` で行う。認証は実行環境の責務であり、特定製品の token / actor / path を前提にしない。一方が使えなければ他方を試す。watcher は公式 babysit-pr の `gh` 実装を正本のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
 4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
 5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。同一 fingerprint ですでに IGNORE_WITH_REASON 処理済みの指摘は、新しい未処理指摘として扱わない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
 6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
@@ -92,9 +92,11 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - PR の目的・scope 外で、今回直すと別の設計判断を持ち込む
 - 未改変 vendor など意図的に触らないファイル。wrapper 側で当該リスクを補完済みのときを含む
 
-Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で返信する。人間が見る本文は自然で簡潔にし、helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
+Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で**日本語**で返信する。識別子・ファイル名・API名は無理に日本語化しない。人間が見る本文は必ず `AIエージェントによる対応: ` で始める。helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> head=<sha> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
 
-返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、同じ thread に helper の marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。helper の投稿者は認証済み `gh` ユーザーであり、`cursor` / `cursor[bot]`、PR 作者、OWNER / MEMBER / COLLABORATOR の人間だけ採用する。CodeRabbit や任意 CONTRIBUTOR の marker は採用しない。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。
+例: `AIエージェントによる対応: OpenAI公式の babysit-pr はvendorとして未改変で保持しています。current HEADのreview-clean判定に必要な commit_id はwrapper側で保持・確認しています。`
+
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、認証済み `gh` ユーザーと同一 actor が書いた marker（fingerprint 一致かつ head が current HEAD）があれば final gate は同一 fingerprint を actionable から外す。製品名の login をハードコードしない。PR 作者・任意参加者・OWNER / MEMBER / COLLABORATOR であることだけでは採用しない。CodeRabbit の marker も採用しない。認証済みユーザーが取れないときは IGNORE を採用せず fail-closed する。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。HEAD が変わったら旧 marker は無効なので、残す IGNORE は新 HEAD で helper を再実行する。
 
 ## 非収束
 
@@ -117,7 +119,7 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 `--head` は検証用である。GitHub 上の current `headRefOid` と一致しないときは fail し、古い SHA を上書きして完了判定しない。
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、同じ thread 内の helper 投稿（`cursor` / `cursor[bot]`）の hidden marker と fingerprint が一致する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
+gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は GraphQL cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、gate 実行時の認証済み `gh` ユーザーと同一 actor の hidden marker で、fingerprint と current HEAD が一致する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 

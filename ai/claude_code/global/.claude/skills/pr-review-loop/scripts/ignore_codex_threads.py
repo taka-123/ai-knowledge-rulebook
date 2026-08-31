@@ -67,7 +67,7 @@ def main(argv=None):
         for item in eligible:
             node_id = str(item.get("node_id") or "")
             fingerprint = gate.finding_fingerprint(item)
-            body = gate.format_ignore_reply(args.reason, fingerprint)
+            body = gate.format_ignore_reply(args.reason, fingerprint, args.head)
             gate.reply_review_thread(node_id, body)
             resolved = bool(item.get("resolved"))
             resolve_error = None

@@ -163,10 +163,13 @@ def test_wrapper_policy_strings():
         "ignore_codex_threads.py",
         "pr-review-loop:disposition=",
         "修正しました",
+        "AIエージェントによる対応:",
+        "head=<sha>",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
     assert "gh pr merge" not in text
+    assert "cursor[bot]" not in text
 
 
 def test_babysit_pr_is_not_a_top_level_global_skill():
@@ -214,6 +217,9 @@ def test_gate_covers_bots_and_external_reviewers_that_watcher_drops():
     assert "original_commit_id" in gate_text
     assert "DISPOSITION_IGNORE" in gate_text
     assert "finding_fingerprint" in gate_text
+    assert "fetch_authenticated_login" in gate_text
+    assert "TRUSTED_DISPOSITION_LOGINS" not in gate_text
+    assert "cursor[bot]" not in gate_text
 
 
 def test_auto_fix_helper_does_not_reply():

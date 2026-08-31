@@ -71,7 +71,12 @@ if (wrapper) {
     'IGNORE_WITH_REASON',
     'pr-review-loop:disposition=',
     '修正しました',
+    'AIエージェントによる対応:',
+    'head=<sha>',
   ]
+  if (wrapper.includes('cursor / cursor[bot]') || wrapper.includes('cursor[bot]')) {
+    errors.push('pr-review-loop SKILL.md must not name Cursor GitHub actors as trusted helpers')
+  }
   for (const item of required) {
     if (!wrapper.includes(item)) errors.push(`pr-review-loop SKILL.md missing policy: ${item}`)
   }
@@ -156,12 +161,24 @@ if (gate) {
     !gate.includes('finding_fingerprint') ||
     !gate.includes('collect_ignore_fingerprints') ||
     !gate.includes('eligible_codex_ignore_threads') ||
-    !gate.includes('TRUSTED_DISPOSITION_LOGINS') ||
+    !gate.includes('fetch_authenticated_login') ||
     !gate.includes('is_trusted_disposition_author') ||
-    !gate.includes('ignore_fingerprints_for_item')
+    !gate.includes('ignore_fingerprints_for_item') ||
+    !gate.includes('IGNORE_REPLY_PREFIX') ||
+    !gate.includes('head=')
   ) {
     errors.push(
       'final_review_clean_gate.py must exclude only verified IGNORE_WITH_REASON fingerprints'
+    )
+  }
+  if (
+    gate.includes('TRUSTED_DISPOSITION_LOGINS') ||
+    gate.includes('TRUSTED_DISPOSITION_ASSOCIATIONS') ||
+    gate.includes('cursor[bot]') ||
+    /["']cursor["']/.test(gate)
+  ) {
+    errors.push(
+      'final_review_clean_gate.py must not hardcode product GitHub logins as trusted helpers'
     )
   }
   if (!gate.includes('addPullRequestReviewThreadReply')) {

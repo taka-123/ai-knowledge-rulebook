@@ -25,8 +25,8 @@ normalize_threads = gate.normalize_threads
 pending_review_ids = gate.pending_review_ids
 
 
-HEAD = "newsha"
-OLD = "oldsha"
+HEAD = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+OLD = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
 
 
 def review(**overrides):
@@ -517,7 +517,7 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
         [
             {
                 "id": 99,
-                "user": {"login": "cursor[bot]"},
+                "user": {"login": "agent-operator"},
                 "body": f"@codex review\nhead: {HEAD}",
                 "html_url": "https://example.test/99",
             }
@@ -649,17 +649,17 @@ def test_non_review_comment_codex_thumbs_is_not_proof():
         [
             {
                 "id": 11,
-                "user": {"login": "cursor[bot]"},
+                "user": {"login": "agent-operator"},
                 "body": f"@codex\nhead: {HEAD}",
             },
             {
                 "id": 12,
-                "user": {"login": "cursor[bot]"},
+                "user": {"login": "agent-operator"},
                 "body": f"@codex address that feedback\nhead: {HEAD}",
             },
             {
                 "id": 13,
-                "user": {"login": "cursor[bot]"},
+                "user": {"login": "agent-operator"},
                 "body": f"@codex fix this\nhead: {HEAD}",
             },
         ],
@@ -940,7 +940,7 @@ def test_codex_boilerplate_review_is_proof_not_actionable():
             review(
                 body=(
                     "### Codex Review\n\nHere are some automated review suggestions "
-                    "for this pull request.\nReviewed commit: newsha"
+                    f"for this pull request.\nReviewed commit: {HEAD}"
                 )
             )
         ],
@@ -991,11 +991,35 @@ VENDOR_P1_COMMIT_ID = (
 )
 
 
-def _ignore_marker(fingerprint):
-    return gate.format_ignore_reply(
-        "Vendored OpenAI babysit-pr is kept unmodified.",
-        fingerprint,
+HELPER_LOGIN = "claude[bot]"
+HELPER_LOGIN_GRAPHQL = "claude"
+LOCAL_OPERATOR = "local-operator"
+VENDOR_IGNORE_REASON = (
+    "OpenAI公式の babysit-pr はvendorとして未改変で保持しています。"
+    "current HEADのreview-clean判定に必要な commit_id はwrapper側で保持・確認しています。"
+)
+
+
+def _ignore_marker(fingerprint, head_sha=HEAD, reason=VENDOR_IGNORE_REASON):
+    return gate.format_ignore_reply(reason, fingerprint, head_sha)
+
+
+def _helper_thread(leftover, helper=HELPER_LOGIN, fingerprint=None, head_sha=HEAD, **overrides):
+    fingerprint = fingerprint or finding_fingerprint(leftover)
+    item = thread(
+        id=leftover.get("id") or "3890915001",
+        node_id="PRRT_codex_ignored",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", helper],
+        comment_ids=[str(leftover.get("id") or "3890915001"), "3890999999"],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint, head_sha=head_sha)],
+        comment_authors=["chatgpt-codex-connector[bot]", helper],
+        resolved=True,
+        path=leftover.get("path") or VENDOR_WATCHER,
+        body=leftover["body"],
     )
+    item.update(overrides)
+    return item
 
 
 def test_explicit_ignore_marker_excludes_matching_fingerprint():
@@ -1006,19 +1030,10 @@ def test_explicit_ignore_marker_excludes_matching_fingerprint():
         body=VENDOR_P1_REVIEWERS,
     )
     fingerprint = finding_fingerprint(leftover)
-    ignored_thread = thread(
-        id="3890915001",
-        node_id="PRRT_codex_ignored",
-        author="chatgpt-codex-connector[bot]",
-        authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
-        comment_ids=["3890915001", "3890999999"],
-        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
-        comment_authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
-        resolved=True,
-        path=VENDOR_WATCHER,
-        body=leftover["body"],
+    ignored_thread = _helper_thread(leftover, fingerprint=fingerprint)
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [ignored_thread], gh_user=HELPER_LOGIN
     )
-    result = evaluate_review_clean(HEAD, [review()], [leftover], [ignored_thread])
     assert result["review_clean"] is True
     assert result["actionable"] == []
     assert result["ignored"][0]["fingerprint"] == fingerprint
@@ -1036,10 +1051,13 @@ def test_unresolved_ignored_fingerprint_is_not_actionable():
         resolved=False,
     )
     fingerprint = finding_fingerprint(open_finding)
-    open_finding["comment_bodies"] = [open_finding["body"], _ignore_marker(fingerprint)]
-    open_finding["comment_authors"] = ["chatgpt-codex-connector[bot]", "cursor[bot]"]
-    open_finding["authors"] = ["chatgpt-codex-connector[bot]", "cursor[bot]"]
-    result = evaluate_review_clean(HEAD, [review()], [], [open_finding])
+    open_finding["comment_bodies"] = [
+        open_finding["body"],
+        _ignore_marker(fingerprint),
+    ]
+    open_finding["comment_authors"] = ["chatgpt-codex-connector[bot]", HELPER_LOGIN]
+    open_finding["authors"] = ["chatgpt-codex-connector[bot]", HELPER_LOGIN]
+    result = evaluate_review_clean(HEAD, [review()], [], [open_finding], gh_user=HELPER_LOGIN)
     assert result["review_clean"] is True
     assert result["actionable"] == []
     assert [item["fingerprint"] for item in result["ignored"]] == [fingerprint]
@@ -1102,16 +1120,11 @@ def test_fingerprint_includes_normalized_finding_body():
 def test_same_finding_reappearance_matches_fingerprint():
     first = comment(path=VENDOR_WATCHER, body=VENDOR_P1_REVIEWERS)
     fingerprint = finding_fingerprint(first)
-    previous = thread(
+    previous = _helper_thread(
+        first,
+        fingerprint=fingerprint,
         id="1",
         node_id="PRRT_old_ignore",
-        author="chatgpt-codex-connector[bot]",
-        authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
-        comment_bodies=[first["body"], _ignore_marker(fingerprint)],
-        comment_authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
-        resolved=True,
-        path=VENDOR_WATCHER,
-        body=first["body"],
     )
     reappeared = thread(
         id="99",
@@ -1122,13 +1135,15 @@ def test_same_finding_reappearance_matches_fingerprint():
         body=first["body"],
         resolved=False,
     )
-    result = evaluate_review_clean(HEAD, [review()], [first], [previous, reappeared])
+    result = evaluate_review_clean(
+        HEAD, [review()], [first], [previous, reappeared], gh_user=HELPER_LOGIN
+    )
     assert result["review_clean"] is True
     assert result["actionable"] == []
     assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
 
 
-def test_pr_author_ignore_marker_is_honored():
+def test_authenticated_helper_without_product_login_is_honored():
     leftover = comment(
         id="3890915001",
         author="chatgpt-codex-connector[bot]",
@@ -1136,22 +1151,51 @@ def test_pr_author_ignore_marker_is_honored():
         body=VENDOR_P1_REVIEWERS,
     )
     fingerprint = finding_fingerprint(leftover)
-    ignored_thread = thread(
-        id="3890915001",
-        node_id="PRRT_owner_ignore",
-        author="chatgpt-codex-connector[bot]",
-        authors=["chatgpt-codex-connector[bot]", "taka-123"],
-        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
-        comment_authors=["chatgpt-codex-connector[bot]", "taka-123"],
-        resolved=True,
-        path=VENDOR_WATCHER,
-        body=leftover["body"],
+    ignored_thread = _helper_thread(
+        leftover, helper=LOCAL_OPERATOR, fingerprint=fingerprint
     )
     result = evaluate_review_clean(
-        HEAD, [review()], [leftover], [ignored_thread], pr_author="taka-123"
+        HEAD, [review()], [leftover], [ignored_thread], gh_user=LOCAL_OPERATOR
     )
     assert result["review_clean"] is True
     assert result["ignored"][0]["fingerprint"] == fingerprint
+
+
+def test_graphql_bot_suffix_matches_authenticated_helper():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    ignored_thread = _helper_thread(
+        leftover, helper=HELPER_LOGIN_GRAPHQL, fingerprint=fingerprint
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [ignored_thread], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is True
+    assert result["ignored"][0]["fingerprint"] == fingerprint
+
+
+def test_pr_author_ignore_marker_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    ignored_thread = _helper_thread(
+        leftover, helper="taka-123", fingerprint=fingerprint
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [ignored_thread], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
 
 
 def test_untrusted_author_ignore_marker_is_not_honored():
@@ -1174,7 +1218,9 @@ def test_untrusted_author_ignore_marker_is_not_honored():
         path=VENDOR_WATCHER,
         body=leftover["body"],
     )
-    result = evaluate_review_clean(HEAD, [review()], [leftover], [spoofed])
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [spoofed], gh_user=HELPER_LOGIN
+    )
     assert result["review_clean"] is False
     assert result["ignored"] == []
     assert result["actionable"][0]["id"] == "3890915001"
@@ -1205,15 +1251,138 @@ def test_ignore_marker_without_comment_authors_is_not_honored():
 
 def test_format_ignore_reply_keeps_natural_text_and_hidden_marker():
     body = gate.format_ignore_reply(
-        "Vendored upstream file is intentionally kept unmodified",
+        "OpenAI公式の babysit-pr はvendorとして未改変で保持しています。",
         "abc123def4567890",
+        HEAD,
     )
     visible, marker = body.split("\n\n", 1)
-    assert visible == "Vendored upstream file is intentionally kept unmodified"
-    assert "<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=abc123def4567890 -->" in marker
+    assert visible.startswith(gate.IGNORE_REPLY_PREFIX)
+    assert visible == (
+        "AIエージェントによる対応: OpenAI公式の babysit-pr はvendorとして未改変で保持しています。"
+    )
+    assert (
+        "<!-- pr-review-loop:disposition=IGNORE_WITH_REASON "
+        f"fingerprint=abc123def4567890 head={HEAD} -->"
+    ) in marker
     parsed = gate.parse_disposition_marker(body)
     assert parsed["disposition"] == gate.DISPOSITION_IGNORE
     assert parsed["fingerprint"] == "abc123def4567890"
+    assert parsed["head"] == HEAD
+
+
+def test_format_ignore_reply_does_not_duplicate_prefix():
+    body = gate.format_ignore_reply(
+        "AIエージェントによる対応: 既存の理由",
+        "abc123def4567890",
+        HEAD,
+    )
+    visible = body.split("\n\n", 1)[0]
+    assert visible == "AIエージェントによる対応: 既存の理由"
+
+
+def test_fingerprint_mismatch_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    other_fp = finding_fingerprint({"path": VENDOR_WATCHER, "body": VENDOR_P1_COMMIT_ID})
+    spoofed = _helper_thread(leftover, fingerprint=other_fp)
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [spoofed], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
+
+
+def test_head_mismatch_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    old_head = _helper_thread(leftover, fingerprint=fingerprint, head_sha=OLD)
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [old_head], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
+
+
+def test_empty_authenticated_user_is_fail_closed():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    ignored_thread = _helper_thread(leftover)
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [ignored_thread], gh_user="")
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+
+
+def test_owner_association_does_not_trust_arbitrary_participant():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    spoofed = _helper_thread(leftover, helper="repo-owner", fingerprint=fingerprint)
+    spoofed["comment_associations"] = ["NONE", "OWNER"]
+    spoofed["author_association"] = "OWNER"
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [spoofed], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+
+
+def test_ignore_marker_without_ai_prefix_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    marker_only = (
+        f"<!-- pr-review-loop:disposition=IGNORE_WITH_REASON "
+        f"fingerprint={fingerprint} head={HEAD} -->"
+    )
+    spoofed = thread(
+        id="3890915001",
+        node_id="PRRT_marker_no_prefix",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comment_bodies=[leftover["body"], marker_only],
+        comment_authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [spoofed], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+
+
+def test_same_github_actor_is_product_agnostic():
+    assert gate.same_github_actor("claude[bot]", "claude") is True
+    assert gate.same_github_actor("codex[bot]", "codex") is True
+    assert gate.same_github_actor(LOCAL_OPERATOR, LOCAL_OPERATOR) is True
+    assert gate.same_github_actor("claude[bot]", "alice") is False
+    assert gate.same_github_actor("", "claude[bot]") is False
+    assert gate.is_trusted_disposition_author("claude[bot]", gh_user="claude") is True
+    assert gate.is_trusted_disposition_author("alice", gh_user="claude[bot]") is False
 
 
 def test_disposition_reply_body_is_not_actionable():
@@ -1312,6 +1481,64 @@ def test_mixed_human_codex_thread_is_not_eligible_for_ignore():
     assert rejected[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
 
 
+def test_mixed_human_codex_thread_ignore_marker_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    mixed = thread(
+        id="3890915001",
+        node_id="PRRT_mixed_marker",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice", HELPER_LOGIN],
+        comment_bodies=[
+            leftover["body"],
+            "Why is this ignored?",
+            _ignore_marker(fingerprint),
+        ],
+        comment_authors=["chatgpt-codex-connector[bot]", "alice", HELPER_LOGIN],
+        resolved=False,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [mixed], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
+
+
+def test_coderabbit_mixed_thread_ignore_marker_is_not_honored():
+    leftover = comment(
+        id="21",
+        author="coderabbitai[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    mixed = thread(
+        id="21",
+        node_id="PRRT_rabbit_mixed_marker",
+        author="coderabbitai[bot]",
+        authors=["coderabbitai[bot]", HELPER_LOGIN],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        comment_authors=["coderabbitai[bot]", HELPER_LOGIN],
+        resolved=False,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [mixed], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "21"
+
+
 def load_ignore_helper():
     path = Path(__file__).with_name("ignore_codex_threads.py")
     spec = importlib.util.spec_from_file_location("ignore_codex_threads", path)
@@ -1363,15 +1590,17 @@ def test_ignore_helper_replies_on_codex_only_thread(monkeypatch, capsys):
             "--head",
             HEAD,
             "--reason",
-            "Vendored upstream file is intentionally kept unmodified",
+            VENDOR_IGNORE_REASON,
             "--thread-id",
             "PRRT_codex_ignore_helper",
         ]
     )
     assert code == 0
     assert replies[0][0] == "PRRT_codex_ignore_helper"
-    assert "Vendored upstream file is intentionally kept unmodified" in replies[0][1]
+    assert replies[0][1].startswith(gate.IGNORE_REPLY_PREFIX)
+    assert VENDOR_IGNORE_REASON in replies[0][1]
     assert "pr-review-loop:disposition=IGNORE_WITH_REASON" in replies[0][1]
+    assert f"head={HEAD}" in replies[0][1]
     assert resolved == ["PRRT_codex_ignore_helper"]
     payload = json.loads(capsys.readouterr().out)
     assert payload["ignored"][0]["replied"] is True
@@ -1444,7 +1673,7 @@ def test_ignore_helper_keeps_reply_if_resolve_is_forbidden(monkeypatch, capsys):
             "--head",
             HEAD,
             "--reason",
-            "wrapper already keeps commit_id for current-HEAD review-clean",
+            "wrapper は current HEAD の review-clean 判定に必要な commit_id を保持しています。",
             "--thread-id",
             "PRRT_codex_resolve_forbidden",
         ]
@@ -1490,3 +1719,74 @@ def test_auto_fix_helper_still_does_not_call_reply(monkeypatch):
     assert code == 0
     assert replies == []
     assert resolved == ["PRRT_codex_auto_fix"]
+
+
+def test_fetch_authenticated_login_reads_gh_user(monkeypatch):
+    seen = []
+
+    def fake_gh_json(args):
+        seen.append(list(args))
+        return {"login": HELPER_LOGIN}
+
+    monkeypatch.setattr(gate, "gh_json", fake_gh_json)
+    assert gate.fetch_authenticated_login() == HELPER_LOGIN
+    assert seen[0][:2] == ["api", "user"]
+    assert "-X" in seen[0] and "GET" in seen[0]
+
+
+def test_fetch_authenticated_login_is_empty_when_unauthenticated(monkeypatch):
+    def boom(_args):
+        raise gate.GhCommandError("HTTP 401")
+
+    monkeypatch.setattr(gate, "gh_json", boom)
+    assert gate.fetch_authenticated_login() == ""
+
+
+def test_main_passes_authenticated_login_to_evaluate(monkeypatch):
+    captured = {}
+
+    def fake_evaluate(*args, **kwargs):
+        captured["gh_user"] = kwargs.get("gh_user")
+        return {
+            "head_sha": HEAD,
+            "review_clean": True,
+            "reason": "current_head_review_complete",
+            "proof": review(),
+            "current_head_items": [],
+            "old_head_items": [],
+            "unbound_items": [],
+            "unresolved_threads": [],
+            "actionable": [],
+            "ignored": [],
+        }
+
+    monkeypatch.setattr(
+        gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "o/r",
+            "owner": "o",
+            "name": "r",
+            "head_sha": HEAD,
+            "url": "https://example.test/o/r/pull/8",
+            "author": "taka-123",
+        },
+    )
+    monkeypatch.setattr(
+        gate,
+        "collect_gate_inputs",
+        lambda pr: {
+            "reviews": [review()],
+            "comments": [],
+            "threads": [],
+            "issue_comments": [],
+            "completion_signals": [],
+        },
+    )
+    monkeypatch.setattr(gate, "fetch_head_sha", lambda pr: HEAD)
+    monkeypatch.setattr(gate, "fetch_authenticated_login", lambda: HELPER_LOGIN)
+    monkeypatch.setattr(gate, "evaluate_review_clean", fake_evaluate)
+    code = gate.main(["--pr", "8", "--head", HEAD])
+    assert code == 0
+    assert captured["gh_user"] == HELPER_LOGIN

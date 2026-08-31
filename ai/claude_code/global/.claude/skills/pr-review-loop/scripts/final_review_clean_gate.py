@@ -92,18 +92,12 @@ mutation($id: ID!, $body: String!) {
 DISPOSITION_IGNORE = "IGNORE_WITH_REASON"
 DISPOSITION_AUTO_FIX = "AUTO_FIX"
 DISPOSITION_MARKER_RE = re.compile(
-    r"<!--\s*pr-review-loop:disposition=(IGNORE_WITH_REASON|AUTO_FIX)"
-    r"(?:\s+fingerprint=([0-9a-f]{8,64}))?\s*-->",
+    r"<!--\s*pr-review-loop:disposition=(IGNORE_WITH_REASON|AUTO_FIX)([^>]*)-->",
     re.IGNORECASE,
 )
+DISPOSITION_ATTR_RE = re.compile(r"\b(fingerprint|head)=([0-9a-f]+)", re.IGNORECASE)
+IGNORE_REPLY_PREFIX = "AIエージェントによる対応: "
 FINDING_BADGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
-# ignore_codex_threads.py posts via whatever `gh` identity is authenticated:
-# Cloud Agent GitHub App (`cursor` / `cursor[bot]`) or a human PAT (PR author).
-TRUSTED_DISPOSITION_LOGINS = {
-    "cursor",
-    "cursor[bot]",
-}
-TRUSTED_DISPOSITION_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 
 
 class GhCommandError(RuntimeError):
@@ -240,17 +234,32 @@ def is_codex_reviewer(login):
     return identity in CODEX_REVIEWER_IDENTITIES
 
 
-def is_trusted_disposition_author(login, association="", pr_author=""):
-    lower = str(login or "").strip().lower()
-    if not lower:
-        return False
-    if lower in TRUSTED_DISPOSITION_LOGINS:
-        return True
-    if is_codex_reviewer(login) or lower.endswith("[bot]"):
-        return False
-    if pr_author and lower == str(pr_author).strip().lower():
-        return True
-    return str(association or "").upper() in TRUSTED_DISPOSITION_ASSOCIATIONS
+def canonical_github_login(login):
+    return normalize_reviewer_login(login)[0]
+
+
+def same_github_actor(left, right):
+    a = canonical_github_login(left)
+    b = canonical_github_login(right)
+    return bool(a) and bool(b) and a == b
+
+
+def fetch_authenticated_login():
+    try:
+        data = gh_json(["api", "user", "-X", "GET"])
+    except GhCommandError:
+        return ""
+    if not isinstance(data, dict):
+        return ""
+    return extract_login(data)
+
+
+def is_trusted_disposition_author(login, gh_user=""):
+    return same_github_actor(login, gh_user)
+
+
+def has_ignore_reply_prefix(body):
+    return str(body or "").lstrip().startswith(IGNORE_REPLY_PREFIX)
 
 
 def is_codex_review_request(body):
@@ -345,9 +354,14 @@ def parse_disposition_marker(body):
     match = DISPOSITION_MARKER_RE.search(body or "")
     if not match:
         return None
+    attrs = {
+        key.lower(): value.lower()
+        for key, value in DISPOSITION_ATTR_RE.findall(match.group(2) or "")
+    }
     return {
         "disposition": match.group(1).upper(),
-        "fingerprint": (match.group(2) or "").lower(),
+        "fingerprint": attrs.get("fingerprint", ""),
+        "head": attrs.get("head", ""),
     }
 
 
@@ -355,46 +369,68 @@ def is_disposition_reply(body):
     return parse_disposition_marker(body) is not None
 
 
-def format_ignore_reply(reason, fingerprint):
+def format_ignore_reply(reason, fingerprint, head_sha):
     text = " ".join(str(reason or "").split()).strip()
     if not text:
         raise ValueError("IGNORE_WITH_REASON requires a concrete reason")
+    fp = str(fingerprint or "").strip().lower()
+    if not fp:
+        raise ValueError("IGNORE_WITH_REASON requires a finding fingerprint")
+    head = str(head_sha or "").strip()
+    if not head:
+        raise ValueError("IGNORE_WITH_REASON requires current HEAD")
+    visible = text if text.startswith(IGNORE_REPLY_PREFIX) else f"{IGNORE_REPLY_PREFIX}{text}"
     marker = (
         f"<!-- pr-review-loop:disposition={DISPOSITION_IGNORE} "
-        f"fingerprint={fingerprint} -->"
+        f"fingerprint={fp} head={head} -->"
     )
-    return f"{text}\n\n{marker}"
+    return f"{visible}\n\n{marker}"
 
 
-def trusted_ignore_fingerprints_from_thread(thread, pr_author=""):
+def trusted_ignore_fingerprints_from_thread(thread, gh_user="", head_sha=""):
     fingerprints = set()
     if not isinstance(thread, dict):
         return fingerprints
+    if not gh_user or not head_sha:
+        return fingerprints
     bodies = thread.get("comment_bodies") or []
     authors = thread.get("comment_authors")
-    associations = thread.get("comment_associations") or []
     if not isinstance(bodies, list) or not isinstance(authors, list):
         return fingerprints
     if len(authors) != len(bodies):
         return fingerprints
+    participants = [str(login) for login in authors if str(login or "")]
+    if not participants:
+        return fingerprints
+    if not all(
+        is_codex_reviewer(login) or is_trusted_disposition_author(login, gh_user)
+        for login in participants
+    ):
+        return fingerprints
     thread_fp = finding_fingerprint(thread)
-    for index, (author, body) in enumerate(zip(authors, bodies)):
-        association = associations[index] if index < len(associations) else ""
-        if not is_trusted_disposition_author(author, association, pr_author):
+    current_head = canonicalize_sha(head_sha, head_sha)
+    for author, body in zip(authors, bodies):
+        if not is_trusted_disposition_author(author, gh_user):
+            continue
+        if not has_ignore_reply_prefix(body):
             continue
         parsed = parse_disposition_marker(body)
         if not parsed or parsed["disposition"] != DISPOSITION_IGNORE:
             continue
-        if parsed["fingerprint"] and parsed["fingerprint"] == thread_fp:
+        marker_fp = parsed.get("fingerprint") or ""
+        marker_head = canonicalize_sha(parsed.get("head") or "", head_sha)
+        if marker_fp == thread_fp and marker_head == current_head:
             fingerprints.add(thread_fp)
     return fingerprints
 
 
-def collect_ignore_fingerprints(threads, comments=None, pr_author=""):
+def collect_ignore_fingerprints(threads, comments=None, gh_user="", head_sha=""):
     del comments
     fingerprints = set()
     for item in threads or []:
-        fingerprints |= trusted_ignore_fingerprints_from_thread(item, pr_author=pr_author)
+        fingerprints |= trusted_ignore_fingerprints_from_thread(
+            item, gh_user=gh_user, head_sha=head_sha
+        )
     return fingerprints
 
 
@@ -415,9 +451,9 @@ def matching_threads_for_item(item, threads):
     return matched
 
 
-def ignore_fingerprints_for_item(item, threads, pr_author=""):
+def ignore_fingerprints_for_item(item, threads, gh_user="", head_sha=""):
     del item
-    return collect_ignore_fingerprints(threads, pr_author=pr_author)
+    return collect_ignore_fingerprints(threads, gh_user=gh_user, head_sha=head_sha)
 
 
 def normalize_reviews(payload):
@@ -716,7 +752,7 @@ def evaluate_review_clean(
     threads,
     issue_comments=None,
     completion_signals=None,
-    pr_author="",
+    gh_user="",
 ):
     issue_comments = issue_comments or []
     completion_signals = completion_signals or []
@@ -737,7 +773,9 @@ def evaluate_review_clean(
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
-    ignored_fingerprints = collect_ignore_fingerprints(threads, comments, pr_author=pr_author)
+    ignored_fingerprints = collect_ignore_fingerprints(
+        threads, comments, gh_user=gh_user, head_sha=head_sha
+    )
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
@@ -936,7 +974,7 @@ def main(argv=None):
             fetched["threads"],
             fetched["issue_comments"],
             fetched["completion_signals"],
-            pr_author=pr.get("author") or "",
+            gh_user=fetch_authenticated_login(),
         )
         result["pr"] = {"number": pr["number"], "repo": pr["repo"], "url": pr["url"]}
     except (GhCommandError, ValueError, json.JSONDecodeError) as err:
