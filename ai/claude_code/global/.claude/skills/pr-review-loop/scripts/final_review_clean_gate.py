@@ -41,10 +41,14 @@ APPROVAL_ONLY_RE = re.compile(
     re.IGNORECASE,
 )
 THREADS_QUERY = """
-query($owner: String!, $name: String!, $number: Int!) {
+query($owner: String!, $name: String!, $number: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
     pullRequest(number: $number) {
-      reviewThreads(first: 100) {
+      reviewThreads(first: 100, after: $after) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
         nodes {
           id
           isResolved
@@ -65,6 +69,7 @@ query($owner: String!, $name: String!, $number: Int!) {
   }
 }
 """
+THREAD_PAGE_LIMIT = 50
 RESOLVE_THREAD_MUTATION = """
 mutation($id: ID!) {
   resolveReviewThread(input: {threadId: $id}) {
@@ -183,21 +188,27 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
     }
 
 
-CODEX_REVIEWER_LOGINS = {
-    "chatgpt-codex-connector[bot]",
-    "chatgpt-codex-connector",
-    "codex[bot]",
-    "codex",
+# REST uses chatgpt-codex-connector[bot] / codex[bot]; GraphQL omits [bot]
+# only for chatgpt-codex-connector. Do not partial-match other *codex* actors.
+CODEX_REVIEWER_IDENTITIES = {
+    ("chatgpt-codex-connector", False),
+    ("chatgpt-codex-connector", True),
+    ("codex", True),
 }
 
 
+def normalize_reviewer_login(login):
+    lower = str(login or "").strip().lower()
+    if lower.endswith("[bot]"):
+        return lower[: -len("[bot]")], True
+    return lower, False
+
+
 def is_codex_reviewer(login):
-    lower = str(login or "").lower()
-    if not lower:
+    identity = normalize_reviewer_login(login)
+    if not identity[0]:
         return False
-    if lower in CODEX_REVIEWER_LOGINS:
-        return True
-    return "codex" in lower and "[bot]" in lower
+    return identity in CODEX_REVIEWER_IDENTITIES
 
 
 def is_codex_review_request(body):
@@ -581,9 +592,17 @@ def evaluate_review_clean(
     }
 
 
+def _review_threads_connection(payload):
+    return (
+        (((payload or {}).get("data") or {}).get("repository") or {}).get("pullRequest") or {}
+    ).get("reviewThreads") or {}
+
+
 def fetch_review_threads(owner, name, number):
-    payload = gh_json(
-        [
+    nodes = []
+    after = None
+    for _ in range(THREAD_PAGE_LIMIT):
+        args = [
             "api",
             "graphql",
             "-f",
@@ -595,11 +614,32 @@ def fetch_review_threads(owner, name, number):
             "-F",
             f"number={int(number)}",
         ]
-    )
-    nodes = (
-        (((payload or {}).get("data") or {}).get("repository") or {}).get("pullRequest") or {}
-    ).get("reviewThreads") or {}
-    return nodes.get("nodes") or []
+        if after:
+            args.extend(["-f", f"after={after}"])
+        payload = gh_json(args)
+        connection = _review_threads_connection(payload)
+        batch = connection.get("nodes") or []
+        if not isinstance(batch, list):
+            raise GhCommandError("Unexpected reviewThreads payload")
+        nodes.extend(batch)
+        page_info = connection.get("pageInfo") or {}
+        if not page_info.get("hasNextPage"):
+            return nodes
+        after = page_info.get("endCursor")
+        if not after:
+            raise GhCommandError("reviewThreads pageInfo.hasNextPage without endCursor")
+    raise GhCommandError(f"reviewThreads exceeded {THREAD_PAGE_LIMIT} pages")
+
+
+def fetch_head_sha(pr):
+    args = ["pr", "view", str(pr["number"]), "--json", "headRefOid"]
+    repo = pr.get("repo")
+    if repo:
+        args.extend(["-R", repo])
+    data = gh_json(args)
+    if not isinstance(data, dict):
+        raise GhCommandError("Unexpected PR payload from `gh pr view`")
+    return str(data.get("headRefOid") or "")
 
 
 def resolve_review_thread(node_id):
@@ -664,6 +704,11 @@ def main(argv=None):
     try:
         pr = resolve_pr(args.pr, repo_override=args.repo, head_override=args.head)
         fetched = collect_gate_inputs(pr)
+        latest_head = fetch_head_sha(pr)
+        if latest_head != pr["head_sha"]:
+            raise GhCommandError(
+                f"PR HEAD changed during gate fetch: {pr['head_sha']} -> {latest_head}"
+            )
         result = evaluate_review_clean(
             pr["head_sha"],
             fetched["reviews"],

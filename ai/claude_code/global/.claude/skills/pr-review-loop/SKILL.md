@@ -110,13 +110,13 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 `--head` は検証用である。GitHub 上の current `headRefOid` と一致しないときは fail し、古い SHA を上書きして完了判定しない。
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。resolved thread に属する REST comment は actionable から外す。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。
+gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。resolved thread に属する REST comment は actionable から外す。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 
 Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。
 
-- current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review（`DISMISSED` / `PENDING` は使わない）
+- current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review（`DISMISSED` / `PENDING` は使わない）。公式 identity は `chatgpt-codex-connector` / `chatgpt-codex-connector[bot]` / `codex[bot]` に限る
 - current HEAD に対応付けた `@codex review` request への Codex 👍（`+1`）。old HEAD や無関係な reaction は使わない
 
 `@codex review` を書くときは current HEAD を本文に含める（`head: <sha>`）。gate はその SHA と Codex 👍 を対応付ける。

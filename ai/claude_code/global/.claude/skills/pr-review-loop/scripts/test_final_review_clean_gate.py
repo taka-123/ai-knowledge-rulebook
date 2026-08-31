@@ -536,8 +536,12 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
 def test_is_codex_reviewer_accepts_graphql_login_without_bot_suffix():
     assert is_codex_reviewer("chatgpt-codex-connector[bot]") is True
     assert is_codex_reviewer("chatgpt-codex-connector") is True
+    assert is_codex_reviewer("codex[bot]") is True
+    assert is_codex_reviewer("codex") is False
     assert is_codex_reviewer("alice") is False
     assert is_codex_reviewer("coderabbitai[bot]") is False
+    assert is_codex_reviewer("my-codex-helper[bot]") is False
+    assert is_codex_reviewer("notcodex[bot]") is False
     graphql_thread = thread(
         author="chatgpt-codex-connector",
         authors=["chatgpt-codex-connector"],
@@ -548,6 +552,77 @@ def test_is_codex_reviewer_accepts_graphql_login_without_bot_suffix():
     )
     assert rejected == []
     assert [item["node_id"] for item in eligible] == ["PRRT_graphql_codex"]
+
+
+def _thread_page(ids, has_next=False, cursor=""):
+    return {
+        "data": {
+            "repository": {
+                "pullRequest": {
+                    "reviewThreads": {
+                        "nodes": [{"id": item} for item in ids],
+                        "pageInfo": {"hasNextPage": has_next, "endCursor": cursor},
+                    }
+                }
+            }
+        }
+    }
+
+
+def test_fetch_review_threads_follows_graphql_cursors(monkeypatch):
+    calls = []
+
+    def fake_gh_json(args):
+        calls.append(list(args))
+        after = None
+        for index, item in enumerate(args):
+            if item == "-f" and index + 1 < len(args) and args[index + 1].startswith("after="):
+                after = args[index + 1].split("=", 1)[1]
+        if after is None:
+            return _thread_page(["t1"], has_next=True, cursor="c1")
+        if after == "c1":
+            return _thread_page(["t2"], has_next=False, cursor="c2")
+        raise AssertionError(f"unexpected after={after}")
+
+    monkeypatch.setattr(gate, "gh_json", fake_gh_json)
+    nodes = gate.fetch_review_threads("o", "n", 8)
+    assert [item["id"] for item in nodes] == ["t1", "t2"]
+    assert any(
+        index + 1 < len(call) and call[index + 1] == "after=c1"
+        for call in calls
+        for index, item in enumerate(call)
+        if item == "-f"
+    )
+
+
+def test_main_fails_if_pr_head_changes_during_fetch(monkeypatch, capsys):
+    monkeypatch.setattr(
+        gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "o/r",
+            "owner": "o",
+            "name": "r",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(
+        gate,
+        "collect_gate_inputs",
+        lambda pr: {
+            "reviews": [],
+            "comments": [],
+            "threads": [],
+            "issue_comments": [],
+            "completion_signals": [],
+        },
+    )
+    monkeypatch.setattr(gate, "fetch_head_sha", lambda pr: OLD)
+    code = gate.main(["--pr", "8", "--head", HEAD])
+    assert code == 2
+    assert "PR HEAD changed during gate fetch" in capsys.readouterr().err
 
 
 def test_codex_review_request_requires_explicit_review_word():

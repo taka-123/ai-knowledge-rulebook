@@ -138,6 +138,15 @@ if (gate) {
   if (!gate.includes('DISMISSED') || !gate.includes('VALID_PROOF_REVIEW_STATES')) {
     errors.push('final_review_clean_gate.py must not treat dismissed reviews as completion proof')
   }
+  if (!gate.includes('pageInfo') || !gate.includes('hasNextPage') || !gate.includes('endCursor')) {
+    errors.push('final_review_clean_gate.py must paginate reviewThreads with GraphQL cursors')
+  }
+  if (gate.includes('"codex" in lower') && gate.includes('"[bot]" in lower')) {
+    errors.push('final_review_clean_gate.py must not treat partial *codex*[bot] logins as Codex')
+  }
+  if (!gate.includes('PR HEAD changed during gate fetch')) {
+    errors.push('final_review_clean_gate.py must re-check PR HEAD after collecting review data')
+  }
   if (!gate.includes('comment_ids') || !gate.includes('resolved_ids')) {
     errors.push(
       'final_review_clean_gate.py must drop REST comments that belong to resolved threads'
