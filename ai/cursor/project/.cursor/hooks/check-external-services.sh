@@ -22,19 +22,19 @@ cwd="$(jq -r '.cwd // empty' <<<"$input")" || cwd=""
 
 [[ -z "$cmd" ]] && allow
 
-# コマンド位置（先頭、または ;|& $() backtick の直後）。引用符は剥がさない。
+# コマンド位置（先頭、または ;|&(){} $() backtick の直後）。引用符は剥がさない。
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -66,7 +66,7 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
-    # Command/process substitution nests a second gh api that tr ';|&' never splits.
+    # Compound ( { and command/process substitution nest gh api; split those too.
     if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
       grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
@@ -96,7 +96,7 @@ if cli_command gh; then
           deny "Mutating gh api is forbidden."
         fi
       fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
+    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 
