@@ -111,6 +111,18 @@ if cli_command gh; then
       grep -Eq '`|\$\(' <<<"$cmd"; then
       block "mutating gh api"
     fi
+    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$cmd" | wc -l | tr -d ' ')" || true
+      if [ "${_gh_method_n:-0}" -gt 1 ]; then
+        block "mutating gh api"
+      fi
+    fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue

@@ -11,6 +11,7 @@ assert MODULE_SPEC.loader is not None
 MODULE_SPEC.loader.exec_module(gate)
 
 evaluate_review_clean = gate.evaluate_review_clean
+is_actionable_text = gate.is_actionable_text
 eligible_codex_ignore_threads = gate.eligible_codex_ignore_threads
 eligible_codex_resolve_threads = gate.eligible_codex_resolve_threads
 finding_fingerprint = gate.finding_fingerprint
@@ -288,6 +289,9 @@ def test_codex_about_footer_is_still_current_head_proof():
 
 
 def test_changes_requested_beats_summary_markers():
+    body = "Walkthrough\nPlease fix the public API before merge."
+    assert is_actionable_text(body, review_state="CHANGES_REQUESTED", kind="review") is True
+    assert is_actionable_text(body, review_state="COMMENTED", kind="review") is False
     result = evaluate_review_clean(
         HEAD,
         [
@@ -296,7 +300,7 @@ def test_changes_requested_beats_summary_markers():
                 id="11",
                 author="human-reviewer",
                 state="CHANGES_REQUESTED",
-                body="Walkthrough\nPlease fix the public API before merge.",
+                body=body,
             ),
         ],
         [],
