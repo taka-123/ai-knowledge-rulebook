@@ -497,9 +497,38 @@ def normalize_reviews(payload):
                 "outdated": None,
                 "body": str(item.get("body") or ""),
                 "url": str(item.get("html_url") or ""),
+                "submitted_at": str(item.get("submitted_at") or ""),
             }
         )
-    return out
+    return latest_reviews_per_reviewer_commit(out)
+
+
+def _review_recency_key(item, index):
+    submitted = str((item or {}).get("submitted_at") or "")
+    try:
+        review_id = int(str((item or {}).get("id") or "0"))
+    except ValueError:
+        review_id = 0
+    return (submitted, review_id, index)
+
+
+def latest_reviews_per_reviewer_commit(reviews):
+    chosen = {}
+    passthrough = []
+    for index, item in enumerate(reviews or []):
+        author = canonical_github_login((item or {}).get("author"))
+        commit_id = str((item or {}).get("commit_id") or "")
+        if not author or not commit_id:
+            passthrough.append(item)
+            continue
+        key = (author, commit_id)
+        prev = chosen.get(key)
+        if prev is None or _review_recency_key(item, index) > _review_recency_key(
+            prev[0], prev[1]
+        ):
+            chosen[key] = (item, index)
+    kept = [pair[0] for pair in sorted(chosen.values(), key=lambda pair: pair[1])]
+    return kept + passthrough
 
 
 def normalize_review_comments(payload, pending_review_ids):
@@ -788,6 +817,7 @@ def evaluate_review_clean(
 ):
     issue_comments = issue_comments or []
     completion_signals = completion_signals or []
+    reviews = latest_reviews_per_reviewer_commit(reviews)
     current = []
     old = []
     unbound = []

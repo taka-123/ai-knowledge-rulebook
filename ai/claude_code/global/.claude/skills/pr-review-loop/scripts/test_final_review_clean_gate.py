@@ -436,6 +436,91 @@ def test_commented_changes_requested_marker_still_blocks():
     assert result["reason"] == "actionable_review_on_current_head"
 
 
+def test_later_approved_review_supersedes_same_reviewer_changes_requested():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="20",
+                author="alice",
+                author_association="MEMBER",
+                state="CHANGES_REQUESTED",
+                body="Please fix the public API.",
+                submitted_at="2026-08-31T01:00:00Z",
+            ),
+            review(
+                id="21",
+                author="alice",
+                author_association="MEMBER",
+                state="APPROVED",
+                body="Approved after discussion.",
+                submitted_at="2026-08-31T02:00:00Z",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+
+
+def test_other_reviewer_changes_requested_is_not_superseded():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="20",
+                author="alice",
+                author_association="MEMBER",
+                state="CHANGES_REQUESTED",
+                body="Please fix the public API.",
+            ),
+            review(
+                id="21",
+                author="bob",
+                author_association="MEMBER",
+                state="APPROVED",
+                body="Approved.",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["author"] == "alice"
+
+
+def test_normalize_reviews_keeps_latest_state_per_reviewer_commit():
+    reviews = normalize_reviews(
+        [
+            {
+                "id": 1,
+                "state": "CHANGES_REQUESTED",
+                "commit_id": HEAD,
+                "user": {"login": "alice"},
+                "submitted_at": "2026-08-31T01:00:00Z",
+                "body": "Please fix",
+            },
+            {
+                "id": 2,
+                "state": "APPROVED",
+                "commit_id": HEAD,
+                "user": {"login": "alice[bot]"},
+                "submitted_at": "2026-08-31T02:00:00Z",
+                "body": "Approved",
+            },
+        ]
+    )
+    assert len(reviews) == 1
+    assert reviews[0]["state"] == "APPROVED"
+    assert reviews[0]["id"] == "2"
+    assert reviews[0]["commit_id"] == HEAD
+
+
 def test_coderabbit_changes_requested_on_current_head_blocks():
     result = evaluate_review_clean(
         HEAD,
