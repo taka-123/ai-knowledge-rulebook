@@ -234,5 +234,10 @@ def test_ignore_helper_source_replies_only_via_codex_helper():
     assert "eligible_codex_ignore_threads" in text
     assert "format_ignore_reply" in text
     assert "DISPOSITION_IGNORE" in text
+    assert "require_current_head" in text
     gate_text = GATE.read_text(encoding="utf-8")
     assert "addPullRequestReviewThreadReply" in gate_text
+    resolve_text = (Path(__file__).resolve().parent / "resolve_codex_threads.py").read_text(
+        encoding="utf-8"
+    )
+    assert "require_current_head" in resolve_text

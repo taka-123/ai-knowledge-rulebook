@@ -739,6 +739,7 @@ def test_resolve_helper_does_not_resolve_human_threads(monkeypatch):
     )
     monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: [human])
     monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
     called = []
     monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: called.append(nid))
     code = helper.main(["--pr", "8", "--head", HEAD, "--thread-id", "PRRT_human"])
@@ -1817,6 +1818,7 @@ def _patch_pr(monkeypatch, helper, threads, gh_user=HELPER_LOGIN):
     monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: threads)
     monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
     monkeypatch.setattr(helper.gate, "fetch_authenticated_login", lambda: gh_user)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
 
 
 def test_ignore_helper_replies_on_codex_only_thread(monkeypatch, capsys):
@@ -1860,6 +1862,127 @@ def test_ignore_helper_replies_on_codex_only_thread(monkeypatch, capsys):
     assert payload["ignored"][0]["replied"] is True
     assert payload["ignored"][0]["resolved"] is True
     assert payload["ignored"][0]["disposition"] == gate.DISPOSITION_IGNORE
+
+
+def test_require_current_head_fails_closed_on_mismatch(monkeypatch):
+    monkeypatch.setattr(gate, "fetch_head_sha", lambda pr: OLD)
+    with pytest.raises(gate.GhCommandError, match="PR HEAD changed before mutation"):
+        gate.require_current_head({"number": 8}, HEAD)
+
+
+def test_ignore_helper_does_not_mutate_if_head_changes(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_head_changed",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    _patch_pr(monkeypatch, helper, [bot])
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: OLD)
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_codex_head_changed",
+        ]
+    )
+    assert code == 2
+    assert replies == []
+    assert resolved == []
+    assert "PR HEAD changed before mutation" in capsys.readouterr().err
+
+
+def test_ignore_helper_skips_resolve_if_head_changes_after_reply(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_head_changed_after_reply",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    _patch_pr(monkeypatch, helper, [bot])
+    seen = {"n": 0}
+
+    def fake_head(pr):
+        seen["n"] += 1
+        return HEAD if seen["n"] == 1 else OLD
+
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", fake_head)
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_codex_head_changed_after_reply",
+        ]
+    )
+    assert code == 0
+    assert len(replies) == 1
+    assert resolved == []
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ignored"][0]["replied"] is True
+    assert payload["ignored"][0]["resolved"] is False
+    assert "PR HEAD changed before mutation" in payload["ignored"][0]["resolve_error"]
+
+
+def test_resolve_helper_does_not_resolve_if_head_changes(monkeypatch, capsys):
+    helper = load_resolve_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_resolve_head_changed",
+    )
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: [bot])
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: OLD)
+    called = []
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: called.append(nid))
+    code = helper.main(
+        ["--pr", "8", "--head", HEAD, "--thread-id", "PRRT_codex_resolve_head_changed"]
+    )
+    assert code == 2
+    assert called == []
+    assert "PR HEAD changed before mutation" in capsys.readouterr().err
 
 
 def test_ignore_helper_does_not_reply_on_human_or_coderabbit(monkeypatch):
@@ -1961,6 +2084,7 @@ def test_auto_fix_helper_still_does_not_call_reply(monkeypatch):
     )
     monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: [bot])
     monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
     replies = []
     resolved = []
     monkeypatch.setattr(

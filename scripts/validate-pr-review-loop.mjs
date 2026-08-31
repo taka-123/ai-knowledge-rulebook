@@ -207,6 +207,9 @@ if (resolver) {
   if (resolver.includes('gh_pr_watch')) {
     errors.push('resolve_codex_threads.py must not import the vendored watcher')
   }
+  if (!resolver.includes('require_current_head')) {
+    errors.push('resolve_codex_threads.py must re-check PR HEAD before each mutation')
+  }
 }
 
 const ignorer = read('scripts/ignore_codex_threads.py')
@@ -225,6 +228,9 @@ if (ignorer) {
   }
   if (ignorer.includes('gh_pr_watch')) {
     errors.push('ignore_codex_threads.py must not import the vendored watcher')
+  }
+  if (!ignorer.includes('require_current_head')) {
+    errors.push('ignore_codex_threads.py must re-check PR HEAD before each mutation')
   }
 } else {
   errors.push('missing: ignore_codex_threads.py')

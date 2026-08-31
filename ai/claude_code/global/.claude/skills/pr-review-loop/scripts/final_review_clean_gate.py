@@ -943,6 +943,14 @@ def fetch_head_sha(pr):
     return str(data.get("headRefOid") or "")
 
 
+def require_current_head(pr, expected_head):
+    expected = str(expected_head or "")
+    latest = fetch_head_sha(pr)
+    if not expected or latest != expected:
+        raise GhCommandError(f"PR HEAD changed before mutation: expected {expected} got {latest}")
+    return latest
+
+
 def resolve_review_thread(node_id):
     if not node_id:
         raise GhCommandError("missing GraphQL thread id")
