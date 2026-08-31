@@ -156,9 +156,13 @@ def test_wrapper_policy_strings():
         "@codex review",
         "AUTO_FIX",
         "ASK_HUMAN",
+        "IGNORE_WITH_REASON",
         "final_review_clean_gate.py",
         "commit_id",
         "resolve_codex_threads.py",
+        "ignore_codex_threads.py",
+        "pr-review-loop:disposition=",
+        "修正しました",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
@@ -208,3 +212,21 @@ def test_gate_covers_bots_and_external_reviewers_that_watcher_drops():
     assert "gh_pr_watch" not in gate_text
     assert "commit_id" in gate_text
     assert "original_commit_id" in gate_text
+    assert "DISPOSITION_IGNORE" in gate_text
+    assert "finding_fingerprint" in gate_text
+
+
+def test_auto_fix_helper_does_not_reply():
+    text = (Path(__file__).resolve().parent / "resolve_codex_threads.py").read_text(encoding="utf-8")
+    assert "addPullRequestReviewThreadReply" not in text
+    assert "pr-review-loop:disposition=" not in text
+    assert "format_ignore_reply" not in text
+
+
+def test_ignore_helper_source_replies_only_via_codex_helper():
+    text = (Path(__file__).resolve().parent / "ignore_codex_threads.py").read_text(encoding="utf-8")
+    assert "eligible_codex_ignore_threads" in text
+    assert "format_ignore_reply" in text
+    assert "DISPOSITION_IGNORE" in text
+    gate_text = GATE.read_text(encoding="utf-8")
+    assert "addPullRequestReviewThreadReply" in gate_text

@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -10,7 +11,9 @@ assert MODULE_SPEC.loader is not None
 MODULE_SPEC.loader.exec_module(gate)
 
 evaluate_review_clean = gate.evaluate_review_clean
+eligible_codex_ignore_threads = gate.eligible_codex_ignore_threads
 eligible_codex_resolve_threads = gate.eligible_codex_resolve_threads
+finding_fingerprint = gate.finding_fingerprint
 is_codex_only_thread = gate.is_codex_only_thread
 is_codex_review_request = gate.is_codex_review_request
 is_codex_reviewer = gate.is_codex_reviewer
@@ -86,6 +89,12 @@ def thread(**overrides):
     item.update(overrides)
     if "authors" not in overrides:
         item["authors"] = [item["author"]] if item.get("author") else []
+    if "comment_bodies" not in item:
+        item["comment_bodies"] = [item["body"]] if item.get("body") else []
+    if "comments_complete" not in item:
+        item["comments_complete"] = True
+    if "comment_ids" not in item and item.get("id"):
+        item["comment_ids"] = [str(item["id"])]
     return item
 
 
@@ -943,16 +952,16 @@ def test_codex_boilerplate_review_is_proof_not_actionable():
     assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
 
 
-def test_resolved_thread_rest_comment_is_not_actionable():
+def test_resolved_thread_without_ignore_marker_is_still_actionable():
     leftover = comment(
         id="3890915001",
         author="chatgpt-codex-connector[bot]",
         path="vendor/gh_pr_watch.py",
-        body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) already fixed",
+        body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Include non-Codex reviewers",
     )
     resolved = thread(
         id="3890915001",
-        node_id="PRRT_codex_fixed",
+        node_id="PRRT_codex_resolved_only",
         author="chatgpt-codex-connector[bot]",
         authors=["chatgpt-codex-connector[bot]"],
         comment_ids=["3890915001"],
@@ -961,6 +970,431 @@ def test_resolved_thread_rest_comment_is_not_actionable():
         body=leftover["body"],
     )
     result = evaluate_review_clean(HEAD, [review()], [leftover], [resolved])
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["id"] == "3890915001"
+    assert result["ignored"] == []
+    assert result["unresolved_threads"] == []
+
+
+VENDOR_WATCHER = (
+    "ai/claude_code/global/.claude/skills/pr-review-loop/vendor/"
+    "openai-codex-babysit-pr/scripts/gh_pr_watch.py"
+)
+VENDOR_P1_REVIEWERS = (
+    "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)\n"
+    "Include non-Codex reviewers such as CodeRabbit and CONTRIBUTOR"
+)
+VENDOR_P1_COMMIT_ID = (
+    "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)\n"
+    "Keep commit_id for current-HEAD review-clean"
+)
+
+
+def _ignore_marker(fingerprint):
+    return gate.format_ignore_reply(
+        "Vendored OpenAI babysit-pr is kept unmodified.",
+        fingerprint,
+    )
+
+
+def test_explicit_ignore_marker_excludes_matching_fingerprint():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    ignored_thread = thread(
+        id="3890915001",
+        node_id="PRRT_codex_ignored",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["3890915001", "3890999999"],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [ignored_thread])
     assert result["review_clean"] is True
     assert result["actionable"] == []
-    assert result["unresolved_threads"] == []
+    assert result["ignored"][0]["fingerprint"] == fingerprint
+    assert result["ignored"][0]["disposition"] == gate.DISPOSITION_IGNORE
+
+
+def test_unresolved_ignored_fingerprint_is_not_actionable():
+    open_finding = thread(
+        id="3890915001",
+        node_id="PRRT_codex_open_ignored",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_COMMIT_ID,
+        resolved=False,
+    )
+    fingerprint = finding_fingerprint(open_finding)
+    open_finding["comment_bodies"] = [open_finding["body"], _ignore_marker(fingerprint)]
+    result = evaluate_review_clean(HEAD, [review()], [], [open_finding])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert [item["fingerprint"] for item in result["ignored"]] == [fingerprint]
+
+
+def test_auto_fix_marker_does_not_exclude_finding():
+    leftover = comment(
+        id="21",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    auto_fix_thread = thread(
+        id="21",
+        node_id="PRRT_auto_fix_marker",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["21"],
+        comment_bodies=[
+            leftover["body"],
+            f"<!-- pr-review-loop:disposition=AUTO_FIX fingerprint={fingerprint} -->",
+        ],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [auto_fix_thread])
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "21"
+
+
+def test_same_finding_reappearance_matches_fingerprint():
+    first = comment(path=VENDOR_WATCHER, body=VENDOR_P1_REVIEWERS)
+    later = comment(
+        id="99",
+        path=VENDOR_WATCHER,
+        body=(
+            "![P1 Badge](https://img.shields.io/badge/P1-red?style=flat)\n"
+            "Include non-Codex reviewers such as CodeRabbit and CONTRIBUTOR\n\n"
+            "Raised again on the new HEAD."
+        ),
+    )
+    other = comment(id="100", path=VENDOR_WATCHER, body=VENDOR_P1_COMMIT_ID)
+    assert finding_fingerprint(first) == finding_fingerprint(later)
+    assert finding_fingerprint(first) != finding_fingerprint(other)
+    fingerprint = finding_fingerprint(first)
+    previous = thread(
+        id="1",
+        node_id="PRRT_old_ignore",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_bodies=[first["body"], _ignore_marker(fingerprint)],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=first["body"],
+    )
+    reappeared = thread(
+        id="99",
+        node_id="PRRT_new_repeat",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        path=VENDOR_WATCHER,
+        body=later["body"],
+        resolved=False,
+    )
+    result = evaluate_review_clean(HEAD, [review()], [later], [previous, reappeared])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
+
+
+def test_format_ignore_reply_keeps_natural_text_and_hidden_marker():
+    body = gate.format_ignore_reply(
+        "Vendored upstream file is intentionally kept unmodified",
+        "abc123def4567890",
+    )
+    visible, marker = body.split("\n\n", 1)
+    assert visible == "Vendored upstream file is intentionally kept unmodified"
+    assert "<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=abc123def4567890 -->" in marker
+    parsed = gate.parse_disposition_marker(body)
+    assert parsed["disposition"] == gate.DISPOSITION_IGNORE
+    assert parsed["fingerprint"] == "abc123def4567890"
+
+
+def test_disposition_reply_body_is_not_actionable():
+    fingerprint = finding_fingerprint(
+        {"path": VENDOR_WATCHER, "body": VENDOR_P1_REVIEWERS}
+    )
+    reply = comment(
+        id="reply1",
+        author="taka-123",
+        path=VENDOR_WATCHER,
+        body=_ignore_marker(fingerprint),
+    )
+    result = evaluate_review_clean(HEAD, [review()], [reply], [])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+
+
+def test_incomplete_thread_comments_are_not_eligible_for_ignore_or_resolve():
+    truncated = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_truncated",
+        comments_complete=False,
+    )
+    ignore_eligible, ignore_rejected = eligible_codex_ignore_threads(
+        [truncated], ["PRRT_truncated"], HEAD, HEAD
+    )
+    resolve_eligible, resolve_rejected = eligible_codex_resolve_threads(
+        [truncated], ["PRRT_truncated"], HEAD, HEAD
+    )
+    assert ignore_eligible == []
+    assert ignore_rejected[0]["node_id"] == "PRRT_truncated"
+    assert resolve_eligible == []
+    assert resolve_rejected[0]["node_id"] == "PRRT_truncated"
+
+
+def test_codex_only_thread_is_eligible_for_ignore_without_push():
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_ignore",
+        resolved=False,
+    )
+    eligible, rejected = eligible_codex_ignore_threads(
+        [bot], ["PRRT_codex_ignore"], HEAD, HEAD
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_codex_ignore"]
+
+
+def test_human_thread_is_not_eligible_for_ignore_or_resolve():
+    human = thread(author="alice", authors=["alice"], node_id="PRRT_human_ask")
+    ignore_eligible, ignore_rejected = eligible_codex_ignore_threads(
+        [human], ["PRRT_human_ask"], HEAD, HEAD
+    )
+    resolve_eligible, resolve_rejected = eligible_codex_resolve_threads(
+        [human], ["PRRT_human_ask"], HEAD, HEAD
+    )
+    assert ignore_eligible == []
+    assert ignore_rejected[0]["author"] == "alice"
+    assert resolve_eligible == []
+    assert resolve_rejected[0]["author"] == "alice"
+    result = evaluate_review_clean(HEAD, [review()], [], [human])
+    assert result["review_clean"] is False
+    assert result["actionable"][0]["author"] == "alice"
+
+
+def test_coderabbit_thread_is_not_eligible_for_ignore_or_resolve():
+    rabbit = thread(
+        author="coderabbitai[bot]",
+        authors=["coderabbitai[bot]"],
+        node_id="PRRT_rabbit_ignore",
+    )
+    ignore_eligible, ignore_rejected = eligible_codex_ignore_threads(
+        [rabbit], ["PRRT_rabbit_ignore"], HEAD, HEAD
+    )
+    resolve_eligible, resolve_rejected = eligible_codex_resolve_threads(
+        [rabbit], ["PRRT_rabbit_ignore"], HEAD, HEAD
+    )
+    assert ignore_eligible == []
+    assert ignore_rejected[0]["author"] == "coderabbitai[bot]"
+    assert resolve_eligible == []
+    assert resolve_rejected[0]["author"] == "coderabbitai[bot]"
+
+
+def test_mixed_human_codex_thread_is_not_eligible_for_ignore():
+    mixed = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice"],
+        node_id="PRRT_mixed_ignore",
+    )
+    eligible, rejected = eligible_codex_ignore_threads(
+        [mixed], ["PRRT_mixed_ignore"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
+
+
+def load_ignore_helper():
+    path = Path(__file__).with_name("ignore_codex_threads.py")
+    spec = importlib.util.spec_from_file_location("ignore_codex_threads", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def _patch_pr(monkeypatch, helper, threads):
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: threads)
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+
+
+def test_ignore_helper_replies_on_codex_only_thread(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_ignore_helper",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    _patch_pr(monkeypatch, helper, [bot])
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            "Vendored upstream file is intentionally kept unmodified",
+            "--thread-id",
+            "PRRT_codex_ignore_helper",
+        ]
+    )
+    assert code == 0
+    assert replies[0][0] == "PRRT_codex_ignore_helper"
+    assert "Vendored upstream file is intentionally kept unmodified" in replies[0][1]
+    assert "pr-review-loop:disposition=IGNORE_WITH_REASON" in replies[0][1]
+    assert resolved == ["PRRT_codex_ignore_helper"]
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ignored"][0]["replied"] is True
+    assert payload["ignored"][0]["resolved"] is True
+    assert payload["ignored"][0]["disposition"] == gate.DISPOSITION_IGNORE
+
+
+def test_ignore_helper_does_not_reply_on_human_or_coderabbit(monkeypatch):
+    helper = load_ignore_helper()
+    human = thread(author="alice", authors=["alice"], node_id="PRRT_human_helper")
+    rabbit = thread(
+        author="coderabbitai[bot]",
+        authors=["coderabbitai[bot]"],
+        node_id="PRRT_rabbit_helper",
+    )
+    for item in (human, rabbit):
+        _patch_pr(monkeypatch, helper, [item])
+        replies = []
+        resolved = []
+        monkeypatch.setattr(
+            helper.gate,
+            "reply_review_thread",
+            lambda nid, body: replies.append((nid, body)),
+        )
+        monkeypatch.setattr(
+            helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid)
+        )
+        code = helper.main(
+            [
+                "--pr",
+                "8",
+                "--head",
+                HEAD,
+                "--reason",
+                "out of scope",
+                "--thread-id",
+                item["node_id"],
+            ]
+        )
+        assert code == 2
+        assert replies == []
+        assert resolved == []
+
+
+def test_ignore_helper_keeps_reply_if_resolve_is_forbidden(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_resolve_forbidden",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_COMMIT_ID,
+    )
+    _patch_pr(monkeypatch, helper, [bot])
+    replies = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+
+    def boom(_nid):
+        raise helper.gate.GhCommandError("Resource not accessible by personal access token")
+
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", boom)
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            "wrapper already keeps commit_id for current-HEAD review-clean",
+            "--thread-id",
+            "PRRT_codex_resolve_forbidden",
+        ]
+    )
+    assert code == 0
+    assert replies
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ignored"][0]["replied"] is True
+    assert payload["ignored"][0]["resolved"] is False
+    assert "Resource not accessible" in payload["ignored"][0]["resolve_error"]
+
+
+def test_auto_fix_helper_still_does_not_call_reply(monkeypatch):
+    helper = load_resolve_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_auto_fix",
+    )
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: [bot])
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(["--pr", "8", "--head", HEAD, "--thread-id", "PRRT_codex_auto_fix"])
+    assert code == 0
+    assert replies == []
+    assert resolved == ["PRRT_codex_auto_fix"]

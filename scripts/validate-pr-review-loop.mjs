@@ -67,6 +67,10 @@ if (wrapper) {
     'final_review_clean_gate.py',
     'commit_id',
     'resolve_codex_threads.py',
+    'ignore_codex_threads.py',
+    'IGNORE_WITH_REASON',
+    'pr-review-loop:disposition=',
+    '修正しました',
   ]
   for (const item of required) {
     if (!wrapper.includes(item)) errors.push(`pr-review-loop SKILL.md missing policy: ${item}`)
@@ -147,10 +151,18 @@ if (gate) {
   if (!gate.includes('PR HEAD changed during gate fetch')) {
     errors.push('final_review_clean_gate.py must re-check PR HEAD after collecting review data')
   }
-  if (!gate.includes('comment_ids') || !gate.includes('resolved_ids')) {
+  if (
+    !gate.includes('DISPOSITION_IGNORE') ||
+    !gate.includes('finding_fingerprint') ||
+    !gate.includes('collect_ignore_fingerprints') ||
+    !gate.includes('eligible_codex_ignore_threads')
+  ) {
     errors.push(
-      'final_review_clean_gate.py must drop REST comments that belong to resolved threads'
+      'final_review_clean_gate.py must exclude only explicit IGNORE_WITH_REASON fingerprints'
     )
+  }
+  if (!gate.includes('addPullRequestReviewThreadReply')) {
+    errors.push('final_review_clean_gate.py must support Codex-only IGNORE_WITH_REASON replies')
   }
 }
 
@@ -162,12 +174,39 @@ if (resolver) {
   ) {
     errors.push('resolve_codex_threads.py must resolve only eligible Codex threads')
   }
+  if (
+    resolver.includes('addPullRequestReviewThreadReply') ||
+    resolver.includes('pr-review-loop:disposition=')
+  ) {
+    errors.push('resolve_codex_threads.py must not reply on AUTO_FIX threads')
+  }
   if (resolver.includes('pulls/') && resolver.includes('--approve')) {
     errors.push('resolve_codex_threads.py must not submit reviews')
   }
   if (resolver.includes('gh_pr_watch')) {
     errors.push('resolve_codex_threads.py must not import the vendored watcher')
   }
+}
+
+const ignorer = read('scripts/ignore_codex_threads.py')
+if (ignorer) {
+  if (
+    !ignorer.includes('eligible_codex_ignore_threads') ||
+    !ignorer.includes('format_ignore_reply') ||
+    !ignorer.includes('DISPOSITION_IGNORE')
+  ) {
+    errors.push(
+      'ignore_codex_threads.py must reply IGNORE_WITH_REASON only on eligible Codex threads'
+    )
+  }
+  if (ignorer.includes('pulls/') && ignorer.includes('--approve')) {
+    errors.push('ignore_codex_threads.py must not submit reviews')
+  }
+  if (ignorer.includes('gh_pr_watch')) {
+    errors.push('ignore_codex_threads.py must not import the vendored watcher')
+  }
+} else {
+  errors.push('missing: ignore_codex_threads.py')
 }
 
 const topLevelBabysit = path.join(

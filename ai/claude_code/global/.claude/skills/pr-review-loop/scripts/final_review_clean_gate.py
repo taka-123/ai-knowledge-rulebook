@@ -10,6 +10,7 @@ watcher may omit, and binds them to current HEAD via commit_id.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -81,6 +82,21 @@ mutation($id: ID!) {
   }
 }
 """
+REPLY_THREAD_MUTATION = """
+mutation($id: ID!, $body: String!) {
+  addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: $id, body: $body}) {
+    comment { databaseId }
+  }
+}
+"""
+DISPOSITION_IGNORE = "IGNORE_WITH_REASON"
+DISPOSITION_AUTO_FIX = "AUTO_FIX"
+DISPOSITION_MARKER_RE = re.compile(
+    r"<!--\s*pr-review-loop:disposition=(IGNORE_WITH_REASON|AUTO_FIX)"
+    r"(?:\s+fingerprint=([0-9a-f]{8,64}))?\s*-->",
+    re.IGNORECASE,
+)
+FINDING_BADGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
 
 
 class GhCommandError(RuntimeError):
@@ -255,6 +271,8 @@ def is_approval_only(body):
 
 
 def is_actionable_text(body, path=None, review_state=None, kind=None, author=None):
+    if is_disposition_reply(body):
+        return False
     if is_summary_only(body, path):
         return False
     if path:
@@ -270,6 +288,73 @@ def is_actionable_text(body, path=None, review_state=None, kind=None, author=Non
     if not text or is_approval_only(text):
         return False
     return True
+
+
+def extract_finding_title(body):
+    text = FINDING_BADGE_RE.sub("", body or "")
+    text = re.sub(r"</?[^>]+>", " ", text)
+    text = re.sub(r"[*_#`]+", "", text)
+    for line in text.splitlines():
+        cleaned = " ".join(line.split()).strip()
+        if not cleaned:
+            continue
+        if cleaned.lower() in {"p0 badge", "p1 badge", "p2 badge"}:
+            continue
+        if cleaned.lower().startswith("useful?"):
+            continue
+        return cleaned[:200]
+    return ""
+
+
+def finding_fingerprint(item):
+    path = str((item or {}).get("path") or "").strip().lower()
+    title = extract_finding_title((item or {}).get("body") or "").lower()
+    raw = f"{path}\n{title}".encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
+def parse_disposition_marker(body):
+    match = DISPOSITION_MARKER_RE.search(body or "")
+    if not match:
+        return None
+    return {
+        "disposition": match.group(1).upper(),
+        "fingerprint": (match.group(2) or "").lower(),
+    }
+
+
+def is_disposition_reply(body):
+    return parse_disposition_marker(body) is not None
+
+
+def format_ignore_reply(reason, fingerprint):
+    text = " ".join(str(reason or "").split()).strip()
+    if not text:
+        raise ValueError("IGNORE_WITH_REASON requires a concrete reason")
+    marker = (
+        f"<!-- pr-review-loop:disposition={DISPOSITION_IGNORE} "
+        f"fingerprint={fingerprint} -->"
+    )
+    return f"{text}\n\n{marker}"
+
+
+def collect_ignore_fingerprints(threads, comments=None):
+    fingerprints = set()
+    bodies = []
+    for item in threads or []:
+        bodies.extend(item.get("comment_bodies") or [])
+        bodies.append(item.get("body") or "")
+    for item in comments or []:
+        bodies.append((item or {}).get("body") or "")
+    for body in bodies:
+        parsed = parse_disposition_marker(body)
+        if not parsed:
+            continue
+        if parsed["disposition"] != DISPOSITION_IGNORE:
+            continue
+        if parsed["fingerprint"]:
+            fingerprints.add(parsed["fingerprint"])
+    return fingerprints
 
 
 def normalize_reviews(payload):
@@ -377,7 +462,8 @@ def normalize_threads(payload):
         original = first.get("originalCommit") if isinstance(first, dict) else {}
         authors = []
         comment_ids = []
-        for comment in comments or []:
+        comment_bodies = []
+        for comment in comments:
             if not isinstance(comment, dict):
                 continue
             login = extract_login(comment.get("author"))
@@ -386,6 +472,7 @@ def normalize_threads(payload):
             comment_id = comment.get("databaseId")
             if comment_id not in (None, ""):
                 comment_ids.append(str(comment_id))
+            comment_bodies.append(str(comment.get("body") or ""))
         first_id = str((first or {}).get("databaseId") or "")
         if first_id and first_id not in comment_ids:
             comment_ids.insert(0, first_id)
@@ -397,6 +484,7 @@ def normalize_threads(payload):
                 "author": extract_login(author),
                 "authors": authors,
                 "comment_ids": comment_ids,
+                "comment_bodies": comment_bodies,
                 "comments_complete": comments_complete,
                 "author_association": "",
                 "state": "",
@@ -523,6 +611,31 @@ def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, curr
             continue
         if item.get("resolved") is True:
             continue
+        if item.get("comments_complete") is False:
+            rejected.append(item)
+            continue
+        if is_codex_only_thread(item):
+            eligible.append(item)
+        else:
+            rejected.append(item)
+    return eligible, rejected
+
+
+def eligible_codex_ignore_threads(threads, requested_ids, current_head_sha, expected_head_sha):
+    if not expected_head_sha or expected_head_sha != current_head_sha:
+        raise ValueError("IGNORE_WITH_REASON requires --head to match current PR HEAD")
+    wanted = {str(item) for item in requested_ids or [] if str(item)}
+    if not wanted:
+        raise ValueError("IGNORE_WITH_REASON requires explicit --thread-id values")
+    eligible = []
+    rejected = []
+    for item in threads or []:
+        ids = thread_ids(item)
+        if not (ids & wanted):
+            continue
+        if item.get("comments_complete") is False:
+            rejected.append(item)
+            continue
         if is_codex_only_thread(item):
             eligible.append(item)
         else:
@@ -547,29 +660,29 @@ def evaluate_review_clean(
         else:
             unbound.append(item)
 
-    resolved_ids = set()
-    for item in threads or []:
-        if item.get("resolved") is not True:
-            continue
-        for comment_id in item.get("comment_ids") or []:
-            if comment_id not in (None, ""):
-                resolved_ids.add(str(comment_id))
-        thread_comment_id = str(item.get("id") or "")
-        if thread_comment_id:
-            resolved_ids.add(thread_comment_id)
-
     live_unresolved = [
         item
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
-    current_unresolved = [
-        item
-        for item in current
-        if not (item.get("kind") == "review_comment" and str(item.get("id") or "") in resolved_ids)
-    ]
+    ignored_fingerprints = collect_ignore_fingerprints(threads, comments)
     actionable = []
-    for item in [*current_unresolved, *live_unresolved]:
+    ignored = []
+    for item in [*current, *live_unresolved]:
+        if is_disposition_reply(item.get("body")):
+            continue
+        fingerprint = finding_fingerprint(item)
+        if fingerprint and fingerprint in ignored_fingerprints:
+            ignored.append(
+                {
+                    "fingerprint": fingerprint,
+                    "disposition": DISPOSITION_IGNORE,
+                    "id": item.get("id"),
+                    "kind": item.get("kind"),
+                    "path": item.get("path"),
+                }
+            )
+            continue
         if is_actionable_text(
             item.get("body"),
             item.get("path"),
@@ -604,6 +717,7 @@ def evaluate_review_clean(
         "unbound_items": unbound,
         "unresolved_threads": live_unresolved,
         "actionable": actionable,
+        "ignored": ignored,
     }
 
 
@@ -668,6 +782,25 @@ def resolve_review_thread(node_id):
             f"query={RESOLVE_THREAD_MUTATION}",
             "-f",
             f"id={node_id}",
+        ]
+    )
+
+
+def reply_review_thread(node_id, body):
+    if not node_id:
+        raise GhCommandError("missing GraphQL thread id")
+    if not str(body or "").strip():
+        raise GhCommandError("missing IGNORE_WITH_REASON reply body")
+    return gh_json(
+        [
+            "api",
+            "graphql",
+            "-f",
+            f"query={REPLY_THREAD_MUTATION}",
+            "-f",
+            f"id={node_id}",
+            "-f",
+            f"body={body}",
         ]
     )
 

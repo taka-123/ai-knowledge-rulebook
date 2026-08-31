@@ -49,8 +49,8 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-fai
 2. 公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read する。監視は継続タスクとして扱う。`--watch` を使い、一時的な `idle` や「review comment が今ない」だけでは終了しない。ユーザーへ「続きを監視しますか」と毎回確認しない。同じ PR に複数 watcher を並走させない。
 3. GitHub 操作は公式 GitHub MCP または `gh` で行う。一方が使えなければ他方を試す。watcher は `gh` 前提のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
 4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
-5. 未対応の指摘を `AUTO_FIX` / `ASK_HUMAN` / `IGNORE_WITH_REASON` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX / ASK_HUMAN を満たすものだけ直す。
-6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。その push で直した Codex bot の thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。人間の thread は resolve しない。その後 launcher で `--watch` を新 HEAD に対して即再開する。
+5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。同一 fingerprint ですでに IGNORE_WITH_REASON 処理済みの指摘は、新しい未処理指摘として扱わない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
+6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
 7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。flaky で watcher が `retry_failed_checks` を出した場合だけ、launcher の `--retry-failed-now` を公式 retry budget（最大 3 cycle）内で使う。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
 8. watcher の `idle` / `ready_to_merge` だけでは完了しない。完了判定の直前に `scripts/final_review_clean_gate.py` を current HEAD で実行する。gate が `review_clean: false` なら watch を続ける。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
@@ -69,9 +69,11 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 
 指摘のために無関係な refactor を広げない。新しい regression を作らない。再現可能な bug には、費用対効果がある範囲で回帰 test を足してよい。
 
+コードそのものを回答とする。原則として「修正しました」の返信コメントは不要。Codex-only thread の resolve は commit + push の後に `resolve_codex_threads.py` だけを使う。
+
 ## ASK_HUMAN
 
-勝手に決めない。
+勝手に決めない。GitHub 上で反論・resolve しない。人間へ返して停止する。
 
 - 仕様の複数解釈、product / UX、architecture、security policy / 権限境界、PR scope の大幅拡大
 - 指摘の妥当性を判断しきれない
@@ -79,21 +81,26 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - 人間 reviewer への回答・交渉
 - 下記の非収束
 
-返すときは未確定点と推奨判断だけ示す。人間 reviewer のコメントへ返信せず、人間の review thread を resolve しない。Codex bot の thread は、指摘を実際に `AUTO_FIX` し commit + push が成功した後に限り、`scripts/resolve_codex_threads.py` で resolve してよい。任意の review mutation はしない。
+返すときは未確定点と推奨判断だけ示す。人間 reviewer のコメントへ返信せず、人間の review thread を resolve しない。ASK_HUMAN の指摘は resolve しない。
 
 ## IGNORE_WITH_REASON
 
-コードを変えない。
+コードを変えない。GitHub 上で無言放置しない。コード内にレビュー依存コメント（「Codex に指摘されたが今回は直さない」等）を書かない。
 
+- 指摘が事実として誤り、または過剰
 - 最新 HEAD で解消済み、duplicate、outdated diff
-- 指摘が事実として誤り
-- PR の目的と無関係で、別 issue に分けるべき改善
+- PR の目的・scope 外で、今回直すと別の設計判断を持ち込む
+- 未改変 vendor など意図的に触らないファイル。wrapper 側で当該リスクを補完済みのときを含む
+
+Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で返信する。人間が見る本文は自然で簡潔にし、helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
+
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。
 
 ## 非収束
 
-次ではコードを足さず `ASK_HUMAN` する。固定の回数上限では止めない。
+機械的な回数上限だけで止めない。再提示された指摘も `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に再分類する。IGNORE_WITH_REASON 処理済みの同一 fingerprint は新しい未処理指摘として扱わない。新しい実質的論点が続く場合は ASK_HUMAN する。
 
-- 同じ原因の指摘が再発する
+- 同じ原因の AUTO_FIX 対象が再発する
 - 修正同士が打ち消し合う
 - 修正が scope / architecture へ波及する
 - 複数 round 連続で新規 actionable 指摘が出続け、収束傾向がない
@@ -110,7 +117,7 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 `--head` は検証用である。GitHub 上の current `headRefOid` と一致しないときは fail し、古い SHA を上書きして完了判定しない。
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。resolved thread に属する REST comment は actionable から外す。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
+gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、hidden marker で fingerprint が確認できる指摘だけを除外する。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 
@@ -149,7 +156,9 @@ merge可能。最終merge判断は人間。
 
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
 - 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 👍 を再取得する。Agent が直接 GraphQL を叩く必要はない。
-- Codex bot の thread resolve は、AUTO_FIX + commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。人間 thread の resolve、review 提出、任意 GraphQL mutation は禁止のまま。
+- AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。
+- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `resolveReviewThread` を呼ぶ。
+- 人間 thread の resolve、人間 / CodeRabbit 等への自動返信、review 提出、任意 GraphQL mutation は禁止のまま。ASK_HUMAN の指摘は GitHub 上で反論・resolve しない。
 - 信頼する公式 watcher が flaky/unrelated と分類し `retry_failed_checks` を出したときだけ、launcher 経由の `--retry-failed-now`（内部の `gh run rerun --failed`）を公式 default 最大 3 cycle まで許可する。
 - Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。
 - 人間 reviewer への返信、人間 review thread の resolve、PR merge はしない。
