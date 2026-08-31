@@ -77,8 +77,10 @@ if cli_command gh; then
       if [ "${_gh_method_n:-0}" -gt 1 ]; then
         block "mutating gh api"
       fi
-      # Fail closed: standalone $var can expand to -X POST after a literal GET.
-      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_]' <<<"$cmd"; then
+      # Fail closed: standalone $var / $@ / $* / $1 can expand to -X POST.
+      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
