@@ -690,6 +690,10 @@ if cli_command gh; then
         grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
         deny "Mutating gh api is forbidden."
       fi
+      # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
+      if grep -Eq '\\' <<<"$cmd"; then
+        deny "Mutating gh api is forbidden."
+      fi
     fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
@@ -818,6 +822,10 @@ if cli_command gh; then
       if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
         grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
         grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
+      if grep -Eq '\\' <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
@@ -986,6 +994,10 @@ if cli_command gh; then
       if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
         grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
         grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
+      if grep -Eq '\\' <<<"$cmd"; then
         block "mutating gh api"
       fi
     fi
@@ -1196,6 +1208,8 @@ deny_all 'm=-; m+=X; n=POST; gh api repos/owner/repo/pulls/1/reviews -f event=AP
 deny_all 'm=-; m+=X; set -- "$m" POST; gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE "$@"'
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $*'
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $1'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE -\X P\O\S\T'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE --\method POST'
 deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
 deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
