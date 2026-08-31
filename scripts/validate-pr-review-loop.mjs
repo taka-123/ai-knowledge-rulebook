@@ -77,6 +77,8 @@ if (wrapper) {
     'launcher は `--retry-failed-now` を拒否する',
     'vendor argparse の短縮形も拒否する',
     '以前の actionable な `COMMENTED` review も捨てない',
+    'updatePullRequestReviewComment',
+    '人間向け返信を増やさない',
   ]
   if (wrapper.includes('cursor / cursor[bot]') || wrapper.includes('cursor[bot]')) {
     errors.push('pr-review-loop SKILL.md must not name Cursor GitHub actors as trusted helpers')
@@ -199,6 +201,11 @@ if (gate) {
   if (!gate.includes('addPullRequestReviewThreadReply')) {
     errors.push('final_review_clean_gate.py must support Codex-only IGNORE_WITH_REASON replies')
   }
+  if (!gate.includes('updatePullRequestReviewComment')) {
+    errors.push(
+      'final_review_clean_gate.py must update existing IGNORE replies instead of duplicating them'
+    )
+  }
 }
 
 const resolver = read('scripts/resolve_codex_threads.py')
@@ -245,6 +252,15 @@ if (ignorer) {
   }
   if (!ignorer.includes('require_fresh_ignore_thread')) {
     errors.push('ignore_codex_threads.py must re-check thread participants before each mutation')
+  }
+  if (
+    !ignorer.includes('update_review_comment') ||
+    !ignorer.includes('ensure_ignore_reply') ||
+    !ignorer.includes('trusted_ignore_replies_on_thread')
+  ) {
+    errors.push(
+      'ignore_codex_threads.py must rebind existing IGNORE replies instead of posting duplicates'
+    )
   }
 } else {
   errors.push('missing: ignore_codex_threads.py')

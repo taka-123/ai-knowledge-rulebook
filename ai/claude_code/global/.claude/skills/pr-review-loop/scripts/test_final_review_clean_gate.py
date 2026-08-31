@@ -1183,6 +1183,7 @@ def test_normalize_threads_keeps_all_comment_authors():
     )
     assert threads[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
     assert threads[0]["comments_complete"] is True
+    assert threads[0]["comment_node_ids"] == ["", ""]
     eligible, rejected = eligible_codex_resolve_threads(
         threads, ["PRRT_mixed"], HEAD, HEAD
     )
@@ -1300,6 +1301,8 @@ def test_threads_query_requests_comment_page_info():
     assert f"comments(first: {gate.COMMENT_PAGE_LIMIT})" in gate.THREADS_QUERY
     assert "pageInfo" in gate.THREADS_QUERY
     assert "hasNextPage" in gate.THREADS_QUERY
+    assert "id\n              databaseId" in gate.THREADS_QUERY
+    assert "updatePullRequestReviewComment" in gate.UPDATE_REVIEW_COMMENT_MUTATION
 
 
 def test_extract_repo_from_pr_url_uses_base_repository():
@@ -2490,3 +2493,440 @@ def test_main_passes_authenticated_login_to_evaluate(monkeypatch):
     code = gate.main(["--pr", "8", "--head", HEAD])
     assert code == 0
     assert captured["gh_user"] == HELPER_LOGIN
+
+
+def test_normalize_threads_keeps_comment_graphql_ids():
+    threads = normalize_threads(
+        [
+            {
+                "id": "PRRT_ids",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": {
+                    "nodes": [
+                        {
+                            "id": "PRRC_finding",
+                            "databaseId": 1,
+                            "body": "Please fix.",
+                            "path": "a.py",
+                            "author": {"login": "chatgpt-codex-connector[bot]"},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                        {
+                            "id": "PRRC_ignore",
+                            "databaseId": 2,
+                            "body": _ignore_marker("abc123def4567890"),
+                            "path": "a.py",
+                            "author": {"login": HELPER_LOGIN},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                    ]
+                },
+            }
+        ]
+    )
+    assert threads[0]["comment_ids"] == ["1", "2"]
+    assert threads[0]["comment_node_ids"] == ["PRRC_finding", "PRRC_ignore"]
+    assert threads[0]["comment_authors"] == [
+        "chatgpt-codex-connector[bot]",
+        HELPER_LOGIN,
+    ]
+
+
+def test_rebind_ignore_reply_keeps_visible_text_when_reason_matches():
+    fingerprint = "abc123def4567890"
+    original = gate.format_ignore_reply(VENDOR_IGNORE_REASON, fingerprint, OLD)
+    rebound = gate.rebind_ignore_reply(original, VENDOR_IGNORE_REASON, fingerprint, HEAD)
+    visible, marker = rebound.split("\n\n", 1)
+    assert visible == original.split("\n\n", 1)[0]
+    assert f"head={HEAD}" in marker
+    assert f"head={OLD}" not in marker
+    assert f"fingerprint={fingerprint}" in marker
+
+
+def test_rebind_ignore_reply_updates_visible_text_when_reason_changes():
+    fingerprint = "abc123def4567890"
+    original = gate.format_ignore_reply("古い理由です。", fingerprint, OLD)
+    rebound = gate.rebind_ignore_reply(original, "新しい理由です。", fingerprint, HEAD)
+    visible = rebound.split("\n\n", 1)[0]
+    assert visible == "AIエージェントによる対応: 新しい理由です。"
+    assert f"head={HEAD}" in rebound
+    assert "古い理由です。" not in rebound
+
+
+def test_stale_ignore_marker_is_not_current_head_proof():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+        commit_id=HEAD,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    stale = _helper_thread(leftover, fingerprint=fingerprint, head_sha=OLD)
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [stale], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == leftover["id"]
+
+
+def test_trusted_ignore_replies_are_scoped_to_thread_and_fingerprint():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    other_fp = finding_fingerprint({"path": VENDOR_WATCHER, "body": VENDOR_P1_COMMIT_ID})
+    thread_a = _helper_thread(leftover, fingerprint=fingerprint)
+    thread_a["node_id"] = "PRRT_a"
+    thread_a["comment_node_ids"] = ["PRRC_finding_a", "PRRC_ignore_a"]
+    thread_b = _helper_thread(leftover, fingerprint=fingerprint)
+    thread_b["node_id"] = "PRRT_b"
+    thread_b["comment_node_ids"] = ["PRRC_finding_b", "PRRC_ignore_b"]
+    other = _helper_thread(leftover, fingerprint=other_fp)
+    other["node_id"] = "PRRT_other"
+    other["comment_node_ids"] = ["PRRC_finding_other", "PRRC_ignore_other"]
+    found_a = gate.trusted_ignore_replies_on_thread(thread_a, fingerprint, HELPER_LOGIN)
+    found_b = gate.trusted_ignore_replies_on_thread(thread_b, fingerprint, HELPER_LOGIN)
+    found_other = gate.trusted_ignore_replies_on_thread(other, fingerprint, HELPER_LOGIN)
+    assert [item["comment_node_id"] for item in found_a] == ["PRRC_ignore_a"]
+    assert [item["comment_node_id"] for item in found_b] == ["PRRC_ignore_b"]
+    assert found_other == []
+
+
+def _ignore_store_thread(store, thread_id, finding_id, finding_node, reply_id, reply_node):
+    authors = ["chatgpt-codex-connector[bot]"]
+    bodies = [VENDOR_P1_REVIEWERS]
+    ids = [finding_id]
+    node_ids = [finding_node]
+    if store["helper_body"]:
+        authors.append(HELPER_LOGIN)
+        bodies.append(store["helper_body"])
+        ids.append(reply_id)
+        node_ids.append(reply_node)
+    return thread(
+        id=finding_id,
+        node_id=thread_id,
+        author="chatgpt-codex-connector[bot]",
+        authors=authors,
+        comment_ids=ids,
+        comment_node_ids=node_ids,
+        comment_bodies=bodies,
+        comment_authors=authors,
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+        resolved=False,
+    )
+
+
+def test_ignore_helper_rebinding_ten_heads_keeps_one_human_reply(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    thread_id = "PRRT_idempotent"
+    finding_id = "3890915001"
+    finding_node = "PRRC_finding"
+    reply_id = "3890999999"
+    reply_node = "PRRC_ignore_reply"
+    store = {"head": None, "helper_body": None, "created": [], "updated": []}
+    heads = [f"{index:040x}" for index in range(1, 11)]
+    leftover = comment(
+        id=finding_id,
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    first_marker_body = None
+
+    def current_threads():
+        return [
+            _ignore_store_thread(
+                store, thread_id, finding_id, finding_node, reply_id, reply_node
+            )
+        ]
+
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": store["head"],
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: current_threads())
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_authenticated_login", lambda: HELPER_LOGIN)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: store["head"])
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: store["created"].append((nid, body)) or store.update(helper_body=body),
+    )
+    monkeypatch.setattr(
+        helper.gate,
+        "update_review_comment",
+        lambda cid, body: store["updated"].append((cid, body)) or store.update(helper_body=body),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: None)
+
+    for head in heads:
+        store["head"] = head
+        leftover["commit_id"] = head
+        code = helper.main(
+            [
+                "--pr",
+                "8",
+                "--head",
+                head,
+                "--reason",
+                VENDOR_IGNORE_REASON,
+                "--thread-id",
+                thread_id,
+                "--no-resolve",
+            ]
+        )
+        assert code == 0
+        payload = json.loads(capsys.readouterr().out)
+        assert payload["ignored"][0]["replied"] is True
+        assert f"head={head}" in store["helper_body"]
+        assert store["helper_body"].startswith(gate.IGNORE_REPLY_PREFIX)
+        helper_comments = [
+            body
+            for author, body in zip(
+                current_threads()[0]["comment_authors"],
+                current_threads()[0]["comment_bodies"],
+            )
+            if author == HELPER_LOGIN
+        ]
+        assert len(helper_comments) == 1
+        if first_marker_body is None:
+            first_marker_body = store["helper_body"]
+            assert payload["ignored"][0]["created"] is True
+            assert payload["ignored"][0]["updated"] is False
+        else:
+            assert payload["ignored"][0]["created"] is False
+            assert payload["ignored"][0]["updated"] is True
+        live = current_threads()
+        live[0]["commit_id"] = head
+        result = evaluate_review_clean(
+            head,
+            [review(commit_id=head)],
+            [leftover],
+            live,
+            gh_user=HELPER_LOGIN,
+        )
+        assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
+        assert result["actionable"] == []
+
+    assert len(store["created"]) == 1
+    assert len(store["updated"]) == 9
+    assert store["created"][0][0] == thread_id
+    assert {item[0] for item in store["updated"]} == {reply_node}
+    stale = _helper_thread(leftover, fingerprint=fingerprint, head_sha=heads[0])
+    stale_result = evaluate_review_clean(
+        heads[-1],
+        [review(commit_id=heads[-1])],
+        [leftover],
+        [stale],
+        gh_user=HELPER_LOGIN,
+    )
+    assert stale_result["ignored"] == []
+    assert stale_result["actionable"][0]["id"] == leftover["id"]
+    assert first_marker_body is not None
+    assert f"head={heads[0]}" in first_marker_body
+    assert f"head={heads[-1]}" in store["helper_body"]
+
+
+def test_ignore_helper_same_fingerprint_on_other_thread_is_separate(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    created = []
+
+    def make_thread(node_id, reply_node):
+        return thread(
+            id="3890915001",
+            node_id=node_id,
+            author="chatgpt-codex-connector[bot]",
+            authors=["chatgpt-codex-connector[bot]"],
+            comment_ids=["3890915001"],
+            comment_node_ids=["PRRC_finding"],
+            comment_bodies=[leftover["body"]],
+            comment_authors=["chatgpt-codex-connector[bot]"],
+            path=VENDOR_WATCHER,
+            body=leftover["body"],
+        )
+
+    threads = {
+        "PRRT_one": make_thread("PRRT_one", "PRRC_one"),
+        "PRRT_two": make_thread("PRRT_two", "PRRC_two"),
+    }
+
+    def fetch(*_a, **_k):
+        return list(threads.values())
+
+    monkeypatch.setattr(
+        helper.gate,
+        "resolve_pr",
+        lambda *a, **k: {
+            "number": 8,
+            "repo": "example/repo",
+            "owner": "example",
+            "name": "repo",
+            "head_sha": HEAD,
+            "url": "",
+        },
+    )
+    monkeypatch.setattr(helper.gate, "fetch_review_threads", fetch)
+    monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_authenticated_login", lambda: HELPER_LOGIN)
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", lambda pr: HEAD)
+
+    def fake_reply(nid, body):
+        created.append((nid, body))
+        item = threads[nid]
+        item["authors"] = ["chatgpt-codex-connector[bot]", HELPER_LOGIN]
+        item["comment_authors"] = ["chatgpt-codex-connector[bot]", HELPER_LOGIN]
+        item["comment_bodies"] = [leftover["body"], body]
+        item["comment_ids"] = ["3890915001", "99"]
+        item["comment_node_ids"] = ["PRRC_finding", f"PRRC_{nid}"]
+
+    monkeypatch.setattr(helper.gate, "reply_review_thread", fake_reply)
+    monkeypatch.setattr(helper.gate, "update_review_comment", lambda *a, **k: None)
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: None)
+    for node_id in ("PRRT_one", "PRRT_two"):
+        code = helper.main(
+            [
+                "--pr",
+                "8",
+                "--head",
+                HEAD,
+                "--reason",
+                VENDOR_IGNORE_REASON,
+                "--thread-id",
+                node_id,
+                "--no-resolve",
+            ]
+        )
+        assert code == 0
+        capsys.readouterr()
+    assert [item[0] for item in created] == ["PRRT_one", "PRRT_two"]
+    assert fingerprint == finding_fingerprint(threads["PRRT_one"])
+    assert fingerprint == finding_fingerprint(threads["PRRT_two"])
+
+
+def test_ignore_helper_missing_comment_id_fails_closed(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    existing = thread(
+        id="3890915001",
+        node_id="PRRT_missing_id",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comment_ids=["3890915001", "3890999999"],
+        comment_node_ids=["PRRC_finding", ""],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint, head_sha=OLD)],
+        comment_authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    _patch_pr(monkeypatch, helper, [existing])
+    replies = []
+    updates = []
+    monkeypatch.setattr(
+        helper.gate, "reply_review_thread", lambda nid, body: replies.append((nid, body))
+    )
+    monkeypatch.setattr(
+        helper.gate, "update_review_comment", lambda cid, body: updates.append((cid, body))
+    )
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_missing_id",
+            "--no-resolve",
+        ]
+    )
+    assert code == 2
+    assert replies == []
+    assert updates == []
+    assert "missing GraphQL comment id" in capsys.readouterr().err
+
+
+def test_ignore_helper_same_head_rerun_is_noop(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    existing_body = _ignore_marker(fingerprint, head_sha=HEAD)
+    existing = thread(
+        id="3890915001",
+        node_id="PRRT_already_bound",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comment_ids=["3890915001", "3890999999"],
+        comment_node_ids=["PRRC_finding", "PRRC_ignore"],
+        comment_bodies=[leftover["body"], existing_body],
+        comment_authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    _patch_pr(monkeypatch, helper, [existing])
+    replies = []
+    updates = []
+    monkeypatch.setattr(
+        helper.gate, "reply_review_thread", lambda nid, body: replies.append((nid, body))
+    )
+    monkeypatch.setattr(
+        helper.gate, "update_review_comment", lambda cid, body: updates.append((cid, body))
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: None)
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_already_bound",
+            "--no-resolve",
+        ]
+    )
+    assert code == 0
+    assert replies == []
+    assert updates == []
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ignored"][0]["created"] is False
+    assert payload["ignored"][0]["updated"] is False
+    assert payload["ignored"][0]["replied"] is True

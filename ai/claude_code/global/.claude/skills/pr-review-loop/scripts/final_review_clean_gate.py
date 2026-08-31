@@ -62,6 +62,7 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
               hasNextPage
             }
             nodes {
+              id
               databaseId
               body
               path
@@ -86,7 +87,14 @@ mutation($id: ID!) {
 REPLY_THREAD_MUTATION = """
 mutation($id: ID!, $body: String!) {
   addPullRequestReviewThreadReply(input: {pullRequestReviewThreadId: $id, body: $body}) {
-    comment { databaseId }
+    comment { id databaseId }
+  }
+}
+"""
+UPDATE_REVIEW_COMMENT_MUTATION = """
+mutation($id: ID!, $body: String!) {
+  updatePullRequestReviewComment(input: {pullRequestReviewCommentId: $id, body: $body}) {
+    pullRequestReviewComment { id databaseId }
   }
 }
 """
@@ -405,6 +413,75 @@ def format_ignore_reply(reason, fingerprint, head_sha):
     return f"{visible}\n\n{marker}"
 
 
+def ignore_reply_visible_text(body):
+    text = str(body or "").strip()
+    match = DISPOSITION_MARKER_RE.search(text)
+    if match:
+        return text[: match.start()].strip()
+    return text.split("\n\n", 1)[0].strip()
+
+
+def normalize_ignore_reason(reason):
+    text = " ".join(str(reason or "").split()).strip()
+    if text.startswith(IGNORE_REPLY_PREFIX):
+        text = text[len(IGNORE_REPLY_PREFIX) :].strip()
+    return text
+
+
+def rebind_ignore_reply(existing_body, reason, fingerprint, head_sha):
+    desired = format_ignore_reply(reason, fingerprint, head_sha)
+    existing_reason = normalize_ignore_reason(ignore_reply_visible_text(existing_body))
+    if existing_reason and existing_reason == normalize_ignore_reason(reason):
+        visible = ignore_reply_visible_text(existing_body)
+        parsed = parse_disposition_marker(desired)
+        marker = (
+            f"<!-- pr-review-loop:disposition={DISPOSITION_IGNORE} "
+            f"fingerprint={parsed['fingerprint']} head={parsed['head']} -->"
+        )
+        return f"{visible}\n\n{marker}"
+    return desired
+
+
+def trusted_ignore_replies_on_thread(thread, fingerprint, gh_user=""):
+    matches = []
+    if not isinstance(thread, dict) or not gh_user:
+        return matches
+    bodies = thread.get("comment_bodies") or []
+    authors = thread.get("comment_authors")
+    node_ids = thread.get("comment_node_ids") or []
+    db_ids = thread.get("comment_ids") or []
+    if not isinstance(bodies, list) or not isinstance(authors, list):
+        return matches
+    if len(authors) != len(bodies):
+        return matches
+    wanted_fp = str(fingerprint or "").strip().lower()
+    if not wanted_fp:
+        return matches
+    for index, (author, body) in enumerate(zip(authors, bodies)):
+        if not is_trusted_disposition_author(author, gh_user):
+            continue
+        if not has_ignore_reply_prefix(body):
+            continue
+        parsed = parse_disposition_marker(body)
+        if not parsed or parsed["disposition"] != DISPOSITION_IGNORE:
+            continue
+        if (parsed.get("fingerprint") or "") != wanted_fp:
+            continue
+        node_id = node_ids[index] if index < len(node_ids) else ""
+        db_id = db_ids[index] if index < len(db_ids) else ""
+        matches.append(
+            {
+                "index": index,
+                "author": author,
+                "body": body,
+                "comment_node_id": str(node_id or ""),
+                "comment_id": str(db_id or ""),
+                "marker_head": parsed.get("head") or "",
+            }
+        )
+    return matches
+
+
 def trusted_ignore_fingerprints_from_thread(thread, gh_user="", head_sha=""):
     fingerprints = set()
     if not isinstance(thread, dict):
@@ -622,6 +699,7 @@ def normalize_threads(payload):
         original = first.get("originalCommit") if isinstance(first, dict) else {}
         authors = []
         comment_ids = []
+        comment_node_ids = []
         comment_bodies = []
         comment_authors = []
         for comment in comments:
@@ -636,6 +714,7 @@ def normalize_threads(payload):
             comment_id = comment.get("databaseId")
             if comment_id not in (None, ""):
                 comment_ids.append(str(comment_id))
+            comment_node_ids.append(str(comment.get("id") or ""))
             comment_bodies.append(str(comment.get("body") or ""))
             comment_authors.append(login)
         first_id = str((first or {}).get("databaseId") or "")
@@ -649,6 +728,7 @@ def normalize_threads(payload):
                 "author": extract_login(author),
                 "authors": authors,
                 "comment_ids": comment_ids,
+                "comment_node_ids": comment_node_ids,
                 "comment_bodies": comment_bodies,
                 "comment_authors": comment_authors,
                 "comments_complete": comments_complete,
@@ -1045,6 +1125,25 @@ def reply_review_thread(node_id, body):
             f"query={REPLY_THREAD_MUTATION}",
             "-f",
             f"id={node_id}",
+            "-f",
+            f"body={body}",
+        ]
+    )
+
+
+def update_review_comment(comment_node_id, body):
+    if not comment_node_id:
+        raise GhCommandError("missing GraphQL review comment id")
+    if not str(body or "").strip():
+        raise GhCommandError("missing IGNORE_WITH_REASON reply body")
+    return gh_json(
+        [
+            "api",
+            "graphql",
+            "-f",
+            f"query={UPDATE_REVIEW_COMMENT_MUTATION}",
+            "-f",
+            f"id={comment_node_id}",
             "-f",
             f"body={body}",
         ]

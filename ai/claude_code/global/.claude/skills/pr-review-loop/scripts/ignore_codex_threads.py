@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Reply with IGNORE_WITH_REASON on Codex-only threads, then resolve.
 
+Idempotent for the same review thread + finding fingerprint: HEAD changes
+re-validate, then update the existing helper reply instead of posting another.
 AUTO_FIX does not use this helper and must not post a review reply.
 Human, CodeRabbit, mixed, and truncated threads are refused. ASK_HUMAN
 findings must not be passed in.
@@ -47,6 +49,25 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
+def ensure_ignore_reply(fresh, fingerprint, reason, head_sha, gh_user):
+    """Create or rebind one human-facing IGNORE reply for this thread."""
+    desired = gate.format_ignore_reply(reason, fingerprint, head_sha)
+    existing = gate.trusted_ignore_replies_on_thread(fresh, fingerprint, gh_user=gh_user)
+    if existing:
+        target = existing[0]
+        if not target.get("comment_node_id"):
+            raise gate.GhCommandError(
+                "existing IGNORE reply is missing GraphQL comment id; refusing duplicate reply"
+            )
+        rebound = gate.rebind_ignore_reply(target["body"], reason, fingerprint, head_sha)
+        if rebound == target["body"]:
+            return {"created": False, "updated": False, "body": rebound}
+        gate.update_review_comment(target["comment_node_id"], rebound)
+        return {"created": False, "updated": True, "body": rebound}
+    gate.reply_review_thread(str(fresh.get("node_id") or ""), desired)
+    return {"created": True, "updated": False, "body": desired}
+
+
 def main(argv=None):
     args = parse_args(argv)
     try:
@@ -67,10 +88,11 @@ def main(argv=None):
         ignored = []
         for item in eligible:
             node_id = str(item.get("node_id") or "")
-            fingerprint = gate.finding_fingerprint(item)
-            body = gate.format_ignore_reply(args.reason, fingerprint, args.head)
             fresh = gate.require_fresh_ignore_thread(pr, node_id, args.head, gh_user=gh_user)
-            gate.reply_review_thread(str(fresh.get("node_id") or node_id), body)
+            fingerprint = gate.finding_fingerprint(fresh)
+            mutation = ensure_ignore_reply(
+                fresh, fingerprint, args.reason, args.head, gh_user
+            )
             resolved = bool(fresh.get("resolved"))
             resolve_error = None
             if not args.no_resolve and not resolved:
@@ -89,6 +111,8 @@ def main(argv=None):
                 "fingerprint": fingerprint,
                 "disposition": gate.DISPOSITION_IGNORE,
                 "replied": True,
+                "created": mutation["created"],
+                "updated": mutation["updated"],
                 "resolved": resolved,
             }
             if resolve_error:

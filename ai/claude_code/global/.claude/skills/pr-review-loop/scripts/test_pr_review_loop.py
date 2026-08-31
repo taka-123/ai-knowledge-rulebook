@@ -186,6 +186,8 @@ def test_wrapper_policy_strings():
         "launcher は `--retry-failed-now` を拒否する",
         "以前の actionable な `COMMENTED` review も捨てない",
         "vendor argparse の短縮形も拒否する",
+        "updatePullRequestReviewComment",
+        "人間向け返信を増やさない",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
@@ -258,8 +260,11 @@ def test_ignore_helper_source_replies_only_via_codex_helper():
     assert "format_ignore_reply" in text
     assert "DISPOSITION_IGNORE" in text
     assert "require_fresh_ignore_thread" in text
+    assert "update_review_comment" in text
+    assert "ensure_ignore_reply" in text
     gate_text = GATE.read_text(encoding="utf-8")
     assert "addPullRequestReviewThreadReply" in gate_text
+    assert "updatePullRequestReviewComment" in gate_text
     assert "require_fresh_resolve_thread" in gate_text
     assert "require_fresh_ignore_thread" in gate_text
     resolve_text = (Path(__file__).resolve().parent / "resolve_codex_threads.py").read_text(

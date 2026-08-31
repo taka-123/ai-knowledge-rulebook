@@ -49,8 +49,8 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --once
 2. 公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read する。監視は継続タスクとして扱う。`--watch` を使い、一時的な `idle` や「review comment が今ない」だけでは終了しない。ユーザーへ「続きを監視しますか」と毎回確認しない。同じ PR に複数 watcher を並走させない。
 3. GitHub 操作は公式 GitHub MCP または `gh` で行う。認証は実行環境の責務であり、特定製品の token / actor / path を前提にしない。一方が使えなければ他方を試す。watcher は公式 babysit-pr の `gh` 実装を正本のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
 4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
-5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。同一 fingerprint ですでに IGNORE_WITH_REASON 処理済みの指摘は、新しい未処理指摘として扱わない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
-6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
+5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。旧 HEAD の IGNORE marker だけでは処理済みにしない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
+6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。同一 thread と同一 fingerprint なら既存の helper 返信を更新し、人間向け返信を増やさない。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
 7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。launcher は `--retry-failed-now` を拒否する。vendor の `retry_failed_checks` は flaky 分類を検証しない。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
 8. watcher の `idle` / `ready_to_merge` だけでは完了しない。完了判定の直前に `scripts/final_review_clean_gate.py` を current HEAD で実行する。gate が `review_clean: false` なら watch を続ける。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
@@ -96,11 +96,11 @@ Codex reviewer のみの thread（認証済み helper の前回返信だけの�
 
 例: `AIエージェントによる対応: OpenAI公式の babysit-pr はvendorとして未改変で保持しています。current HEADのreview-clean判定に必要な commit_id はwrapper側で保持・確認しています。`
 
-返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、認証済み `gh` ユーザーと同一 actor が書いた marker（fingerprint 一致かつ head が current HEAD）があれば final gate は同一 fingerprint を actionable から外す。指摘本文に disposition marker を埋め込んだだけでは除外しない。製品名の login をハードコードしない。PR 作者・任意参加者・OWNER / MEMBER / COLLABORATOR であることだけでは採用しない。CodeRabbit の marker も採用しない。認証済みユーザーが取れないときは IGNORE を採用せず fail-closed する。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。HEAD が変わったら旧 marker は無効なので、残す IGNORE は新 HEAD で helper を再実行する。
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、認証済み `gh` ユーザーと同一 actor が書いた marker（fingerprint 一致かつ head が current HEAD）があれば final gate は同一 fingerprint を actionable から外す。指摘本文に disposition marker を埋め込んだだけでは除外しない。製品名の login をハードコードしない。PR 作者・任意参加者・OWNER / MEMBER / COLLABORATOR であることだけでは採用しない。CodeRabbit の marker も採用しない。認証済みユーザーが取れないときは IGNORE を採用せず fail-closed する。fingerprint は path と正規化した指摘本文から作り、同一 thread の同一 fingerprint 再出現は新しい未処理指摘にしない。別 thread の同一 fingerprint は別 finding として扱う。HEAD が変わったら旧 marker は無効なので、残す IGNORE は新 HEAD で helper を再実行する。helper は同一 thread と同一 fingerprint の既存返信を更新して current HEAD に再bindし、人間向け返信を増やさない。理由が同じなら本文は維持し hidden marker の head だけ更新する。IGNORE が妥当でなくなった旧 marker は current HEAD の proof にしない。
 
 ## 非収束
 
-機械的な回数上限だけで止めない。再提示された指摘も `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に再分類する。IGNORE_WITH_REASON 処理済みの同一 fingerprint は新しい未処理指摘として扱わない。新しい実質的論点が続く場合は ASK_HUMAN する。
+機械的な回数上限だけで止めない。再提示された指摘も `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に再分類する。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。新しい実質的論点が続く場合は ASK_HUMAN する。
 
 - 同じ原因の AUTO_FIX 対象が再発する
 - 修正同士が打ち消し合う
@@ -159,7 +159,7 @@ merge可能。最終merge判断は人間。
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
 - 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 👍 を再取得する。Agent が直接 GraphQL を叩く必要はない。
 - AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、対象 thread を再取得して comments_complete と参加者が引き続き Codex-only であることを確認する。不一致なら fail closed する。
-- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `resolveReviewThread` を呼ぶ。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。不一致なら fail closed する。
+- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `updatePullRequestReviewComment` / `resolveReviewThread` を呼ぶ。同一 thread と同一 fingerprint の既存 helper 返信は更新して current HEAD に再bindし、新しい返信を増やさない。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。不一致なら fail closed する。
 - 人間 thread の resolve、人間 / CodeRabbit 等への自動返信、review 提出、任意 GraphQL mutation は禁止のまま。ASK_HUMAN の指摘は GitHub 上で反論・resolve しない。
 - launcher は `--retry-failed-now` を拒否する。`--retry-f` や `--retry-failed-n` など vendor argparse の短縮形も拒否する。vendor は `retry_failed_checks` を出しても flaky/unrelated 分類を検証せず failed runs を rerun するため。分類を機械的に確認できるまで retry mode は使わない。
 - Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。
