@@ -165,6 +165,7 @@ def test_wrapper_policy_strings():
         "修正しました",
         "AIエージェントによる対応:",
         "head=<sha>",
+        "後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
@@ -218,6 +219,7 @@ def test_gate_covers_bots_and_external_reviewers_that_watcher_drops():
     assert "DISPOSITION_IGNORE" in gate_text
     assert "finding_fingerprint" in gate_text
     assert "fetch_authenticated_login" in gate_text
+    assert "CHANGES_REQUESTED_CLEARED_BY" in gate_text
     assert "TRUSTED_DISPOSITION_LOGINS" not in gate_text
     assert "cursor[bot]" not in gate_text
 

@@ -436,6 +436,67 @@ def test_commented_changes_requested_marker_still_blocks():
     assert result["reason"] == "actionable_review_on_current_head"
 
 
+def test_later_commented_review_does_not_clear_changes_requested():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="20",
+                author="alice",
+                author_association="MEMBER",
+                state="CHANGES_REQUESTED",
+                body="Please fix the public API.",
+                submitted_at="2026-08-31T01:00:00Z",
+            ),
+            review(
+                id="21",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body="Adding context; the request still stands.",
+                submitted_at="2026-08-31T02:00:00Z",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["state"] == "CHANGES_REQUESTED"
+    assert result["actionable"][0]["id"] == "20"
+
+
+def test_later_dismissed_review_clears_same_reviewer_changes_requested():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="20",
+                author="alice",
+                author_association="MEMBER",
+                state="CHANGES_REQUESTED",
+                body="Please fix the public API.",
+                submitted_at="2026-08-31T01:00:00Z",
+            ),
+            review(
+                id="21",
+                author="alice",
+                author_association="MEMBER",
+                state="DISMISSED",
+                body="No issues found.",
+                submitted_at="2026-08-31T02:00:00Z",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+
+
 def test_later_approved_review_supersedes_same_reviewer_changes_requested():
     result = evaluate_review_clean(
         HEAD,

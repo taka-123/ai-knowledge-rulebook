@@ -512,6 +512,9 @@ def _review_recency_key(item, index):
     return (submitted, review_id, index)
 
 
+CHANGES_REQUESTED_CLEARED_BY = {"APPROVED", "DISMISSED", "CHANGES_REQUESTED"}
+
+
 def latest_reviews_per_reviewer_commit(reviews):
     chosen = {}
     passthrough = []
@@ -523,10 +526,16 @@ def latest_reviews_per_reviewer_commit(reviews):
             continue
         key = (author, commit_id)
         prev = chosen.get(key)
-        if prev is None or _review_recency_key(item, index) > _review_recency_key(
-            prev[0], prev[1]
-        ):
+        if prev is None:
             chosen[key] = (item, index)
+            continue
+        if _review_recency_key(item, index) <= _review_recency_key(prev[0], prev[1]):
+            continue
+        prev_state = str((prev[0] or {}).get("state") or "").upper()
+        new_state = str((item or {}).get("state") or "").upper()
+        if prev_state == "CHANGES_REQUESTED" and new_state not in CHANGES_REQUESTED_CLEARED_BY:
+            continue
+        chosen[key] = (item, index)
     kept = [pair[0] for pair in sorted(chosen.values(), key=lambda pair: pair[1])]
     return kept + passthrough
 
