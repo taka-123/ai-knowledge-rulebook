@@ -1579,8 +1579,9 @@ def test_same_finding_reappearance_matches_fingerprint():
     result = evaluate_review_clean(
         HEAD, [review()], [first], [previous, reappeared], gh_user=HELPER_LOGIN
     )
-    assert result["review_clean"] is True
-    assert result["actionable"] == []
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert "99" in {item["id"] for item in result["actionable"]}
     assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
 
 
