@@ -33,6 +33,11 @@ THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
 CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex\s+review\b", re.IGNORECASE)
 HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
 SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b", re.IGNORECASE)
+APPROVAL_ONLY_RE = re.compile(
+    r"^\s*(?:lgtm|looks\s+(?:good|fine)(?:\s+to\s+me)?|approved|no issues found)"
+    r"(?:\s*[.!]*)?\s*$",
+    re.IGNORECASE,
+)
 THREADS_QUERY = """
 query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -125,6 +130,22 @@ def parse_pr_spec(pr_spec):
     raise ValueError("--pr must be 'auto', a PR number, or a PR URL")
 
 
+def extract_repo_from_pr_url(pr_url):
+    parsed = urlparse(str(pr_url or ""))
+    parts = [item for item in parsed.path.split("/") if item]
+    if len(parts) >= 4 and parts[2] == "pull":
+        return f"{parts[0]}/{parts[1]}"
+    return ""
+
+
+def split_repo(repo):
+    raw = str(repo or "")
+    if "/" not in raw:
+        return "", ""
+    owner, name = raw.split("/", 1)
+    return owner, name
+
+
 def resolve_pr(pr_spec, repo_override=None, head_override=None):
     spec = parse_pr_spec(pr_spec)
     args = ["pr", "view", "--json", "number,url,headRefOid,headRepository,headRepositoryOwner"]
@@ -137,17 +158,21 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
     data = gh_json(args)
     if not isinstance(data, dict):
         raise GhCommandError("Unexpected PR payload from `gh pr view`")
-    owner = ((data.get("headRepositoryOwner") or {}).get("login")) or ""
-    name = ((data.get("headRepository") or {}).get("name")) or ""
-    if repo_override and "/" in repo_override:
-        owner, name = repo_override.split("/", 1)
+    pr_url = str(data.get("url") or "")
+    repo = repo_override or extract_repo_from_pr_url(pr_url)
+    if repo and "/" in repo:
+        owner, name = split_repo(repo)
+    else:
+        owner = ((data.get("headRepositoryOwner") or {}).get("login")) or ""
+        name = ((data.get("headRepository") or {}).get("name")) or ""
+        repo = f"{owner}/{name}" if owner and name else ""
     return {
         "number": int(data.get("number")),
-        "repo": f"{owner}/{name}",
+        "repo": repo,
         "owner": owner,
         "name": name,
         "head_sha": head_override or str(data.get("headRefOid") or ""),
-        "url": str(data.get("url") or ""),
+        "url": pr_url,
     }
 
 
@@ -203,7 +228,11 @@ def is_summary_only(body, path=None):
     return any(marker in lower for marker in SUMMARY_MARKERS)
 
 
-def is_actionable_text(body, path=None, review_state=None):
+def is_approval_only(body):
+    return bool(APPROVAL_ONLY_RE.match((body or "").strip()))
+
+
+def is_actionable_text(body, path=None, review_state=None, kind=None, author=None):
     if is_summary_only(body, path):
         return False
     if path:
@@ -211,7 +240,14 @@ def is_actionable_text(body, path=None, review_state=None):
     if str(review_state or "").upper() == "CHANGES_REQUESTED":
         return True
     lower = (body or "").lower()
-    return any(marker in lower for marker in ACTIONABLE_MARKERS)
+    if any(marker in lower for marker in ACTIONABLE_MARKERS):
+        return True
+    if kind != "review" or is_codex_reviewer(author):
+        return False
+    text = (body or "").strip()
+    if not text or is_approval_only(text):
+        return False
+    return True
 
 
 def normalize_reviews(payload):
@@ -310,19 +346,27 @@ def normalize_threads(payload):
         commit = first.get("commit") if isinstance(first, dict) else {}
         original = first.get("originalCommit") if isinstance(first, dict) else {}
         authors = []
+        comment_ids = []
         for comment in comments or []:
             if not isinstance(comment, dict):
                 continue
             login = extract_login(comment.get("author"))
             if login:
                 authors.append(login)
+            comment_id = comment.get("databaseId")
+            if comment_id not in (None, ""):
+                comment_ids.append(str(comment_id))
+        first_id = str((first or {}).get("databaseId") or "")
+        if first_id and first_id not in comment_ids:
+            comment_ids.insert(0, first_id)
         out.append(
             {
                 "kind": "review_thread",
-                "id": str((first or {}).get("databaseId") or ""),
+                "id": first_id,
                 "node_id": str(thread.get("id") or ""),
                 "author": extract_login(author),
                 "authors": authors,
+                "comment_ids": comment_ids,
                 "author_association": "",
                 "state": "",
                 "commit_id": str((commit or {}).get("oid") or ""),
@@ -465,14 +509,36 @@ def evaluate_review_clean(
         else:
             unbound.append(item)
 
+    resolved_ids = set()
+    for item in threads or []:
+        if item.get("resolved") is not True:
+            continue
+        for comment_id in item.get("comment_ids") or []:
+            if comment_id not in (None, ""):
+                resolved_ids.add(str(comment_id))
+        thread_comment_id = str(item.get("id") or "")
+        if thread_comment_id:
+            resolved_ids.add(thread_comment_id)
+
     live_unresolved = [
         item
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
+    current_unresolved = [
+        item
+        for item in current
+        if not (item.get("kind") == "review_comment" and str(item.get("id") or "") in resolved_ids)
+    ]
     actionable = []
-    for item in [*current, *live_unresolved]:
-        if is_actionable_text(item.get("body"), item.get("path"), item.get("state")):
+    for item in [*current_unresolved, *live_unresolved]:
+        if is_actionable_text(
+            item.get("body"),
+            item.get("path"),
+            item.get("state"),
+            item.get("kind"),
+            item.get("author"),
+        ):
             actionable.append(item)
 
     proof = next((item for item in current if is_codex_completion_proof(item, head_sha)), None)

@@ -108,7 +108,7 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --head <current-sha>
 ```
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。
+gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。resolved thread に属する REST comment は actionable から外す。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 

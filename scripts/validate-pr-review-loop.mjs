@@ -129,6 +129,14 @@ if (gate) {
   if (!gate.includes('codex_thumbs_up') || !gate.includes('is_codex_reviewer')) {
     errors.push('final_review_clean_gate.py must treat bound Codex thumbs-up as completion proof')
   }
+  if (!gate.includes('extract_repo_from_pr_url')) {
+    errors.push('final_review_clean_gate.py must target the PR URL base repository, not fork HEAD')
+  }
+  if (!gate.includes('comment_ids') || !gate.includes('resolved_ids')) {
+    errors.push(
+      'final_review_clean_gate.py must drop REST comments that belong to resolved threads'
+    )
+  }
 }
 
 const resolver = read('scripts/resolve_codex_threads.py')

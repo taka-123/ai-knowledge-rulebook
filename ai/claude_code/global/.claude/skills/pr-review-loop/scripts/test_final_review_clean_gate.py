@@ -339,6 +339,7 @@ def test_normalize_threads_keeps_commit_and_unresolved():
     assert threads[0]["resolved"] is False
     assert threads[0]["node_id"].startswith("PRRT_")
     assert threads[0]["authors"] == ["coderabbitai[bot]"]
+    assert threads[0]["comment_ids"] == ["44"]
 
 
 def test_current_head_codex_thumbs_up_is_clean():
@@ -690,3 +691,96 @@ def test_normalize_threads_keeps_all_comment_authors():
     )
     assert eligible == []
     assert rejected[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
+
+
+def test_extract_repo_from_pr_url_uses_base_repository():
+    assert (
+        gate.extract_repo_from_pr_url("https://github.com/base-owner/base-repo/pull/8")
+        == "base-owner/base-repo"
+    )
+    assert gate.extract_repo_from_pr_url("https://github.com/base-owner/base-repo") == ""
+
+
+def test_resolve_pr_prefers_url_base_repo_over_fork_head(monkeypatch):
+    monkeypatch.setattr(
+        gate,
+        "gh_json",
+        lambda args: {
+            "number": 8,
+            "url": "https://github.com/base-owner/base-repo/pull/8",
+            "headRefOid": HEAD,
+            "headRepositoryOwner": {"login": "fork-owner"},
+            "headRepository": {"name": "fork-repo"},
+        },
+    )
+    pr = gate.resolve_pr("8")
+    assert pr["repo"] == "base-owner/base-repo"
+    assert pr["owner"] == "base-owner"
+    assert pr["name"] == "base-repo"
+    assert pr["head_sha"] == HEAD
+
+
+def test_unmarked_external_review_body_is_actionable():
+    external = review(
+        author="outside-reviewer",
+        author_association="CONTRIBUTOR",
+        body="Please keep the public API stable before merging.",
+    )
+    result = evaluate_review_clean(HEAD, [review(), external], [], [])
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["author"] == "outside-reviewer"
+    assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
+
+
+def test_approval_only_review_body_is_not_actionable():
+    result = evaluate_review_clean(
+        HEAD,
+        [review(), review(author="alice", author_association="MEMBER", body="Looks fine.")],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+
+
+def test_codex_boilerplate_review_is_proof_not_actionable():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(
+                body=(
+                    "### Codex Review\n\nHere are some automated review suggestions "
+                    "for this pull request.\nReviewed commit: newsha"
+                )
+            )
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
+
+
+def test_resolved_thread_rest_comment_is_not_actionable():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path="vendor/gh_pr_watch.py",
+        body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) already fixed",
+    )
+    resolved = thread(
+        id="3890915001",
+        node_id="PRRT_codex_fixed",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["3890915001"],
+        resolved=True,
+        path="vendor/gh_pr_watch.py",
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [resolved])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert result["unresolved_threads"] == []
