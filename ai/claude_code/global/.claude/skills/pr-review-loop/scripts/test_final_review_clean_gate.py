@@ -1099,7 +1099,7 @@ def test_fingerprint_includes_normalized_finding_body():
     assert finding_fingerprint(first) != finding_fingerprint(other)
 
 
-def test_ignore_marker_does_not_apply_across_threads():
+def test_same_finding_reappearance_matches_fingerprint():
     first = comment(path=VENDOR_WATCHER, body=VENDOR_P1_REVIEWERS)
     fingerprint = finding_fingerprint(first)
     previous = thread(
@@ -1123,9 +1123,35 @@ def test_ignore_marker_does_not_apply_across_threads():
         resolved=False,
     )
     result = evaluate_review_clean(HEAD, [review()], [first], [previous, reappeared])
-    assert result["review_clean"] is False
-    assert result["reason"] == "actionable_review_on_current_head"
-    assert any(item.get("node_id") == "PRRT_new_repeat" for item in result["actionable"])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
+
+
+def test_pr_author_ignore_marker_is_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    ignored_thread = thread(
+        id="3890915001",
+        node_id="PRRT_owner_ignore",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "taka-123"],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", "taka-123"],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [ignored_thread], pr_author="taka-123"
+    )
+    assert result["review_clean"] is True
+    assert result["ignored"][0]["fingerprint"] == fingerprint
 
 
 def test_untrusted_author_ignore_marker_is_not_honored():

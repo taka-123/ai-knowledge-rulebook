@@ -94,7 +94,7 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 
 Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で返信する。人間が見る本文は自然で簡潔にし、helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
 
-返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、同じ thread に helper（`cursor` / `cursor[bot]`）の marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。PR 作成者など任意参加者の marker は採用しない。
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、同じ thread に helper の marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。helper の投稿者は認証済み `gh` ユーザーであり、`cursor` / `cursor[bot]`、PR 作者、OWNER / MEMBER / COLLABORATOR の人間だけ採用する。CodeRabbit や任意 CONTRIBUTOR の marker は採用しない。fingerprint は path と正規化した指摘本文から作り、同一 fingerprint の再出現は新しい未処理指摘にしない。
 
 ## 非収束
 

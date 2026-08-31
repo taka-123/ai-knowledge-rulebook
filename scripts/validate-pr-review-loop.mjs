@@ -161,7 +161,7 @@ if (gate) {
     !gate.includes('ignore_fingerprints_for_item')
   ) {
     errors.push(
-      'final_review_clean_gate.py must exclude only helper IGNORE_WITH_REASON fingerprints in the same thread'
+      'final_review_clean_gate.py must exclude only verified IGNORE_WITH_REASON fingerprints'
     )
   }
   if (!gate.includes('addPullRequestReviewThreadReply')) {

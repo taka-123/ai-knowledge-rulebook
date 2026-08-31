@@ -97,12 +97,13 @@ DISPOSITION_MARKER_RE = re.compile(
     re.IGNORECASE,
 )
 FINDING_BADGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
-# ignore_codex_threads.py posts via gh; Cloud Agent GitHub App logins only.
-# Do not trust PR authors or arbitrary participants who paste the marker.
+# ignore_codex_threads.py posts via whatever `gh` identity is authenticated:
+# Cloud Agent GitHub App (`cursor` / `cursor[bot]`) or a human PAT (PR author).
 TRUSTED_DISPOSITION_LOGINS = {
     "cursor",
     "cursor[bot]",
 }
+TRUSTED_DISPOSITION_ASSOCIATIONS = {"OWNER", "MEMBER", "COLLABORATOR"}
 
 
 class GhCommandError(RuntimeError):
@@ -181,7 +182,7 @@ def split_repo(repo):
 
 def resolve_pr(pr_spec, repo_override=None, head_override=None):
     spec = parse_pr_spec(pr_spec)
-    args = ["pr", "view", "--json", "number,url,headRefOid,headRepository,headRepositoryOwner"]
+    args = ["pr", "view", "--json", "number,url,headRefOid,headRepository,headRepositoryOwner,author"]
     if spec["mode"] == "number":
         args.insert(2, spec["value"])
     elif spec["mode"] == "url":
@@ -204,6 +205,7 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
         raise GhCommandError(
             f"--head {head_override} does not match current PR HEAD {actual_head}"
         )
+    author_login = ((data.get("author") or {}).get("login")) or ""
     return {
         "number": int(data.get("number")),
         "repo": repo,
@@ -211,6 +213,7 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
         "name": name,
         "head_sha": actual_head,
         "url": pr_url,
+        "author": author_login,
     }
 
 
@@ -237,9 +240,17 @@ def is_codex_reviewer(login):
     return identity in CODEX_REVIEWER_IDENTITIES
 
 
-def is_trusted_disposition_author(login):
+def is_trusted_disposition_author(login, association="", pr_author=""):
     lower = str(login or "").strip().lower()
-    return lower in TRUSTED_DISPOSITION_LOGINS
+    if not lower:
+        return False
+    if lower in TRUSTED_DISPOSITION_LOGINS:
+        return True
+    if is_codex_reviewer(login) or lower.endswith("[bot]"):
+        return False
+    if pr_author and lower == str(pr_author).strip().lower():
+        return True
+    return str(association or "").upper() in TRUSTED_DISPOSITION_ASSOCIATIONS
 
 
 def is_codex_review_request(body):
@@ -355,32 +366,35 @@ def format_ignore_reply(reason, fingerprint):
     return f"{text}\n\n{marker}"
 
 
-def trusted_ignore_fingerprints_from_thread(thread):
+def trusted_ignore_fingerprints_from_thread(thread, pr_author=""):
     fingerprints = set()
     if not isinstance(thread, dict):
         return fingerprints
     bodies = thread.get("comment_bodies") or []
     authors = thread.get("comment_authors")
+    associations = thread.get("comment_associations") or []
     if not isinstance(bodies, list) or not isinstance(authors, list):
         return fingerprints
     if len(authors) != len(bodies):
         return fingerprints
-    for author, body in zip(authors, bodies):
-        if not is_trusted_disposition_author(author):
+    thread_fp = finding_fingerprint(thread)
+    for index, (author, body) in enumerate(zip(authors, bodies)):
+        association = associations[index] if index < len(associations) else ""
+        if not is_trusted_disposition_author(author, association, pr_author):
             continue
         parsed = parse_disposition_marker(body)
         if not parsed or parsed["disposition"] != DISPOSITION_IGNORE:
             continue
-        if parsed["fingerprint"]:
-            fingerprints.add(parsed["fingerprint"])
+        if parsed["fingerprint"] and parsed["fingerprint"] == thread_fp:
+            fingerprints.add(thread_fp)
     return fingerprints
 
 
-def collect_ignore_fingerprints(threads, comments=None):
+def collect_ignore_fingerprints(threads, comments=None, pr_author=""):
     del comments
     fingerprints = set()
     for item in threads or []:
-        fingerprints |= trusted_ignore_fingerprints_from_thread(item)
+        fingerprints |= trusted_ignore_fingerprints_from_thread(item, pr_author=pr_author)
     return fingerprints
 
 
@@ -401,13 +415,9 @@ def matching_threads_for_item(item, threads):
     return matched
 
 
-def ignore_fingerprints_for_item(item, threads):
-    fingerprints = set()
-    if item.get("kind") == "review_thread":
-        fingerprints |= trusted_ignore_fingerprints_from_thread(item)
-    for thread in matching_threads_for_item(item, threads):
-        fingerprints |= trusted_ignore_fingerprints_from_thread(thread)
-    return fingerprints
+def ignore_fingerprints_for_item(item, threads, pr_author=""):
+    del item
+    return collect_ignore_fingerprints(threads, pr_author=pr_author)
 
 
 def normalize_reviews(payload):
@@ -700,7 +710,13 @@ def eligible_codex_ignore_threads(threads, requested_ids, current_head_sha, expe
 
 
 def evaluate_review_clean(
-    head_sha, reviews, comments, threads, issue_comments=None, completion_signals=None
+    head_sha,
+    reviews,
+    comments,
+    threads,
+    issue_comments=None,
+    completion_signals=None,
+    pr_author="",
 ):
     issue_comments = issue_comments or []
     completion_signals = completion_signals or []
@@ -721,13 +737,13 @@ def evaluate_review_clean(
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
+    ignored_fingerprints = collect_ignore_fingerprints(threads, comments, pr_author=pr_author)
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
         if is_disposition_reply(item.get("body")):
             continue
         fingerprint = finding_fingerprint(item)
-        ignored_fingerprints = ignore_fingerprints_for_item(item, threads)
         if fingerprint and fingerprint in ignored_fingerprints:
             ignored.append(
                 {
@@ -920,6 +936,7 @@ def main(argv=None):
             fetched["threads"],
             fetched["issue_comments"],
             fetched["completion_signals"],
+            pr_author=pr.get("author") or "",
         )
         result["pr"] = {"number": pr["number"], "repo": pr["repo"], "url": pr["url"]}
     except (GhCommandError, ValueError, json.JSONDecodeError) as err:
