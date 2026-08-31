@@ -107,12 +107,12 @@ if cli_command gh; then
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
     # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
       grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       block "mutating gh api"
     fi
     # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
       if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
         grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
@@ -145,7 +145,7 @@ if cli_command gh; then
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
-      if grep -Eq '(^|[[:space:]])(-[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+      if grep -Eq '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
         _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
         if [ "${_method_n:-0}" -gt 1 ]; then
           block "mutating gh api"
