@@ -78,6 +78,8 @@ if (wrapper) {
     'vendor argparse の短縮形も拒否する',
     '以前の actionable な `COMMENTED` review も捨てない',
     '保持済み COMMENTED も含めて解除する',
+    'thread 再取得の後と各 mutation の直前',
+    'finding 判定から除外する',
     'updatePullRequestReviewComment',
     '人間向け返信を増やさない',
   ]
@@ -184,6 +186,8 @@ if (gate) {
     !gate.includes('ignore_fingerprints_for_item') ||
     !gate.includes('matching_threads_for_item') ||
     !gate.includes('IGNORE_REPLY_PREFIX') ||
+    !gate.includes('COMPLETION_ONLY_KINDS') ||
+    !gate.includes('Recheck HEAD after thread fetch') ||
     !gate.includes('head=')
   ) {
     errors.push(

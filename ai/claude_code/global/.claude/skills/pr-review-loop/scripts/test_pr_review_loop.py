@@ -186,6 +186,8 @@ def test_wrapper_policy_strings():
         "launcher は `--retry-failed-now` を拒否する",
         "以前の actionable な `COMMENTED` review も捨てない",
         "保持済み COMMENTED も含めて解除する",
+        "thread 再取得の後と各 mutation の直前",
+        "finding 判定から除外する",
         "vendor argparse の短縮形も拒否する",
         "updatePullRequestReviewComment",
         "人間向け返信を増やさない",
@@ -262,6 +264,7 @@ def test_ignore_helper_source_replies_only_via_codex_helper():
     assert "format_ignore_reply" in text
     assert "DISPOSITION_IGNORE" in text
     assert "require_fresh_ignore_thread" in text
+    assert "require_current_head" in text
     assert "update_review_comment" in text
     assert "ensure_ignore_reply" in text
     gate_text = GATE.read_text(encoding="utf-8")
@@ -273,3 +276,4 @@ def test_ignore_helper_source_replies_only_via_codex_helper():
         encoding="utf-8"
     )
     assert "require_fresh_resolve_thread" in resolve_text
+    assert "require_current_head" in resolve_text

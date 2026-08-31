@@ -90,6 +90,7 @@ def main(argv=None):
             node_id = str(item.get("node_id") or "")
             fresh = gate.require_fresh_ignore_thread(pr, node_id, args.head, gh_user=gh_user)
             fingerprint = gate.finding_fingerprint(fresh)
+            gate.require_current_head(pr, args.head)
             mutation = ensure_ignore_reply(
                 fresh, fingerprint, args.reason, args.head, gh_user
             )
@@ -100,6 +101,7 @@ def main(argv=None):
                     fresh = gate.require_fresh_ignore_thread(
                         pr, node_id, args.head, gh_user=gh_user
                     )
+                    gate.require_current_head(pr, args.head)
                     gate.resolve_review_thread(str(fresh.get("node_id") or node_id))
                     resolved = True
                 except gate.GhCommandError as err:

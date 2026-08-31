@@ -123,7 +123,7 @@ gate は GitHub から published review / review comments / unresolved threads /
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 
-Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。
+Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。`@codex review` の issue comment と Codex 👍 は完了証明だけに使い、finding 判定から除外する。
 
 - current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review（`DISMISSED` / `PENDING` は使わない）。公式 identity は `chatgpt-codex-connector` / `chatgpt-codex-connector[bot]` / `codex[bot]` に限る
 - current HEAD に対応付けた `@codex review` request への Codex 👍（`+1`）。old HEAD や無関係な reaction は使わない。request 本文が編集されているときは、編集時刻より前の 👍 は使わない
@@ -158,8 +158,8 @@ merge可能。最終merge判断は人間。
 
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
 - 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 👍 を再取得する。Agent が直接 GraphQL を叩く必要はない。
-- AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、対象 thread を再取得して comments_complete と参加者が引き続き Codex-only であることを確認する。不一致なら fail closed する。
-- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `updatePullRequestReviewComment` / `resolveReviewThread` を呼ぶ。同一 thread と同一 fingerprint の既存 helper 返信は更新して current HEAD に再bindし、新しい返信を増やさない。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。不一致なら fail closed する。
+- AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、対象 thread を再取得して comments_complete と参加者が引き続き Codex-only であることを確認する。thread 再取得の後と各 mutation の直前にも `headRefOid` を再確認する。不一致なら fail closed する。
+- IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `updatePullRequestReviewComment` / `resolveReviewThread` を呼ぶ。同一 thread と同一 fingerprint の既存 helper 返信は更新して current HEAD に再bindし、新しい返信を増やさない。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。thread 再取得の後と各 mutation の直前にも `headRefOid` を再確認する。不一致なら fail closed する。
 - 人間 thread の resolve、人間 / CodeRabbit 等への自動返信、review 提出、任意 GraphQL mutation は禁止のまま。ASK_HUMAN の指摘は GitHub 上で反論・resolve しない。
 - launcher は `--retry-failed-now` を拒否する。`--retry-f` や `--retry-failed-n` など vendor argparse の短縮形も拒否する。vendor は `retry_failed_checks` を出しても flaky/unrelated 分類を検証せず failed runs を rerun するため。分類を機械的に確認できるまで retry mode は使わない。
 - Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。

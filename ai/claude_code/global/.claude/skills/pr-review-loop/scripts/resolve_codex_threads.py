@@ -63,6 +63,7 @@ def main(argv=None):
         for item in eligible:
             node_id = str(item.get("node_id") or "")
             fresh = gate.require_fresh_resolve_thread(pr, node_id, args.head)
+            gate.require_current_head(pr, args.head)
             gate.resolve_review_thread(str(fresh.get("node_id") or node_id))
             resolved.append({"node_id": node_id, "author": fresh.get("author")})
     except (gate.GhCommandError, ValueError, json.JSONDecodeError) as err:

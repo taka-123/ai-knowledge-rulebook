@@ -33,6 +33,7 @@ ACTIONABLE_MARKERS = (*FINDING_BADGE_MARKERS, CHANGES_REQUESTED_MARKER)
 PENDING = "PENDING"
 DISMISSED = "DISMISSED"
 VALID_PROOF_REVIEW_STATES = {"COMMENTED", "APPROVED"}
+COMPLETION_ONLY_KINDS = frozenset({"issue_comment", "codex_thumbs_up"})
 THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
 CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex\s+review\b", re.IGNORECASE)
 HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
@@ -324,6 +325,8 @@ def has_actionable_marker(body):
 
 
 def is_actionable_text(body, path=None, review_state=None, kind=None, author=None, gh_user=""):
+    if str(kind or "") in COMPLETION_ONLY_KINDS:
+        return False
     if is_disposition_reply(body) and is_trusted_disposition_author(author, gh_user):
         return False
     state = str(review_state or "").upper()
@@ -965,6 +968,8 @@ def evaluate_review_clean(
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
+        if item.get("kind") in COMPLETION_ONLY_KINDS:
+            continue
         if is_disposition_reply(item.get("body")) and is_trusted_disposition_author(
             item.get("author"), gh_user
         ):
@@ -1088,6 +1093,8 @@ def load_live_threads(pr):
 def require_fresh_resolve_thread(pr, thread_id, expected_head):
     require_current_head(pr, expected_head)
     threads = load_live_threads(pr)
+    # Recheck HEAD after thread fetch; pagination can race with a new push.
+    require_current_head(pr, expected_head)
     eligible, rejected = eligible_codex_resolve_threads(
         threads, [thread_id], expected_head, expected_head
     )
@@ -1101,6 +1108,8 @@ def require_fresh_resolve_thread(pr, thread_id, expected_head):
 def require_fresh_ignore_thread(pr, thread_id, expected_head, gh_user=""):
     require_current_head(pr, expected_head)
     threads = load_live_threads(pr)
+    # Recheck HEAD after thread fetch; pagination can race with a new push.
+    require_current_head(pr, expected_head)
     eligible, rejected = eligible_codex_ignore_threads(
         threads, [thread_id], expected_head, expected_head, gh_user=gh_user
     )

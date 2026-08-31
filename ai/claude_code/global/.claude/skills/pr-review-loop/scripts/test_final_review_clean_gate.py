@@ -742,6 +742,30 @@ def test_current_head_codex_thumbs_up_is_clean():
     assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
 
 
+def test_codex_review_request_with_changes_requested_phrase_is_not_actionable():
+    request = {
+        "kind": "issue_comment",
+        "id": "99",
+        "author": "taka-123",
+        "author_association": "OWNER",
+        "state": "",
+        "commit_id": HEAD,
+        "original_commit_id": "",
+        "path": None,
+        "line": None,
+        "resolved": None,
+        "outdated": None,
+        "body": f"@codex review\nhead: {HEAD}\nNo changes requested.",
+        "url": "",
+    }
+    signal = thumbs(body=request["body"], request_id="99")
+    result = evaluate_review_clean(HEAD, [], [], [], [request], [signal])
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+    assert result["proof"]["kind"] == "codex_thumbs_up"
+
+
 def test_old_head_codex_thumbs_up_is_not_clean():
     result = evaluate_review_clean(HEAD, [], [], [], [], [thumbs(commit_id=OLD)])
     assert result["review_clean"] is False
@@ -2166,6 +2190,49 @@ def test_ignore_helper_does_not_mutate_if_head_changes(monkeypatch, capsys):
     assert "PR HEAD changed before mutation" in capsys.readouterr().err
 
 
+def test_ignore_helper_does_not_mutate_if_head_changes_during_thread_fetch(monkeypatch, capsys):
+    helper = load_ignore_helper()
+    bot = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        node_id="PRRT_codex_head_changed_during_fetch",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    _patch_pr(monkeypatch, helper, [bot])
+    seen = {"n": 0}
+
+    def fake_head(pr):
+        seen["n"] += 1
+        return HEAD if seen["n"] == 1 else OLD
+
+    monkeypatch.setattr(helper.gate, "fetch_head_sha", fake_head)
+    replies = []
+    resolved = []
+    monkeypatch.setattr(
+        helper.gate,
+        "reply_review_thread",
+        lambda nid, body: replies.append((nid, body)),
+    )
+    monkeypatch.setattr(helper.gate, "resolve_review_thread", lambda nid: resolved.append(nid))
+    code = helper.main(
+        [
+            "--pr",
+            "8",
+            "--head",
+            HEAD,
+            "--reason",
+            VENDOR_IGNORE_REASON,
+            "--thread-id",
+            "PRRT_codex_head_changed_during_fetch",
+        ]
+    )
+    assert code == 2
+    assert replies == []
+    assert resolved == []
+    assert "PR HEAD changed before mutation" in capsys.readouterr().err
+
+
 def test_ignore_helper_skips_resolve_if_head_changes_after_reply(monkeypatch, capsys):
     helper = load_ignore_helper()
     bot = thread(
@@ -2180,7 +2247,7 @@ def test_ignore_helper_skips_resolve_if_head_changes_after_reply(monkeypatch, ca
 
     def fake_head(pr):
         seen["n"] += 1
-        return HEAD if seen["n"] == 1 else OLD
+        return HEAD if seen["n"] <= 3 else OLD
 
     monkeypatch.setattr(helper.gate, "fetch_head_sha", fake_head)
     replies = []
