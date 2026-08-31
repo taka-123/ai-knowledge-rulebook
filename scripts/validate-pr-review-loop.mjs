@@ -181,6 +181,7 @@ if (gate) {
     !gate.includes('CHANGES_REQUESTED_CLEARED_BY') ||
     !gate.includes('reaction_matches_current_request_body') ||
     !gate.includes('ignore_fingerprints_for_item') ||
+    !gate.includes('matching_threads_for_item') ||
     !gate.includes('IGNORE_REPLY_PREFIX') ||
     !gate.includes('head=')
   ) {

@@ -2574,6 +2574,56 @@ def test_stale_ignore_marker_is_not_current_head_proof():
     assert result["actionable"][0]["id"] == leftover["id"]
 
 
+def test_ignore_marker_does_not_apply_to_other_thread_with_same_fingerprint():
+    path = VENDOR_WATCHER
+    body = VENDOR_P1_REVIEWERS
+    fingerprint = finding_fingerprint({"path": path, "body": body})
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=path,
+        body=body,
+    )
+    ignored_thread = thread(
+        id="3890915001",
+        node_id="PRRT_ignored_same_fp",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comment_ids=["3890915001", "3890999999"],
+        comment_bodies=[body, _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        resolved=False,
+        outdated=False,
+        path=path,
+        body=body,
+    )
+    other_thread = thread(
+        id="3890915002",
+        node_id="PRRT_other_same_fp",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["3890915002"],
+        resolved=False,
+        outdated=False,
+        path=path,
+        body=body,
+    )
+    result = evaluate_review_clean(
+        HEAD,
+        [review()],
+        [leftover],
+        [ignored_thread, other_thread],
+        gh_user=HELPER_LOGIN,
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    ignored_ids = {item["id"] for item in result["ignored"]}
+    actionable_ids = {item["id"] for item in result["actionable"]}
+    assert "3890915001" in ignored_ids
+    assert "3890915002" in actionable_ids
+    assert "3890915002" not in ignored_ids
+
+
 def test_trusted_ignore_replies_are_scoped_to_thread_and_fingerprint():
     leftover = comment(
         id="3890915001",

@@ -547,8 +547,12 @@ def matching_threads_for_item(item, threads):
 
 
 def ignore_fingerprints_for_item(item, threads, gh_user="", head_sha=""):
-    del item
-    return collect_ignore_fingerprints(threads, gh_user=gh_user, head_sha=head_sha)
+    fingerprints = set()
+    for thread in matching_threads_for_item(item, threads):
+        fingerprints |= trusted_ignore_fingerprints_from_thread(
+            thread, gh_user=gh_user, head_sha=head_sha
+        )
+    return fingerprints
 
 
 def normalize_reviews(payload):
@@ -948,9 +952,6 @@ def evaluate_review_clean(
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
-    ignored_fingerprints = collect_ignore_fingerprints(
-        threads, comments, gh_user=gh_user, head_sha=head_sha
-    )
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
@@ -959,7 +960,10 @@ def evaluate_review_clean(
         ):
             continue
         fingerprint = finding_fingerprint(item)
-        if fingerprint and fingerprint in ignored_fingerprints:
+        item_ignored = ignore_fingerprints_for_item(
+            item, threads, gh_user=gh_user, head_sha=head_sha
+        )
+        if fingerprint and fingerprint in item_ignored:
             ignored.append(
                 {
                     "fingerprint": fingerprint,

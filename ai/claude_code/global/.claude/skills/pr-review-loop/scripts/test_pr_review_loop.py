@@ -188,6 +188,7 @@ def test_wrapper_policy_strings():
         "vendor argparse の短縮形も拒否する",
         "updatePullRequestReviewComment",
         "人間向け返信を増やさない",
+        "別 thread の同一 fingerprint は別 finding",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
