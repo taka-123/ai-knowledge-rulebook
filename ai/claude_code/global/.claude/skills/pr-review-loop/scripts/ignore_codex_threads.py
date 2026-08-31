@@ -53,8 +53,9 @@ def main(argv=None):
         pr = gate.resolve_pr(args.pr, repo_override=args.repo, head_override=args.head)
         raw_threads = gate.fetch_review_threads(pr["owner"], pr["name"], pr["number"])
         threads = gate.normalize_threads(raw_threads)
+        gh_user = gate.fetch_authenticated_login()
         eligible, rejected = gate.eligible_codex_ignore_threads(
-            threads, args.thread_id, pr["head_sha"], args.head
+            threads, args.thread_id, pr["head_sha"], args.head, gh_user=gh_user
         )
         if rejected:
             authors = ", ".join(sorted({str(item.get("author") or "") for item in rejected}))

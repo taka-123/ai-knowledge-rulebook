@@ -92,7 +92,7 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - PR の目的・scope 外で、今回直すと別の設計判断を持ち込む
 - 未改変 vendor など意図的に触らないファイル。wrapper 側で当該リスクを補完済みのときを含む
 
-Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で**日本語**で返信する。識別子・ファイル名・API名は無理に日本語化しない。人間が見る本文は必ず `AIエージェントによる対応: ` で始める。helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> head=<sha> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
+Codex reviewer のみの thread（認証済み helper の前回返信だけの参加は含む）に、短い具体的な理由を `ignore_codex_threads.py` で**日本語**で返信する。識別子・ファイル名・API名は無理に日本語化しない。人間が見る本文は必ず `AIエージェントによる対応: ` で始める。helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> head=<sha> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
 
 例: `AIエージェントによる対応: OpenAI公式の babysit-pr はvendorとして未改変で保持しています。current HEADのreview-clean判定に必要な commit_id はwrapper側で保持・確認しています。`
 

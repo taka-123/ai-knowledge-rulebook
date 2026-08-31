@@ -1433,6 +1433,25 @@ def test_codex_only_thread_is_eligible_for_ignore_without_push():
     assert [item["node_id"] for item in eligible] == ["PRRT_codex_ignore"]
 
 
+def test_helper_reignore_is_eligible_on_previous_helper_thread():
+    previous = thread(
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", LOCAL_OPERATOR],
+        node_id="PRRT_codex_reignore",
+        resolved=False,
+    )
+    eligible, rejected = eligible_codex_ignore_threads(
+        [previous], ["PRRT_codex_reignore"], HEAD, HEAD, gh_user=LOCAL_OPERATOR
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_codex_reignore"]
+    other_operator, other_rejected = eligible_codex_ignore_threads(
+        [previous], ["PRRT_codex_reignore"], HEAD, HEAD, gh_user=HELPER_LOGIN
+    )
+    assert other_operator == []
+    assert other_rejected[0]["node_id"] == "PRRT_codex_reignore"
+
+
 def test_human_thread_is_not_eligible_for_ignore_or_resolve():
     human = thread(author="alice", authors=["alice"], node_id="PRRT_human_ask")
     ignore_eligible, ignore_rejected = eligible_codex_ignore_threads(
@@ -1548,7 +1567,7 @@ def load_ignore_helper():
     return module
 
 
-def _patch_pr(monkeypatch, helper, threads):
+def _patch_pr(monkeypatch, helper, threads, gh_user=HELPER_LOGIN):
     monkeypatch.setattr(
         helper.gate,
         "resolve_pr",
@@ -1563,6 +1582,7 @@ def _patch_pr(monkeypatch, helper, threads):
     )
     monkeypatch.setattr(helper.gate, "fetch_review_threads", lambda *a, **k: threads)
     monkeypatch.setattr(helper.gate, "normalize_threads", lambda payload: payload)
+    monkeypatch.setattr(helper.gate, "fetch_authenticated_login", lambda: gh_user)
 
 
 def test_ignore_helper_replies_on_codex_only_thread(monkeypatch, capsys):

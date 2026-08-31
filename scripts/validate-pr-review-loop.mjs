@@ -161,6 +161,7 @@ if (gate) {
     !gate.includes('finding_fingerprint') ||
     !gate.includes('collect_ignore_fingerprints') ||
     !gate.includes('eligible_codex_ignore_threads') ||
+    !gate.includes('is_codex_or_helper_thread') ||
     !gate.includes('fetch_authenticated_login') ||
     !gate.includes('is_trusted_disposition_author') ||
     !gate.includes('ignore_fingerprints_for_item') ||

@@ -699,6 +699,18 @@ def is_codex_only_thread(item):
     return bool(authors) and all(is_codex_reviewer(login) for login in authors)
 
 
+def is_codex_or_helper_thread(item, gh_user=""):
+    if item.get("comments_complete") is False:
+        return False
+    authors = thread_authors(item)
+    if not authors:
+        return False
+    return all(
+        is_codex_reviewer(login) or is_trusted_disposition_author(login, gh_user)
+        for login in authors
+    )
+
+
 def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, current_head_sha):
     if not pushed_head_sha or pushed_head_sha != current_head_sha:
         raise ValueError("resolve Codex threads only after commit + push of current HEAD")
@@ -723,7 +735,9 @@ def eligible_codex_resolve_threads(threads, requested_ids, pushed_head_sha, curr
     return eligible, rejected
 
 
-def eligible_codex_ignore_threads(threads, requested_ids, current_head_sha, expected_head_sha):
+def eligible_codex_ignore_threads(
+    threads, requested_ids, current_head_sha, expected_head_sha, gh_user=""
+):
     if not expected_head_sha or expected_head_sha != current_head_sha:
         raise ValueError("IGNORE_WITH_REASON requires --head to match current PR HEAD")
     wanted = {str(item) for item in requested_ids or [] if str(item)}
@@ -738,7 +752,7 @@ def eligible_codex_ignore_threads(threads, requested_ids, current_head_sha, expe
         if item.get("comments_complete") is False:
             rejected.append(item)
             continue
-        if is_codex_only_thread(item):
+        if is_codex_or_helper_thread(item, gh_user):
             eligible.append(item)
         else:
             rejected.append(item)
