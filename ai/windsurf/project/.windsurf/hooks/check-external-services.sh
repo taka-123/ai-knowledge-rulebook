@@ -61,9 +61,9 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
-    # Command substitution nests a second gh api that tr ';|&' never splits.
+    # Command/process substitution nests a second gh api that tr ';|&' never splits.
     if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
-      grep -Eq '`|\$\(' <<<"$cmd"; then
+      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
       block "mutating gh api"
     fi
     # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
