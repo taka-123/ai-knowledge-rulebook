@@ -106,6 +106,11 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    # Command substitution nests a second gh api that tr ';|&' never splits.
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+      grep -Eq '`|\$\(' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue

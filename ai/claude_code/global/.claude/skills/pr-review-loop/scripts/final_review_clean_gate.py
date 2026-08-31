@@ -40,6 +40,8 @@ APPROVAL_ONLY_RE = re.compile(
     r"(?:\s*[.!]*)?\s*$",
     re.IGNORECASE,
 )
+THREAD_PAGE_LIMIT = 50
+COMMENT_PAGE_LIMIT = 100
 THREADS_QUERY = """
 query($owner: String!, $name: String!, $number: Int!, $after: String) {
   repository(owner: $owner, name: $name) {
@@ -53,7 +55,10 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
           id
           isResolved
           isOutdated
-          comments(first: 20) {
+          comments(first: %d) {
+            pageInfo {
+              hasNextPage
+            }
             nodes {
               databaseId
               body
@@ -68,8 +73,7 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
     }
   }
 }
-"""
-THREAD_PAGE_LIMIT = 50
+""" % COMMENT_PAGE_LIMIT
 RESOLVE_THREAD_MUTATION = """
 mutation($id: ID!) {
   resolveReviewThread(input: {threadId: $id}) {
@@ -356,9 +360,17 @@ def normalize_threads(payload):
     for thread in payload or []:
         if not isinstance(thread, dict):
             continue
-        comments = thread.get("comments")
-        if isinstance(comments, dict):
-            comments = comments.get("nodes") or []
+        comments_payload = thread.get("comments")
+        comments_complete = True
+        if isinstance(comments_payload, dict):
+            comments = comments_payload.get("nodes") or []
+            page_info = comments_payload.get("pageInfo") or {}
+            if isinstance(page_info, dict) and page_info.get("hasNextPage"):
+                comments_complete = False
+        elif isinstance(comments_payload, list):
+            comments = comments_payload
+        else:
+            comments = []
         first = comments[0] if comments else {}
         author = first.get("author") if isinstance(first, dict) else {}
         commit = first.get("commit") if isinstance(first, dict) else {}
@@ -385,6 +397,7 @@ def normalize_threads(payload):
                 "author": extract_login(author),
                 "authors": authors,
                 "comment_ids": comment_ids,
+                "comments_complete": comments_complete,
                 "author_association": "",
                 "state": "",
                 "commit_id": str((commit or {}).get("oid") or ""),
@@ -490,6 +503,8 @@ def thread_authors(item):
 
 
 def is_codex_only_thread(item):
+    if item.get("comments_complete") is False:
+        return False
     authors = thread_authors(item)
     return bool(authors) and all(is_codex_reviewer(login) for login in authors)
 

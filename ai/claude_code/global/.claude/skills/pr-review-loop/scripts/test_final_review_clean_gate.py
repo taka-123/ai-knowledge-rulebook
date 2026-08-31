@@ -11,6 +11,7 @@ MODULE_SPEC.loader.exec_module(gate)
 
 evaluate_review_clean = gate.evaluate_review_clean
 eligible_codex_resolve_threads = gate.eligible_codex_resolve_threads
+is_codex_only_thread = gate.is_codex_only_thread
 is_codex_review_request = gate.is_codex_review_request
 is_codex_reviewer = gate.is_codex_reviewer
 normalize_codex_completion_signals = gate.normalize_codex_completion_signals
@@ -779,11 +780,79 @@ def test_normalize_threads_keeps_all_comment_authors():
         ]
     )
     assert threads[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
+    assert threads[0]["comments_complete"] is True
     eligible, rejected = eligible_codex_resolve_threads(
         threads, ["PRRT_mixed"], HEAD, HEAD
     )
     assert eligible == []
     assert rejected[0]["authors"] == ["chatgpt-codex-connector[bot]", "alice"]
+
+
+def test_incomplete_comment_page_is_not_codex_only():
+    threads = normalize_threads(
+        [
+            {
+                "id": "PRRT_truncated",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": {
+                    "pageInfo": {"hasNextPage": True},
+                    "nodes": [
+                        {
+                            "databaseId": 1,
+                            "body": "Please fix.",
+                            "path": "a.py",
+                            "author": {"login": "chatgpt-codex-connector[bot]"},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        }
+                    ],
+                },
+            }
+        ]
+    )
+    assert threads[0]["authors"] == ["chatgpt-codex-connector[bot]"]
+    assert threads[0]["comments_complete"] is False
+    assert is_codex_only_thread(threads[0]) is False
+    eligible, rejected = eligible_codex_resolve_threads(
+        threads, ["PRRT_truncated"], HEAD, HEAD
+    )
+    assert eligible == []
+    assert rejected[0]["node_id"] == "PRRT_truncated"
+
+
+def test_list_comments_payload_defaults_to_complete():
+    threads = normalize_threads(
+        [
+            {
+                "id": "PRRT_list",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": [
+                    {
+                        "databaseId": 1,
+                        "body": "Please fix.",
+                        "path": "a.py",
+                        "author": {"login": "chatgpt-codex-connector[bot]"},
+                        "commit": {"oid": HEAD},
+                        "originalCommit": {"oid": HEAD},
+                    }
+                ],
+            }
+        ]
+    )
+    assert threads[0]["comments_complete"] is True
+    eligible, rejected = eligible_codex_resolve_threads(
+        threads, ["PRRT_list"], HEAD, HEAD
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_list"]
+
+
+def test_threads_query_requests_comment_page_info():
+    assert f"comments(first: {gate.COMMENT_PAGE_LIMIT})" in gate.THREADS_QUERY
+    assert "pageInfo" in gate.THREADS_QUERY
+    assert "hasNextPage" in gate.THREADS_QUERY
 
 
 def test_extract_repo_from_pr_url_uses_base_repository():
