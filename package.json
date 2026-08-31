@@ -24,7 +24,8 @@
     "codex-wiring:check": "node .claude/skills/codex-wiring-doctor/scripts/check-codex-wiring.mjs",
     "routing:check": "node scripts/validate-routing.mjs",
     "hooks:check": "bash scripts/validate-external-service-hooks.sh",
-    "pr-review-loop:check": "node scripts/validate-pr-review-loop.mjs",
+    "pr-review-loop:test": "python3 -m pytest ai/claude_code/global/.claude/skills/pr-review-loop/scripts/test_final_review_clean_gate.py ai/claude_code/global/.claude/skills/pr-review-loop/scripts/test_pr_review_loop.py ai/claude_code/global/.claude/skills/pr-review-loop/vendor/openai-codex-babysit-pr/scripts/test_gh_pr_watch.py -q --tb=short",
+    "pr-review-loop:check": "node scripts/validate-pr-review-loop.mjs && npm run pr-review-loop:test",
     "agent:check": "npm run skills:check && npm run global-skills:check && npm run description:check && npm run claude-agents:check && npm run cursor-agents:check && npm run codex-wiring:check && npm run routing:check && npm run hooks:check && npm run pr-review-loop:check",
     "lint:staged": "lint-staged",
     "prepare": "husky"

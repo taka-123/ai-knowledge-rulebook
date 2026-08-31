@@ -76,7 +76,7 @@
 
 ## 環境とコマンド
 
-- Install: `npm install`、`pip install check-jsonschema yamllint`
+- Install: `npm install`、`pip install check-jsonschema yamllint pytest`
 - Test (focus): 変更対象に応じて `npm run schema:check` または個別の `*:check`
 - Test (full): `npm run agent:check`
 - Lint: `npm run lint`

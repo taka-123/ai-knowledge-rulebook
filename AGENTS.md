@@ -27,7 +27,7 @@
 
 ## 主要コマンド
 
-- Install: `npm install`、`pip install check-jsonschema yamllint`
+- Install: `npm install`、`pip install check-jsonschema yamllint pytest`
 - Lint: `npm run lint`
 - Test: `npm run schema:check`、`npm run agent:check`
 - その他: `./scripts/sync-all-to-home.sh`、必要に応じて `./scripts/sync-*-to-home.sh`

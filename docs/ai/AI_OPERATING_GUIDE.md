@@ -42,19 +42,19 @@
 
 変更種別に応じて **最小の `*:check` から** 実行し、必要なら広げる:
 
-| 変更内容                        | 最低限                         | 広げる条件                                  |
-| ------------------------------- | ------------------------------ | ------------------------------------------- |
-| Markdown 一般                   | `npm run lint`                 | 共有ルール・憲法変更                        |
-| `ai/` JSON                      | `npm run schema:check`         | —                                           |
-| `.claude/skills/`               | `npm run skills:check`         | description 変更時は `description:check` も |
-| `ai/.../global/.claude/skills/` | `npm run global-skills:check`  | —                                           |
-| `.claude/agents/`               | `npm run claude-agents:check`  | 色変更時は許可色セット確認                  |
-| `.cursor/agents/`               | `npm run cursor-agents:check`  | —                                           |
-| `.codex/`                       | `npm run codex-wiring:check`   | —                                           |
-| レビュールーティング            | `npm run routing:check`        | —                                           |
-| AWS/GitHub CLI hook             | `npm run hooks:check`          | `.cursor/hooks/` 等の guard 変更時          |
-| pr-review-loop vendor / policy  | `npm run pr-review-loop:check` | 公式 babysit-pr の path と完了条件          |
-| 上記複数または不確実            | `npm run agent:check`          | —                                           |
+| 変更内容                        | 最低限                         | 広げる条件                                           |
+| ------------------------------- | ------------------------------ | ---------------------------------------------------- |
+| Markdown 一般                   | `npm run lint`                 | 共有ルール・憲法変更                                 |
+| `ai/` JSON                      | `npm run schema:check`         | —                                                    |
+| `.claude/skills/`               | `npm run skills:check`         | description 変更時は `description:check` も          |
+| `ai/.../global/.claude/skills/` | `npm run global-skills:check`  | —                                                    |
+| `.claude/agents/`               | `npm run claude-agents:check`  | 色変更時は許可色セット確認                           |
+| `.cursor/agents/`               | `npm run cursor-agents:check`  | —                                                    |
+| `.codex/`                       | `npm run codex-wiring:check`   | —                                                    |
+| レビュールーティング            | `npm run routing:check`        | —                                                    |
+| AWS/GitHub CLI hook             | `npm run hooks:check`          | `.cursor/hooks/` 等の guard 変更時                   |
+| pr-review-loop vendor / policy  | `npm run pr-review-loop:check` | policy 検査 + wrapper/vendor pytest。`pytest` が必要 |
+| 上記複数または不確実            | `npm run agent:check`          | —                                                    |
 
 **注意**: CI（`.github/workflows/ci.yml`）は `npm run check` のみ。`agent:check` はローカルで実行する。
 
@@ -146,7 +146,7 @@
 ```bash
 # セットアップ
 npm install
-pip install check-jsonschema yamllint
+pip install check-jsonschema yamllint pytest
 
 # 軽量チェック（CI と同等）
 npm run check
