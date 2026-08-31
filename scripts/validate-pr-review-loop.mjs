@@ -155,10 +155,13 @@ if (gate) {
     !gate.includes('DISPOSITION_IGNORE') ||
     !gate.includes('finding_fingerprint') ||
     !gate.includes('collect_ignore_fingerprints') ||
-    !gate.includes('eligible_codex_ignore_threads')
+    !gate.includes('eligible_codex_ignore_threads') ||
+    !gate.includes('TRUSTED_DISPOSITION_LOGINS') ||
+    !gate.includes('is_trusted_disposition_author') ||
+    !gate.includes('ignore_fingerprints_for_item')
   ) {
     errors.push(
-      'final_review_clean_gate.py must exclude only explicit IGNORE_WITH_REASON fingerprints'
+      'final_review_clean_gate.py must exclude only helper IGNORE_WITH_REASON fingerprints in the same thread'
     )
   }
   if (!gate.includes('addPullRequestReviewThreadReply')) {

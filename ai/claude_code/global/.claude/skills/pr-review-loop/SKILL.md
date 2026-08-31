@@ -94,7 +94,7 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 
 Codex-only thread にだけ、短い具体的な理由を `ignore_codex_threads.py` で返信する。人間が見る本文は自然で簡潔にし、helper が hidden marker `<!-- pr-review-loop:disposition=IGNORE_WITH_REASON fingerprint=<hex> -->` を付ける。人間 / CodeRabbit 等へは自動返信しない。
 
-返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。
+返信後、その thread が Codex-only で、IGNORE_WITH_REASON が明確で、ASK_HUMAN ではないときだけ resolve してよい（helper が行う）。resolve できなくても、同じ thread に helper（`cursor` / `cursor[bot]`）の marker 付き返信があれば final gate は同一 fingerprint を actionable から外す。PR 作成者など任意参加者の marker は採用しない。
 
 ## 非収束
 
@@ -117,7 +117,7 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 `--head` は検証用である。GitHub 上の current `headRefOid` と一致しないときは fail し、古い SHA を上書きして完了判定しない。
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、hidden marker で fingerprint が確認できる指摘だけを除外する。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
+gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。`reviewThreads` は cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、同じ thread 内の helper 投稿（`cursor` / `cursor[bot]`）の hidden marker と fingerprint が一致する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
 

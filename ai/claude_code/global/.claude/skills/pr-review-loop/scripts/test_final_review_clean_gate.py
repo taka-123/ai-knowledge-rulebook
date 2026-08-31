@@ -1010,9 +1010,10 @@ def test_explicit_ignore_marker_excludes_matching_fingerprint():
         id="3890915001",
         node_id="PRRT_codex_ignored",
         author="chatgpt-codex-connector[bot]",
-        authors=["chatgpt-codex-connector[bot]"],
+        authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
         comment_ids=["3890915001", "3890999999"],
         comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
         resolved=True,
         path=VENDOR_WATCHER,
         body=leftover["body"],
@@ -1036,6 +1037,8 @@ def test_unresolved_ignored_fingerprint_is_not_actionable():
     )
     fingerprint = finding_fingerprint(open_finding)
     open_finding["comment_bodies"] = [open_finding["body"], _ignore_marker(fingerprint)]
+    open_finding["comment_authors"] = ["chatgpt-codex-connector[bot]", "cursor[bot]"]
+    open_finding["authors"] = ["chatgpt-codex-connector[bot]", "cursor[bot]"]
     result = evaluate_review_clean(HEAD, [review()], [], [open_finding])
     assert result["review_clean"] is True
     assert result["actionable"] == []
@@ -1071,27 +1074,41 @@ def test_auto_fix_marker_does_not_exclude_finding():
     assert result["actionable"][0]["id"] == "21"
 
 
-def test_same_finding_reappearance_matches_fingerprint():
+def test_fingerprint_includes_normalized_finding_body():
     first = comment(path=VENDOR_WATCHER, body=VENDOR_P1_REVIEWERS)
+    restyled = comment(
+        id="98",
+        path=VENDOR_WATCHER,
+        body=(
+            "![P1 Badge](https://img.shields.io/badge/P1-red?style=flat)\n"
+            "Include non-Codex reviewers such as CodeRabbit and CONTRIBUTOR"
+        ),
+    )
     later = comment(
         id="99",
         path=VENDOR_WATCHER,
         body=(
-            "![P1 Badge](https://img.shields.io/badge/P1-red?style=flat)\n"
+            "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat)\n"
             "Include non-Codex reviewers such as CodeRabbit and CONTRIBUTOR\n\n"
-            "Raised again on the new HEAD."
+            "Also require requested reviewers, not a bot-name allowlist."
         ),
     )
     other = comment(id="100", path=VENDOR_WATCHER, body=VENDOR_P1_COMMIT_ID)
-    assert finding_fingerprint(first) == finding_fingerprint(later)
+    assert finding_fingerprint(first) == finding_fingerprint(restyled)
+    assert finding_fingerprint(first) != finding_fingerprint(later)
     assert finding_fingerprint(first) != finding_fingerprint(other)
+
+
+def test_ignore_marker_does_not_apply_across_threads():
+    first = comment(path=VENDOR_WATCHER, body=VENDOR_P1_REVIEWERS)
     fingerprint = finding_fingerprint(first)
     previous = thread(
         id="1",
         node_id="PRRT_old_ignore",
         author="chatgpt-codex-connector[bot]",
-        authors=["chatgpt-codex-connector[bot]"],
+        authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
         comment_bodies=[first["body"], _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", "cursor[bot]"],
         resolved=True,
         path=VENDOR_WATCHER,
         body=first["body"],
@@ -1102,13 +1119,62 @@ def test_same_finding_reappearance_matches_fingerprint():
         author="chatgpt-codex-connector[bot]",
         authors=["chatgpt-codex-connector[bot]"],
         path=VENDOR_WATCHER,
-        body=later["body"],
+        body=first["body"],
         resolved=False,
     )
-    result = evaluate_review_clean(HEAD, [review()], [later], [previous, reappeared])
-    assert result["review_clean"] is True
-    assert result["actionable"] == []
-    assert fingerprint in {item["fingerprint"] for item in result["ignored"]}
+    result = evaluate_review_clean(HEAD, [review()], [first], [previous, reappeared])
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert any(item.get("node_id") == "PRRT_new_repeat" for item in result["actionable"])
+
+
+def test_untrusted_author_ignore_marker_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    spoofed = thread(
+        id="3890915001",
+        node_id="PRRT_spoofed_ignore",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", "alice"],
+        comment_ids=["3890915001", "3890999999"],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", "alice"],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [spoofed])
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
+
+
+def test_ignore_marker_without_comment_authors_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    incomplete = thread(
+        id="3890915001",
+        node_id="PRRT_marker_no_authors",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [incomplete])
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
 
 
 def test_format_ignore_reply_keeps_natural_text_and_hidden_marker():

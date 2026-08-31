@@ -97,6 +97,12 @@ DISPOSITION_MARKER_RE = re.compile(
     re.IGNORECASE,
 )
 FINDING_BADGE_RE = re.compile(r"!\[[^\]]*\]\([^)]*\)")
+# ignore_codex_threads.py posts via gh; Cloud Agent GitHub App logins only.
+# Do not trust PR authors or arbitrary participants who paste the marker.
+TRUSTED_DISPOSITION_LOGINS = {
+    "cursor",
+    "cursor[bot]",
+}
 
 
 class GhCommandError(RuntimeError):
@@ -231,6 +237,11 @@ def is_codex_reviewer(login):
     return identity in CODEX_REVIEWER_IDENTITIES
 
 
+def is_trusted_disposition_author(login):
+    lower = str(login or "").strip().lower()
+    return lower in TRUSTED_DISPOSITION_LOGINS
+
+
 def is_codex_review_request(body):
     return bool(CODEX_REVIEW_REQUEST_RE.search(body or ""))
 
@@ -291,9 +302,15 @@ def is_actionable_text(body, path=None, review_state=None, kind=None, author=Non
 
 
 def extract_finding_title(body):
+    lines = normalize_finding_lines(body)
+    return lines[0][:200] if lines else ""
+
+
+def normalize_finding_lines(body):
     text = FINDING_BADGE_RE.sub("", body or "")
     text = re.sub(r"</?[^>]+>", " ", text)
     text = re.sub(r"[*_#`]+", "", text)
+    lines = []
     for line in text.splitlines():
         cleaned = " ".join(line.split()).strip()
         if not cleaned:
@@ -302,14 +319,14 @@ def extract_finding_title(body):
             continue
         if cleaned.lower().startswith("useful?"):
             continue
-        return cleaned[:200]
-    return ""
+        lines.append(cleaned.lower())
+    return lines
 
 
 def finding_fingerprint(item):
     path = str((item or {}).get("path") or "").strip().lower()
-    title = extract_finding_title((item or {}).get("body") or "").lower()
-    raw = f"{path}\n{title}".encode("utf-8")
+    text = "\n".join(normalize_finding_lines((item or {}).get("body") or ""))
+    raw = f"{path}\n{text}".encode("utf-8")
     return hashlib.sha256(raw).hexdigest()[:16]
 
 
@@ -338,22 +355,58 @@ def format_ignore_reply(reason, fingerprint):
     return f"{text}\n\n{marker}"
 
 
-def collect_ignore_fingerprints(threads, comments=None):
+def trusted_ignore_fingerprints_from_thread(thread):
     fingerprints = set()
-    bodies = []
-    for item in threads or []:
-        bodies.extend(item.get("comment_bodies") or [])
-        bodies.append(item.get("body") or "")
-    for item in comments or []:
-        bodies.append((item or {}).get("body") or "")
-    for body in bodies:
-        parsed = parse_disposition_marker(body)
-        if not parsed:
+    if not isinstance(thread, dict):
+        return fingerprints
+    bodies = thread.get("comment_bodies") or []
+    authors = thread.get("comment_authors")
+    if not isinstance(bodies, list) or not isinstance(authors, list):
+        return fingerprints
+    if len(authors) != len(bodies):
+        return fingerprints
+    for author, body in zip(authors, bodies):
+        if not is_trusted_disposition_author(author):
             continue
-        if parsed["disposition"] != DISPOSITION_IGNORE:
+        parsed = parse_disposition_marker(body)
+        if not parsed or parsed["disposition"] != DISPOSITION_IGNORE:
             continue
         if parsed["fingerprint"]:
             fingerprints.add(parsed["fingerprint"])
+    return fingerprints
+
+
+def collect_ignore_fingerprints(threads, comments=None):
+    del comments
+    fingerprints = set()
+    for item in threads or []:
+        fingerprints |= trusted_ignore_fingerprints_from_thread(item)
+    return fingerprints
+
+
+def item_identity_ids(item):
+    ids = thread_ids(item)
+    for comment_id in item.get("comment_ids") or []:
+        if comment_id not in (None, ""):
+            ids.add(str(comment_id))
+    return ids
+
+
+def matching_threads_for_item(item, threads):
+    ids = item_identity_ids(item)
+    matched = []
+    for thread in threads or []:
+        if ids & item_identity_ids(thread):
+            matched.append(thread)
+    return matched
+
+
+def ignore_fingerprints_for_item(item, threads):
+    fingerprints = set()
+    if item.get("kind") == "review_thread":
+        fingerprints |= trusted_ignore_fingerprints_from_thread(item)
+    for thread in matching_threads_for_item(item, threads):
+        fingerprints |= trusted_ignore_fingerprints_from_thread(thread)
     return fingerprints
 
 
@@ -463,6 +516,7 @@ def normalize_threads(payload):
         authors = []
         comment_ids = []
         comment_bodies = []
+        comment_authors = []
         for comment in comments:
             if not isinstance(comment, dict):
                 continue
@@ -473,6 +527,7 @@ def normalize_threads(payload):
             if comment_id not in (None, ""):
                 comment_ids.append(str(comment_id))
             comment_bodies.append(str(comment.get("body") or ""))
+            comment_authors.append(login)
         first_id = str((first or {}).get("databaseId") or "")
         if first_id and first_id not in comment_ids:
             comment_ids.insert(0, first_id)
@@ -485,6 +540,7 @@ def normalize_threads(payload):
                 "authors": authors,
                 "comment_ids": comment_ids,
                 "comment_bodies": comment_bodies,
+                "comment_authors": comment_authors,
                 "comments_complete": comments_complete,
                 "author_association": "",
                 "state": "",
@@ -665,13 +721,13 @@ def evaluate_review_clean(
         for item in threads
         if item.get("resolved") is False and item.get("outdated") is not True
     ]
-    ignored_fingerprints = collect_ignore_fingerprints(threads, comments)
     actionable = []
     ignored = []
     for item in [*current, *live_unresolved]:
         if is_disposition_reply(item.get("body")):
             continue
         fingerprint = finding_fingerprint(item)
+        ignored_fingerprints = ignore_fingerprints_for_item(item, threads)
         if fingerprint and fingerprint in ignored_fingerprints:
             ignored.append(
                 {
