@@ -287,6 +287,27 @@ def test_codex_about_footer_is_still_current_head_proof():
     assert result["proof"]["commit_id"] == HEAD
 
 
+def test_changes_requested_beats_summary_markers():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="11",
+                author="human-reviewer",
+                state="CHANGES_REQUESTED",
+                body="Walkthrough\nPlease fix the public API before merge.",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["actionable"][0]["state"] == "CHANGES_REQUESTED"
+    assert result["actionable"][0]["author"] == "human-reviewer"
+
+
 def test_coderabbit_changes_requested_on_current_head_blocks():
     result = evaluate_review_clean(
         HEAD,

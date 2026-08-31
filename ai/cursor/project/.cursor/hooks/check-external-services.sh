@@ -76,6 +76,10 @@ if cli_command gh; then
         continue
       fi
       if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
+        if [ "${_method_n:-0}" -gt 1 ]; then
+          deny "Mutating gh api is forbidden."
+        fi
         if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
           deny "Mutating gh api is forbidden."
         fi

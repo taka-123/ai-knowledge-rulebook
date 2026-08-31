@@ -304,11 +304,11 @@ def is_approval_only(body):
 def is_actionable_text(body, path=None, review_state=None, kind=None, author=None):
     if is_disposition_reply(body):
         return False
+    if str(review_state or "").upper() == "CHANGES_REQUESTED":
+        return True
     if is_summary_only(body, path):
         return False
     if path:
-        return True
-    if str(review_state or "").upper() == "CHANGES_REQUESTED":
         return True
     lower = (body or "").lower()
     if any(marker in lower for marker in ACTIONABLE_MARKERS):

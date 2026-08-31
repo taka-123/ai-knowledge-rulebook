@@ -125,6 +125,7 @@ deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repo
 deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE && gh api repos/owner/repo/pulls/1 -X GET"
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
 deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE `gh api repos/owner/repo/pulls/1 -X GET`'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
 deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
 deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
