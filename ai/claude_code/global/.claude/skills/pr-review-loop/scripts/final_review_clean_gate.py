@@ -590,6 +590,8 @@ def normalize_issue_comments(payload, head_sha=""):
                 "outdated": None,
                 "body": body,
                 "url": str(item.get("html_url") or ""),
+                "created_at": str(item.get("created_at") or ""),
+                "updated_at": str(item.get("updated_at") or ""),
             }
         )
     return out
@@ -621,10 +623,13 @@ def normalize_threads(payload):
         comment_authors = []
         for comment in comments:
             if not isinstance(comment, dict):
+                comments_complete = False
                 continue
             login = extract_login(comment.get("author"))
             if login:
                 authors.append(login)
+            else:
+                comments_complete = False
             comment_id = comment.get("databaseId")
             if comment_id not in (None, ""):
                 comment_ids.append(str(comment_id))
@@ -659,6 +664,20 @@ def normalize_threads(payload):
     return out
 
 
+def request_comment_was_edited(comment):
+    created = str((comment or {}).get("created_at") or "")
+    updated = str((comment or {}).get("updated_at") or "")
+    return bool(created and updated and updated > created)
+
+
+def reaction_matches_current_request_body(comment, reaction):
+    if not request_comment_was_edited(comment):
+        return True
+    reacted = str((reaction or {}).get("created_at") or "")
+    updated = str((comment or {}).get("updated_at") or "")
+    return bool(reacted and reacted >= updated)
+
+
 def normalize_codex_completion_signals(issue_comments, reactions_by_comment_id, head_sha=""):
     out = []
     for comment in issue_comments or []:
@@ -671,6 +690,8 @@ def normalize_codex_completion_signals(issue_comments, reactions_by_comment_id, 
         bound = extract_bound_sha(body, head_sha) or str(comment.get("commit_id") or "")
         for reaction in reactions_by_comment_id.get(comment_id, []) or []:
             if not isinstance(reaction, dict):
+                continue
+            if not reaction_matches_current_request_body(comment, reaction):
                 continue
             content = str(reaction.get("content") or "")
             author = extract_login(reaction.get("user")) or str(reaction.get("author") or "")

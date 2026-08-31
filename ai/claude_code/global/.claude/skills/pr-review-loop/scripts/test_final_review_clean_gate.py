@@ -839,6 +839,73 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
     assert result["review_clean"] is True
 
 
+def test_edited_codex_request_ignores_stale_thumbs():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 99,
+                "user": {"login": "agent-operator"},
+                "body": f"@codex review\nhead: {HEAD}",
+                "created_at": "2026-08-31T01:00:00Z",
+                "updated_at": "2026-08-31T03:00:00Z",
+                "html_url": "https://example.test/99",
+            }
+        ],
+        HEAD,
+    )
+    signals = normalize_codex_completion_signals(
+        comments,
+        {
+            "99": [
+                {
+                    "id": 1,
+                    "content": "+1",
+                    "created_at": "2026-08-31T02:00:00Z",
+                    "user": {"login": "chatgpt-codex-connector[bot]"},
+                }
+            ]
+        },
+        HEAD,
+    )
+    assert signals == []
+    result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_thumbs_after_codex_request_edit_still_count():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 99,
+                "user": {"login": "agent-operator"},
+                "body": f"@codex review\nhead: {HEAD}",
+                "created_at": "2026-08-31T01:00:00Z",
+                "updated_at": "2026-08-31T03:00:00Z",
+                "html_url": "https://example.test/99",
+            }
+        ],
+        HEAD,
+    )
+    signals = normalize_codex_completion_signals(
+        comments,
+        {
+            "99": [
+                {
+                    "id": 1,
+                    "content": "+1",
+                    "created_at": "2026-08-31T03:00:01Z",
+                    "user": {"login": "chatgpt-codex-connector[bot]"},
+                }
+            ]
+        },
+        HEAD,
+    )
+    assert len(signals) == 1
+    result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
+    assert result["review_clean"] is True
+
+
 def test_is_codex_reviewer_accepts_graphql_login_without_bot_suffix():
     assert is_codex_reviewer("chatgpt-codex-connector[bot]") is True
     assert is_codex_reviewer("chatgpt-codex-connector") is True
@@ -1124,6 +1191,51 @@ def test_incomplete_comment_page_is_not_codex_only():
     )
     assert eligible == []
     assert rejected[0]["node_id"] == "PRRT_truncated"
+
+
+def test_null_author_comment_makes_thread_incomplete():
+    threads = normalize_threads(
+        [
+            {
+                "id": "PRRT_ghost",
+                "isResolved": False,
+                "isOutdated": False,
+                "comments": {
+                    "nodes": [
+                        {
+                            "databaseId": 1,
+                            "body": "Please fix.",
+                            "path": "a.py",
+                            "author": {"login": "chatgpt-codex-connector[bot]"},
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                        {
+                            "databaseId": 2,
+                            "body": "Human reply from a deleted account.",
+                            "path": "a.py",
+                            "author": None,
+                            "commit": {"oid": HEAD},
+                            "originalCommit": {"oid": HEAD},
+                        },
+                    ]
+                },
+            }
+        ]
+    )
+    assert threads[0]["authors"] == ["chatgpt-codex-connector[bot]"]
+    assert threads[0]["comments_complete"] is False
+    assert is_codex_only_thread(threads[0]) is False
+    ignore_eligible, ignore_rejected = eligible_codex_ignore_threads(
+        threads, ["PRRT_ghost"], HEAD, HEAD
+    )
+    resolve_eligible, resolve_rejected = eligible_codex_resolve_threads(
+        threads, ["PRRT_ghost"], HEAD, HEAD
+    )
+    assert ignore_eligible == []
+    assert resolve_eligible == []
+    assert ignore_rejected[0]["node_id"] == "PRRT_ghost"
+    assert resolve_rejected[0]["node_id"] == "PRRT_ghost"
 
 
 def test_list_comments_payload_defaults_to_complete():
