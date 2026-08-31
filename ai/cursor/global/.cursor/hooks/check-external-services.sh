@@ -78,7 +78,9 @@ if cli_command gh; then
         grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
         deny "Mutating gh api is forbidden."
       fi
-      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$cmd" | wc -l | tr -d ' ')" || true
+      # Count after quote removal so -'X' POST is visible as -X POST.
+      _cmd_unquote="$(printf '%s' "$cmd" | tr -d "'\"")"
+      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$_cmd_unquote" | wc -l | tr -d ' ')" || true
       if [ "${_gh_method_n:-0}" -gt 1 ]; then
         deny "Mutating gh api is forbidden."
       fi
