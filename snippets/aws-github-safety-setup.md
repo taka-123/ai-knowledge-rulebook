@@ -627,16 +627,16 @@ cwd="$(jq -r '.cwd // empty' <<<"$input")" || cwd=""
 
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -668,16 +668,43 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    # Compound ( { and command/process substitution nest gh api; split those too.
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
+      deny "Mutating gh api is forbidden."
+    fi
+    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
+        deny "Mutating gh api is forbidden."
+      fi
+      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$cmd" | wc -l | tr -d ' ')" || true
+      if [ "${_gh_method_n:-0}" -gt 1 ]; then
+        deny "Mutating gh api is forbidden."
+      fi
+      # Fail closed: standalone $var / $@ / $* / $1 can expand to -X POST.
+      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+        deny "Mutating gh api is forbidden."
+      fi
+    fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
       if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
+        if [ "${_method_n:-0}" -gt 1 ]; then
+          deny "Mutating gh api is forbidden."
+        fi
         if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
           deny "Mutating gh api is forbidden."
         fi
       fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
+    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 
@@ -730,16 +757,16 @@ cwd="$(jq -r '.cwd // .tool_info.cwd // empty' <<<"$input")" || cwd=""
 
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -771,16 +798,43 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    # Compound ( { and command/process substitution nest gh api; split those too.
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$cmd" | wc -l | tr -d ' ')" || true
+      if [ "${_gh_method_n:-0}" -gt 1 ]; then
+        block "mutating gh api"
+      fi
+      # Fail closed: standalone $var / $@ / $* / $1 can expand to -X POST.
+      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+    fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
       if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
+        if [ "${_method_n:-0}" -gt 1 ]; then
+          block "mutating gh api"
+        fi
         if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
           block "mutating gh api"
         fi
       fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
+    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 
@@ -871,16 +925,16 @@ fi
 
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -912,16 +966,43 @@ if cli_command gh; then
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
     # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    # Compound ( { and command/process substitution nest gh api; split those too.
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
+      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
+    if grep -Eq -- '(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
+        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$cmd" | wc -l | tr -d ' ')" || true
+      if [ "${_gh_method_n:-0}" -gt 1 ]; then
+        block "mutating gh api"
+      fi
+      # Fail closed: standalone $var / $@ / $* / $1 can expand to -X POST.
+      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
+        grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+        block "mutating gh api"
+      fi
+    fi
     while IFS= read -r _gh_api_seg; do
       if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
         continue
       fi
       if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
+        if [ "${_method_n:-0}" -gt 1 ]; then
+          block "mutating gh api"
+        fi
         if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
           block "mutating gh api"
         fi
       fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
+    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 
@@ -1097,6 +1178,26 @@ deny_all "gh repo edit owner/repo"
 deny_all "gh auth token"
 deny_all "gh api repos/owner/repo/pulls/1 -X DELETE"
 deny_all "gh api graphql -f query=foo"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repos/owner/repo/pulls/1 -X GET"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE && gh api repos/owner/repo/pulls/1 -X GET"
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE `gh api repos/owner/repo/pulls/1 -X GET`'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE < <(gh api repos/owner/repo/pulls/1 -X GET )'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE >(gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
+deny_all 'm=POST; gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET --method="$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X"$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X "$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews --method GET --method=POST -f event=APPROVE'
+deny_all '(gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all '{ gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET; }'
+deny_all 'm=-; m+=X; n=POST; gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE -X GET $m $n'
+deny_all 'm=-; m+=X; set -- "$m" POST; gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE "$@"'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $*'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $1'
+deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
+deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
 allow_all "echo 'aws s3 ls'"
 allow_all 'git commit -m "use aws cli"'
