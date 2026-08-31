@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import os
 import subprocess
@@ -15,8 +16,10 @@ VENDOR_OFFICIAL_TEST = (
 WRAPPER_SKILL = SKILL_ROOT / "SKILL.md"
 UPSTREAM = SKILL_ROOT / "UPSTREAM.md"
 OFFICIAL_SKILL = SKILL_ROOT / "vendor" / "openai-codex-babysit-pr" / "SKILL.md"
+GATE = Path(__file__).resolve().parent / "final_review_clean_gate.py"
 
 PINNED_SHA = "a770e5b8470d3320eb53a56a286ea4a0a70a1f59"
+VENDOR_WATCHER_SHA256 = "9f9e992ec1f3e5a99546c79334ae2e0f810279edbd8b50fa894f2b275d644417"
 
 
 def load_module(path, name):
@@ -153,6 +156,8 @@ def test_wrapper_policy_strings():
         "@codex review",
         "AUTO_FIX",
         "ASK_HUMAN",
+        "final_review_clean_gate.py",
+        "commit_id",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []
@@ -169,3 +174,36 @@ def test_official_unit_tests_are_present():
     assert "test_pending_review_feedback_surfaces_only_after_publication" in VENDOR_OFFICIAL_TEST.read_text(
         encoding="utf-8"
     )
+
+
+def test_vendored_watcher_sha256_is_unmodified():
+    digest = hashlib.sha256(VENDOR_WATCHER.read_bytes()).hexdigest()
+    assert digest == VENDOR_WATCHER_SHA256
+    normalized = gh_pr_watch.normalize_reviews(
+        [
+            {
+                "id": 1,
+                "state": "COMMENTED",
+                "commit_id": "abc123",
+                "user": {"login": "octocat"},
+                "body": "Looks good",
+            }
+        ]
+    )
+    assert "commit_id" not in normalized[0]
+
+
+def test_gate_covers_bots_and_external_reviewers_that_watcher_drops():
+    assert gh_pr_watch.is_actionable_review_bot_login("coderabbitai[bot]") is False
+    assert gh_pr_watch.is_actionable_review_bot_login("chatgpt-codex-connector[bot]") is True
+    assert (
+        gh_pr_watch.is_trusted_human_review_author(
+            {"author": "outside-reviewer", "author_association": "CONTRIBUTOR"},
+            None,
+        )
+        is False
+    )
+    gate_text = GATE.read_text(encoding="utf-8")
+    assert "gh_pr_watch" not in gate_text
+    assert "commit_id" in gate_text
+    assert "original_commit_id" in gate_text

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -37,6 +38,7 @@ const officialTest = path.join(
 )
 
 const PINNED_SHA = 'a770e5b8470d3320eb53a56a286ea4a0a70a1f59'
+const VENDOR_WATCHER_SHA256 = '9f9e992ec1f3e5a99546c79334ae2e0f810279edbd8b50fa894f2b275d644417'
 
 if (upstream && !upstream.includes(PINNED_SHA)) {
   errors.push('UPSTREAM.md must record the pinned openai/codex commit SHA')
@@ -62,6 +64,8 @@ if (wrapper) {
     'gh workflow run',
     'retry_failed_checks',
     '@codex review',
+    'final_review_clean_gate.py',
+    'commit_id',
   ]
   for (const item of required) {
     if (!wrapper.includes(item)) errors.push(`pr-review-loop SKILL.md missing policy: ${item}`)
@@ -87,9 +91,40 @@ if (launcher) {
 
 if (!fs.existsSync(officialWatcher)) {
   errors.push('missing vendored gh_pr_watch.py')
+} else {
+  const hash = crypto.createHash('sha256').update(fs.readFileSync(officialWatcher)).digest('hex')
+  if (hash !== VENDOR_WATCHER_SHA256) {
+    errors.push('vendored gh_pr_watch.py must remain unmodified (SHA256 mismatch)')
+  }
+  const watcherText = fs.readFileSync(officialWatcher, 'utf8')
+  if (
+    !watcherText.includes('"kind": "review"') ||
+    watcherText.includes('"commit_id": str(item.get("commit_id")')
+  ) {
+    errors.push('vendored normalize_reviews must stay upstream (no wrapper commit_id patch)')
+  }
 }
 if (!fs.existsSync(officialTest)) {
   errors.push('missing vendored test_gh_pr_watch.py')
+}
+
+const gate = read('scripts/final_review_clean_gate.py')
+if (gate) {
+  if (
+    gate.includes('gh_pr_watch') ||
+    gate.includes('recommend_actions') ||
+    gate.includes('fetch_new_review_items')
+  ) {
+    errors.push('final_review_clean_gate.py must not import or reimplement the vendored watcher')
+  }
+  if (!gate.includes('commit_id') || !gate.includes('original_commit_id')) {
+    errors.push(
+      'final_review_clean_gate.py must keep commit_id / original_commit_id for HEAD binding'
+    )
+  }
+  if (!gate.includes('reviewThreads') || !gate.includes('api graphql')) {
+    errors.push('final_review_clean_gate.py must re-fetch published reviews and unresolved threads')
+  }
 }
 
 const topLevelBabysit = path.join(

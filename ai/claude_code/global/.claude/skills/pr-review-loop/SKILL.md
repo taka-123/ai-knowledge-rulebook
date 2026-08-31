@@ -52,7 +52,7 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --retry-fai
 5. 未対応の指摘を `AUTO_FIX` / `ASK_HUMAN` / `IGNORE_WITH_REASON` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX / ASK_HUMAN を満たすものだけ直す。
 6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄し、launcher で `--watch` を新 HEAD に対して即再開する。
 7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。flaky で watcher が `retry_failed_checks` を出した場合だけ、launcher の `--retry-failed-now` を公式 retry budget（最大 3 cycle）内で使う。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
-8. current HEAD について完了条件をすべて満たすまで繰り返す。満たしたら watch を止め、`merge可能。最終merge判断は人間。` と返す。
+8. watcher の `idle` / `ready_to_merge` だけでは完了しない。完了判定の直前に `scripts/final_review_clean_gate.py` を current HEAD で実行する。gate が `review_clean: false` なら watch を続ける。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
 上位の repository / tool policy を本手順より優先する。触るのは PR head branch だけ。同じ PR に複数の修正 Agent を並走させない。別の人・Agent が新しい commit を push したら、最新状態を読み直してから動く。
 
@@ -102,7 +102,15 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 
 **現在 HEAD に対する review が完了したことを確認するまで、review-clean と判定しない。**
 
-一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。
+公式 watcher の snapshot は通常監視用である。完了判定には使わない。watcher は pending review を正しく無視する一方、CodeRabbit 等の bot や `CONTRIBUTOR` の外部 reviewer を通常監視から外すことがあり、正規化結果から `commit_id` も落とす。その不足は完了直前の final gate で埋める。vendor の `gh_pr_watch.py` は改変しない。
+
+```bash
+python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --head <current-sha>
+```
+
+gate は GitHub から published review / review comments / unresolved threads を再取得する。pending は無視する。Codex 以外の review bot と正当な external reviewer も含める。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。
+
+一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に紐づく published review 完了を証明できないときも完了しない。
 
 Codex Review を primary reviewer として扱う repo では、次を区別する。
 
@@ -117,6 +125,7 @@ AUTO_FIX 後に push した場合は、それ以前の review-clean を無効化
 
 current HEAD について次をすべて確認したら watch を終了してよい。
 
+- `final_review_clean_gate.py` が `review_clean: true`（current HEAD の review 完了証明あり、actionable なし）
 - review 完了確認済み（上記 review-clean）
 - 未対応の actionable review なし
 - CI green
@@ -135,6 +144,7 @@ merge可能。最終merge判断は人間。
 ## GitHub 操作の境界
 
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
+- 完了直前の `final_review_clean_gate.py` が published review / threads を再取得する。Agent が直接 GraphQL を叩く必要はない。
 - 信頼する公式 watcher が flaky/unrelated と分類し `retry_failed_checks` を出したときだけ、launcher 経由の `--retry-failed-now`（内部の `gh run rerun --failed`）を公式 default 最大 3 cycle まで許可する。
 - Agent が直接 `gh run rerun` すること、`gh workflow run` による任意 workflow の新規手動起動、それ以外の Actions 手動実行は禁止のまま。
 - 人間 reviewer への返信、人間 review thread の resolve、PR merge はしない。
