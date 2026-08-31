@@ -466,6 +466,44 @@ def test_later_commented_review_does_not_drop_earlier_actionable_commented():
     assert any(item.get("id") == "30" for item in result["actionable"])
 
 
+def test_later_approved_review_clears_kept_commented_reviews():
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="30",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Please fix the hook.",
+                submitted_at="2026-08-31T01:00:00Z",
+            ),
+            review(
+                id="31",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Also fix the gate.",
+                submitted_at="2026-08-31T02:00:00Z",
+            ),
+            review(
+                id="32",
+                author="alice",
+                author_association="MEMBER",
+                state="APPROVED",
+                body="Approved after discussion.",
+                submitted_at="2026-08-31T03:00:00Z",
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+
+
 def test_later_commented_review_does_not_clear_changes_requested():
     result = evaluate_review_clean(
         HEAD,

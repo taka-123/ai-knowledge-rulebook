@@ -77,6 +77,7 @@ if (wrapper) {
     'launcher は `--retry-failed-now` を拒否する',
     'vendor argparse の短縮形も拒否する',
     '以前の actionable な `COMMENTED` review も捨てない',
+    '保持済み COMMENTED も含めて解除する',
     'updatePullRequestReviewComment',
     '人間向け返信を増やさない',
   ]

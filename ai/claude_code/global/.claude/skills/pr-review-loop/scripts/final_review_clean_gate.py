@@ -619,6 +619,16 @@ def latest_reviews_per_reviewer_commit(reviews):
         if prev_state == "COMMENTED" and new_state == "COMMENTED":
             passthrough.append(item)
             continue
+        if new_state in CHANGES_REQUESTED_CLEARED_BY:
+            passthrough = [
+                kept_item
+                for kept_item in passthrough
+                if (
+                    canonical_github_login((kept_item or {}).get("author")),
+                    str((kept_item or {}).get("commit_id") or ""),
+                )
+                != key
+            ]
         chosen[key] = (item, index)
     kept = [pair[0] for pair in sorted(chosen.values(), key=lambda pair: pair[1])]
     return kept + passthrough
