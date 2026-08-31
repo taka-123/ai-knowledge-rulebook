@@ -387,6 +387,55 @@ def test_approved_review_with_actionable_marker_still_blocks():
     assert result["reason"] == "actionable_review_on_current_head"
 
 
+def test_approved_review_with_negated_changes_requested_is_not_actionable():
+    bodies = (
+        "No changes requested.",
+        "Approved; no changes requested.",
+    )
+    for body in bodies:
+        assert is_actionable_text(body, review_state="APPROVED", kind="review") is False
+        result = evaluate_review_clean(
+            HEAD,
+            [
+                review(),
+                review(
+                    id="15",
+                    author="alice",
+                    author_association="MEMBER",
+                    state="APPROVED",
+                    body=body,
+                ),
+            ],
+            [],
+            [],
+        )
+        assert result["review_clean"] is True, body
+        assert result["reason"] == "current_head_review_complete"
+        assert result["actionable"] == []
+
+
+def test_commented_changes_requested_marker_still_blocks():
+    body = "Please address the changes requested in the walkthrough."
+    assert is_actionable_text(body, review_state="COMMENTED", kind="review") is True
+    result = evaluate_review_clean(
+        HEAD,
+        [
+            review(),
+            review(
+                id="16",
+                author="alice",
+                author_association="MEMBER",
+                state="COMMENTED",
+                body=body,
+            ),
+        ],
+        [],
+        [],
+    )
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+
+
 def test_coderabbit_changes_requested_on_current_head_blocks():
     result = evaluate_review_clean(
         HEAD,
