@@ -720,6 +720,24 @@ def test_resolve_pr_prefers_url_base_repo_over_fork_head(monkeypatch):
     assert pr["head_sha"] == HEAD
 
 
+def test_resolve_pr_rejects_stale_head_override(monkeypatch):
+    monkeypatch.setattr(
+        gate,
+        "gh_json",
+        lambda args: {
+            "number": 8,
+            "url": "https://github.com/base-owner/base-repo/pull/8",
+            "headRefOid": HEAD,
+            "headRepositoryOwner": {"login": "base-owner"},
+            "headRepository": {"name": "base-repo"},
+        },
+    )
+    with pytest.raises(gate.GhCommandError, match="does not match current PR HEAD"):
+        gate.resolve_pr("8", head_override=OLD)
+    matched = gate.resolve_pr("8", head_override=HEAD)
+    assert matched["head_sha"] == HEAD
+
+
 def test_unmarked_external_review_body_is_actionable():
     external = review(
         author="outside-reviewer",

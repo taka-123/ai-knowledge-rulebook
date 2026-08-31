@@ -132,6 +132,9 @@ if (gate) {
   if (!gate.includes('extract_repo_from_pr_url')) {
     errors.push('final_review_clean_gate.py must target the PR URL base repository, not fork HEAD')
   }
+  if (!gate.includes('does not match current PR HEAD')) {
+    errors.push('final_review_clean_gate.py must reject --head that does not match live headRefOid')
+  }
   if (!gate.includes('comment_ids') || !gate.includes('resolved_ids')) {
     errors.push(
       'final_review_clean_gate.py must drop REST comments that belong to resolved threads'

@@ -166,12 +166,17 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
         owner = ((data.get("headRepositoryOwner") or {}).get("login")) or ""
         name = ((data.get("headRepository") or {}).get("name")) or ""
         repo = f"{owner}/{name}" if owner and name else ""
+    actual_head = str(data.get("headRefOid") or "")
+    if head_override and head_override != actual_head:
+        raise GhCommandError(
+            f"--head {head_override} does not match current PR HEAD {actual_head}"
+        )
     return {
         "number": int(data.get("number")),
         "repo": repo,
         "owner": owner,
         "name": name,
-        "head_sha": head_override or str(data.get("headRefOid") or ""),
+        "head_sha": actual_head,
         "url": pr_url,
     }
 

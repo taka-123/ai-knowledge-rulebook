@@ -667,12 +667,17 @@ if cli_command gh; then
       deny "Mutating gh api is forbidden."
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
-    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
-      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
-        deny "Mutating gh api is forbidden."
+    # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    while IFS= read -r _gh_api_seg; do
+      if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+        continue
       fi
-    fi
+      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+          deny "Mutating gh api is forbidden."
+        fi
+      fi
+    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
   fi
 fi
 
@@ -765,12 +770,17 @@ if cli_command gh; then
       block "mutating gh api"
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
-    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
-      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
-        block "mutating gh api"
+    # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    while IFS= read -r _gh_api_seg; do
+      if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+        continue
       fi
-    fi
+      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+          block "mutating gh api"
+        fi
+      fi
+    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
   fi
 fi
 
@@ -901,12 +911,17 @@ if cli_command gh; then
       block "mutating gh api"
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
-    # Unspecified method + -f stays denied so `gh api graphql -f` remains blocked.
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd"; then
-      if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$cmd"; then
-        block "mutating gh api"
+    # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
+    while IFS= read -r _gh_api_seg; do
+      if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+        continue
       fi
-    fi
+      if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
+        if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
+          block "mutating gh api"
+        fi
+      fi
+    done < <(printf '%s\n' "$cmd" | tr ';|&' '\n')
   fi
 fi
 
