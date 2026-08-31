@@ -79,10 +79,8 @@ if cli_command gh; then
       if [ "${_gh_method_n:-0}" -gt 1 ]; then
         block "mutating gh api"
       fi
-      # Fail closed: standalone $var / $@ / $* / $1 can expand to -X POST.
-      if grep -Eq '(^|[[:space:]])\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
-        grep -Eq '(^|[[:space:]])"\$[{A-Za-z_@*0-9]' <<<"$cmd" ||
-        grep -Eq "(^|[[:space:]])'\\\$[{A-Za-z_@*0-9]" <<<"$cmd"; then
+      # Fail closed: $var / ${m} / -$var can expand to -X POST, including inside tokens.
+      if grep -Eq '\$[{A-Za-z_@*0-9]' <<<"$cmd"; then
         block "mutating gh api"
       fi
       # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
