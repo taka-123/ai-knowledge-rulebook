@@ -514,6 +514,23 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
     assert result["review_clean"] is True
 
 
+def test_is_codex_reviewer_accepts_graphql_login_without_bot_suffix():
+    assert is_codex_reviewer("chatgpt-codex-connector[bot]") is True
+    assert is_codex_reviewer("chatgpt-codex-connector") is True
+    assert is_codex_reviewer("alice") is False
+    assert is_codex_reviewer("coderabbitai[bot]") is False
+    graphql_thread = thread(
+        author="chatgpt-codex-connector",
+        authors=["chatgpt-codex-connector"],
+        node_id="PRRT_graphql_codex",
+    )
+    eligible, rejected = eligible_codex_resolve_threads(
+        [graphql_thread], ["PRRT_graphql_codex"], HEAD, HEAD
+    )
+    assert rejected == []
+    assert [item["node_id"] for item in eligible] == ["PRRT_graphql_codex"]
+
+
 def test_codex_review_request_requires_explicit_review_word():
     assert is_codex_review_request("@codex review") is True
     assert is_codex_review_request(f"@codex review\nhead: {HEAD}") is True

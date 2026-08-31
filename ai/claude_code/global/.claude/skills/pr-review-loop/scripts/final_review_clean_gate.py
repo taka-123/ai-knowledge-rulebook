@@ -151,9 +151,21 @@ def resolve_pr(pr_spec, repo_override=None, head_override=None):
     }
 
 
+CODEX_REVIEWER_LOGINS = {
+    "chatgpt-codex-connector[bot]",
+    "chatgpt-codex-connector",
+    "codex[bot]",
+    "codex",
+}
+
+
 def is_codex_reviewer(login):
     lower = str(login or "").lower()
-    return bool(lower) and "codex" in lower and "[bot]" in lower
+    if not lower:
+        return False
+    if lower in CODEX_REVIEWER_LOGINS:
+        return True
+    return "codex" in lower and "[bot]" in lower
 
 
 def is_codex_review_request(body):
