@@ -300,6 +300,16 @@ def extract_bound_sha(body, head_sha=""):
     return ""
 
 
+def is_codex_inline_summary(body, author=None, path=None):
+    if not path or not is_codex_reviewer(author):
+        return False
+    text = (body or "").strip()
+    if text.startswith("### Summary"):
+        return True
+    lower = text.lower()
+    return "view task →" in lower or lower.startswith("**testing**")
+
+
 def is_summary_only(body, path=None):
     if path:
         return False
@@ -339,6 +349,8 @@ def is_actionable_text(body, path=None, review_state=None, kind=None, author=Non
     if has_changes_requested_marker(body):
         return True
     if is_summary_only(body, path):
+        return False
+    if is_codex_inline_summary(body, author, path):
         return False
     if path:
         return True
