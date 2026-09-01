@@ -504,6 +504,8 @@ def trusted_ignore_fingerprints_from_thread(thread, gh_user="", head_sha=""):
     fingerprints = set()
     if not isinstance(thread, dict):
         return fingerprints
+    if thread.get("comments_complete") is False:
+        return fingerprints
     if not gh_user or not head_sha:
         return fingerprints
     bodies = thread.get("comment_bodies") or []

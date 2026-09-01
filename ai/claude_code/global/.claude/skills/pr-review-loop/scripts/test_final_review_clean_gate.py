@@ -2007,6 +2007,34 @@ def test_incomplete_thread_comments_are_not_eligible_for_ignore_or_resolve():
     assert resolve_rejected[0]["node_id"] == "PRRT_truncated"
 
 
+def test_incomplete_thread_ignore_marker_is_not_honored():
+    leftover = comment(
+        id="3890915001",
+        author="chatgpt-codex-connector[bot]",
+        path=VENDOR_WATCHER,
+        body=VENDOR_P1_REVIEWERS,
+    )
+    fingerprint = finding_fingerprint(leftover)
+    truncated = thread(
+        id="3890915001",
+        node_id="PRRT_truncated_marker",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comment_bodies=[leftover["body"], _ignore_marker(fingerprint)],
+        comment_authors=["chatgpt-codex-connector[bot]", HELPER_LOGIN],
+        comments_complete=False,
+        resolved=True,
+        path=VENDOR_WATCHER,
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(
+        HEAD, [review()], [leftover], [truncated], gh_user=HELPER_LOGIN
+    )
+    assert result["review_clean"] is False
+    assert result["ignored"] == []
+    assert result["actionable"][0]["id"] == "3890915001"
+
+
 def test_codex_only_thread_is_eligible_for_ignore_without_push():
     bot = thread(
         author="chatgpt-codex-connector[bot]",
