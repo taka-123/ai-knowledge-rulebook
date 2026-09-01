@@ -348,6 +348,16 @@ def test_codex_inline_summary_is_not_actionable():
     ) is False
 
 
+def test_codex_finding_with_view_task_link_is_actionable():
+    body = "Some finding without badge.\n\n[View task →](https://example.test)"
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is True
+
+
 def test_approved_review_with_extra_prose_is_not_actionable():
     body = "Approved — nice work on the tests."
     assert is_actionable_text(body, review_state="APPROVED", kind="review") is False

@@ -303,11 +303,7 @@ def extract_bound_sha(body, head_sha=""):
 def is_codex_inline_summary(body, author=None, path=None):
     if not path or not is_codex_reviewer(author):
         return False
-    text = (body or "").strip()
-    if text.startswith("### Summary"):
-        return True
-    lower = text.lower()
-    return "view task →" in lower or lower.startswith("**testing**")
+    return (body or "").strip().startswith("### Summary")
 
 
 def is_summary_only(body, path=None):
