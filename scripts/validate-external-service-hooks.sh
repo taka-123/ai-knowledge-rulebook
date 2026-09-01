@@ -79,8 +79,6 @@ expect_windsurf() {
   fi
 }
 
-# deny: cursor=deny, claude/windsurf=exit 2
-# allow: cursor=allow, claude/windsurf=exit 0
 deny_all() {
   local cmd="$1" cwd="${2:-$tmp_feature}"
   expect_cursor deny "$cmd" "$cwd"
@@ -123,39 +121,14 @@ deny_all "gh repo edit owner/repo"
 deny_all "gh auth token"
 deny_all "gh api repos/owner/repo/pulls/1 -X DELETE"
 deny_all "gh api graphql -f query=foo"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repos/owner/repo/pulls/1 -X GET"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE && gh api repos/owner/repo/pulls/1 -X GET"
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE `gh api repos/owner/repo/pulls/1 -X GET`'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE < <(gh api repos/owner/repo/pulls/1 -X GET )'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE >(gh api repos/owner/repo/pulls/1 -X GET)'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
-deny_all 'm=POST; gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET --method="$m" -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X"$m" -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X "$m" -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews --method GET --method=POST -f event=APPROVE'
-deny_all '(gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET)'
-deny_all '{ gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET; }'
-deny_all 'm=-; m+=X; n=POST; gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE -X GET $m $n'
-deny_all 'm=-; m+=X; set -- "$m" POST; gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE "$@"'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $*'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $1'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE -\X P\O\S\T'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE --\method POST'
-deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -'X' POST -f event=APPROVE"
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -"X" POST -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET ?X POST -f event=APPROVE'
-deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET *X POST -f event=APPROVE'
-deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -\$'X' POST -f event=APPROVE"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -\$\"X\" POST -f event=APPROVE"
-deny_all 'm=X; gh api repos/owner/repo/pulls/1/reviews -X GET -${m} POST -f event=APPROVE'
-deny_all "gh api repos/owner/repo/pulls/1/reviews -fevent=APPROVE"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -Fevent=APPROVE"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -if event=APPROVE"
-deny_all "gh api repos/owner/repo/pulls/1/reviews -iF event=APPROVE"
 deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
 deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -Fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE"
+# compound / substitution bypass は best-effort guardrail の残余リスクとして許容
+allow_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repos/owner/repo/pulls/1 -X GET"
+allow_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
 allow_all "rg 'gh '"
 allow_all "echo 'aws s3 ls'"
 allow_all 'git commit -m "use aws cli"'

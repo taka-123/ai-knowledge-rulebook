@@ -28,17 +28,12 @@ fi
 # プロジェクト内の rm -rf ./dist, ./build, ./node_modules, ./.claude/skills/foo などは sandbox に任せる。
 if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
   if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
-    # ルート、ホーム、カレント全体、親ディレクトリ全体
     if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
       block "destructive rm target"
     fi
-
-    # macOS / Unix の重要ディレクトリ
     if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd_scan"; then
       block "destructive rm system path"
     fi
-
-    # ユーザーホーム直下全体や主要設定ディレクトリ
     if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd_scan"; then
       block "destructive rm protected home path"
     fi
@@ -77,6 +72,15 @@ gh_subcmd() {
   grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-[fF]([[:space:]=]|[^[:space:]-])' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
+}
+
 if cli_command aws; then
   block "aws CLI (use AWS MCP Server)"
 fi
@@ -98,63 +102,16 @@ if cli_command gh; then
     block "dangerous gh command (auth)"
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
     if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
     # -f/--field on explicit GET are query params (official babysit-pr watcher).
-    # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
-    # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
-      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       block "mutating gh api"
     fi
-    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
-      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
-        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
-        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Count after quote removal so -'X' POST is visible as -X POST.
-      _cmd_unquote="$(printf '%s' "$cmd" | tr -d "'\"")"
-      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$_cmd_unquote" | wc -l | tr -d ' ')" || true
-      if [ "${_gh_method_n:-0}" -gt 1 ]; then
-        block "mutating gh api"
-      fi
-      # Fail closed: $var / ${m} / -$var can expand to -X POST, including inside tokens.
-      if grep -Eq '\$[{A-Za-z_@*0-9]' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
-      if grep -Eq '\\' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: unquoted ? * [ can glob-expand to -X (e.g. ?X -> -X).
-      if grep -Eq '[?*[]' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: ANSI-C $'X' or locale $"X" quotes can assemble -X after shell parse.
-      if grep -Eq "\\\$['\"]" <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-    fi
-    while IFS= read -r _gh_api_seg; do
-      if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
-        continue
-      fi
-      if grep -Eq '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
-        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
-        if [ "${_method_n:-0}" -gt 1 ]; then
-          block "mutating gh api"
-        fi
-        if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
-          block "mutating gh api"
-        fi
-      fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 

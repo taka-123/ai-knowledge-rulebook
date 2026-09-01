@@ -931,7 +931,7 @@ def test_normalize_codex_thumbs_binds_request_head_sha():
     assert result["review_clean"] is True
 
 
-def test_edited_codex_request_ignores_stale_thumbs():
+def test_edited_codex_request_is_not_completion_proof():
     comments = normalize_issue_comments(
         [
             {
@@ -954,7 +954,13 @@ def test_edited_codex_request_ignores_stale_thumbs():
                     "content": "+1",
                     "created_at": "2026-08-31T02:00:00Z",
                     "user": {"login": "chatgpt-codex-connector[bot]"},
-                }
+                },
+                {
+                    "id": 2,
+                    "content": "+1",
+                    "created_at": "2026-08-31T03:00:01Z",
+                    "user": {"login": "chatgpt-codex-connector[bot]"},
+                },
             ]
         },
         HEAD,
@@ -963,39 +969,6 @@ def test_edited_codex_request_ignores_stale_thumbs():
     result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
     assert result["review_clean"] is False
     assert result["proof"] is None
-
-
-def test_thumbs_after_codex_request_edit_still_count():
-    comments = normalize_issue_comments(
-        [
-            {
-                "id": 99,
-                "user": {"login": "agent-operator"},
-                "body": f"@codex review\nhead: {HEAD}",
-                "created_at": "2026-08-31T01:00:00Z",
-                "updated_at": "2026-08-31T03:00:00Z",
-                "html_url": "https://example.test/99",
-            }
-        ],
-        HEAD,
-    )
-    signals = normalize_codex_completion_signals(
-        comments,
-        {
-            "99": [
-                {
-                    "id": 1,
-                    "content": "+1",
-                    "created_at": "2026-08-31T03:00:01Z",
-                    "user": {"login": "chatgpt-codex-connector[bot]"},
-                }
-            ]
-        },
-        HEAD,
-    )
-    assert len(signals) == 1
-    result = evaluate_review_clean(HEAD, [], [], [], comments, signals)
-    assert result["review_clean"] is True
 
 
 def test_is_codex_reviewer_accepts_graphql_login_without_bot_suffix():
@@ -2553,9 +2526,11 @@ def test_fetch_authenticated_login_is_empty_when_unauthenticated(monkeypatch):
 
 def test_main_passes_authenticated_login_to_evaluate(monkeypatch):
     captured = {}
+    call_order = []
 
     def fake_evaluate(*args, **kwargs):
         captured["gh_user"] = kwargs.get("gh_user")
+        call_order.append("evaluate")
         return {
             "head_sha": HEAD,
             "review_clean": True,
@@ -2593,12 +2568,21 @@ def test_main_passes_authenticated_login_to_evaluate(monkeypatch):
             "completion_signals": [],
         },
     )
-    monkeypatch.setattr(gate, "fetch_head_sha", lambda pr: HEAD)
-    monkeypatch.setattr(gate, "fetch_authenticated_login", lambda: HELPER_LOGIN)
+    monkeypatch.setattr(
+        gate,
+        "fetch_head_sha",
+        lambda pr: call_order.append("fetch_head_sha") or HEAD,
+    )
+    monkeypatch.setattr(
+        gate,
+        "fetch_authenticated_login",
+        lambda: call_order.append("fetch_authenticated_login") or HELPER_LOGIN,
+    )
     monkeypatch.setattr(gate, "evaluate_review_clean", fake_evaluate)
     code = gate.main(["--pr", "8", "--head", HEAD])
     assert code == 0
     assert captured["gh_user"] == HELPER_LOGIN
+    assert call_order == ["fetch_authenticated_login", "fetch_head_sha", "evaluate"]
 
 
 def test_normalize_threads_keeps_comment_graphql_ids():

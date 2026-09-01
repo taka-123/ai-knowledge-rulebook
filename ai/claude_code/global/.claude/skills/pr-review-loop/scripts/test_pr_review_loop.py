@@ -179,7 +179,8 @@ def test_wrapper_policy_strings():
         "AIエージェントによる対応:",
         "head=<sha>",
         "後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず",
-        "編集時刻より前の 👍 は使わない",
+        "編集済み request comment は completion proof にしない",
+        "request は immutable",
         "GraphQL `author` が取れないコメントがある thread は不完全",
         "指摘本文に disposition marker を埋め込んだだけでは除外しない",
         "対象 thread を再取得して comments_complete",
@@ -246,7 +247,7 @@ def test_gate_covers_bots_and_external_reviewers_that_watcher_drops():
     assert "finding_fingerprint" in gate_text
     assert "fetch_authenticated_login" in gate_text
     assert "CHANGES_REQUESTED_CLEARED_BY" in gate_text
-    assert "reaction_matches_current_request_body" in gate_text
+    assert "request_comment_is_immutable" in gate_text
     assert "TRUSTED_DISPOSITION_LOGINS" not in gate_text
     assert "cursor[bot]" not in gate_text
 

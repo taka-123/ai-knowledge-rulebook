@@ -182,7 +182,7 @@ if (gate) {
     !gate.includes('fetch_authenticated_login') ||
     !gate.includes('is_trusted_disposition_author') ||
     !gate.includes('CHANGES_REQUESTED_CLEARED_BY') ||
-    !gate.includes('reaction_matches_current_request_body') ||
+    !gate.includes('request_comment_is_immutable') ||
     !gate.includes('ignore_fingerprints_for_item') ||
     !gate.includes('matching_threads_for_item') ||
     !gate.includes('IGNORE_REPLY_PREFIX') ||

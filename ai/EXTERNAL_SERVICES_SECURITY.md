@@ -12,6 +12,8 @@ AI エージェントから AWS・GitHub を使うときの推奨構成。
 | MCP tool 制限 / Agent command deny | 危険な能力を減らす               | 補助   |
 | `AGENTS.md` / `CLAUDE.md` / Skill  | 行動規範（境界そのものではない） | 補助   |
 
+Hooks と command deny は **best-effort guardrail** である。敵対的な Shell 構文変形の完全防止は目的ではない。絶対禁止が必要な操作は credential 権限、sandbox、GitHub Rulesets / Branch Protection、IAM / SCP、MCP capability 制限などの **hard boundary** で制御する。guardrail は通常の Agent が自然に生成しやすい高頻度の危険操作を優先して止める。
+
 人間はこれまでどおり `aws` / `gh` を使う。
 AWS は AI を MCP 経由に限定する。GitHub は MCP と `gh` のどちらも使ってよい。GitHub MCP を使うこと自体はセキュリティ境界ではない。
 

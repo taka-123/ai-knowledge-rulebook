@@ -18,6 +18,40 @@ cwd="$(jq -r '.cwd // .tool_info.cwd // empty' <<<"$input")" || cwd=""
 
 [[ -z "$cmd" ]] && exit 0
 
+cmd_scan="$(printf '%s' "$cmd" | tr -d "'\"")"
+
+if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd_scan"; then
+  block "fork bomb pattern"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
+  if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
+    if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
+      block "destructive rm target"
+    fi
+    if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd_scan"; then
+      block "destructive rm system path"
+    fi
+    if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd_scan"; then
+      block "destructive rm protected home path"
+    fi
+  fi
+fi
+
+if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd_scan"; then
+  block "dd if/of pattern"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd_scan"; then
+  block "download piped to shell"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd_scan"; then
+  if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd_scan"; then
+    block "shell -c with download substitution"
+  fi
+fi
+
 cli_command() {
   local name="$1"
   grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
@@ -30,6 +64,15 @@ git_push_command() {
 gh_subcmd() {
   local sub="$1"
   grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-[fF]([[:space:]=]|[^[:space:]-])' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -53,63 +96,15 @@ if cli_command gh; then
     block "dangerous gh command (auth)"
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
     if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    # -f/--field on explicit GET are query params (official babysit-pr watcher).
-    # Bind GET to the same gh api invocation; a later GET must not authorize an earlier mutation.
-    # Compound ( { and command/process substitution nest gh api; split those too.
-    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd" &&
-      grep -Eq '`|\$\(|<\(|>\(' <<<"$cmd"; then
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       block "mutating gh api"
     fi
-    # Fail closed: extra or expanded -X/--method can override a literal GET (gh last-wins).
-    if grep -Eq -- '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
-      if grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]+)\$' <<<"$cmd" ||
-        grep -Eqi '(^|[[:space:]])(-X|--method)(=|[[:space:]]*)"\$' <<<"$cmd" ||
-        grep -Eqi '(^|[[:space:]])(-X|--method)=\$' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Count after quote removal so -'X' POST is visible as -X POST.
-      _cmd_unquote="$(printf '%s' "$cmd" | tr -d "'\"")"
-      _gh_method_n="$(grep -Eo -- '-X|--method' <<<"$_cmd_unquote" | wc -l | tr -d ' ')" || true
-      if [ "${_gh_method_n:-0}" -gt 1 ]; then
-        block "mutating gh api"
-      fi
-      # Fail closed: $var / ${m} / -$var can expand to -X POST, including inside tokens.
-      if grep -Eq '\$[{A-Za-z_@*0-9]' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: backslash-escaped tokens can become -X POST after shell parse.
-      if grep -Eq '\\' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: unquoted ? * [ can glob-expand to -X (e.g. ?X -> -X).
-      if grep -Eq '[?*[]' <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-      # Fail closed: ANSI-C $'X' or locale $"X" quotes can assemble -X after shell parse.
-      if grep -Eq "\\\$['\"]" <<<"$cmd"; then
-        block "mutating gh api"
-      fi
-    fi
-    while IFS= read -r _gh_api_seg; do
-      if ! grep -Eq '(^|[[:space:]])([^[:space:]"'\'']*/)?gh[[:space:]]+api([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
-        continue
-      fi
-      if grep -Eq '(^|[[:space:]])(-[A-Za-z]*[fF]([^[:space:]-][^[:space:]]*)?|--field|--raw-field)([[:space:]|=]|$)' <<<"$_gh_api_seg"; then
-        _method_n=$(grep -Eoi -- '(-X|--method)[[:space:]]+' <<<"$_gh_api_seg" | grep -c . || true)
-        if [ "${_method_n:-0}" -gt 1 ]; then
-          block "mutating gh api"
-        fi
-        if ! grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET([[:space:]|;|&]|$)' <<<"$_gh_api_seg"; then
-          block "mutating gh api"
-        fi
-      fi
-    done < <(printf '%s\n' "$cmd" | tr ';|&(){}' '\n')
   fi
 fi
 
@@ -124,10 +119,10 @@ if git_push_command; then
     block "force push"
   fi
   if grep -Eq '(^|[[:space:]]|:)(main|master|develop|deploy)([[:space:]]|$)' <<<"$cmd"; then
-    block "push to protected branch (explicit)"
+    block "push to protected branch"
   fi
   if grep -Eq 'refs/heads/(main|master|develop|deploy)([[:space:]:^~]|$)' <<<"$cmd"; then
-    block "push to protected branch (refspec)"
+    block "push to protected branch"
   fi
   if [[ -n "$cwd" ]] && git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     branch="$(git -C "$cwd" symbolic-ref --short HEAD 2>/dev/null || git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null || true)"

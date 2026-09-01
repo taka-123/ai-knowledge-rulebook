@@ -764,18 +764,11 @@ def normalize_threads(payload):
     return out
 
 
-def request_comment_was_edited(comment):
+def request_comment_is_immutable(comment):
+    """Edited @codex review requests are not completion proof (no timestamp races)."""
     created = str((comment or {}).get("created_at") or "")
     updated = str((comment or {}).get("updated_at") or "")
-    return bool(created and updated and updated > created)
-
-
-def reaction_matches_current_request_body(comment, reaction):
-    if not request_comment_was_edited(comment):
-        return True
-    reacted = str((reaction or {}).get("created_at") or "")
-    updated = str((comment or {}).get("updated_at") or "")
-    return bool(reacted and reacted >= updated)
+    return not (created and updated and updated > created)
 
 
 def normalize_codex_completion_signals(issue_comments, reactions_by_comment_id, head_sha=""):
@@ -786,12 +779,12 @@ def normalize_codex_completion_signals(issue_comments, reactions_by_comment_id, 
         body = str(comment.get("body") or "")
         if not is_codex_review_request(body):
             continue
+        if not request_comment_is_immutable(comment):
+            continue
         comment_id = str(comment.get("id") or "")
         bound = extract_bound_sha(body, head_sha) or str(comment.get("commit_id") or "")
         for reaction in reactions_by_comment_id.get(comment_id, []) or []:
             if not isinstance(reaction, dict):
-                continue
-            if not reaction_matches_current_request_body(comment, reaction):
                 continue
             content = str(reaction.get("content") or "")
             author = extract_login(reaction.get("user")) or str(reaction.get("author") or "")
@@ -1219,6 +1212,7 @@ def main(argv=None):
     args = parse_args(argv)
     try:
         pr = resolve_pr(args.pr, repo_override=args.repo, head_override=args.head)
+        gh_user = fetch_authenticated_login()
         fetched = collect_gate_inputs(pr)
         latest_head = fetch_head_sha(pr)
         if latest_head != pr["head_sha"]:
@@ -1232,7 +1226,7 @@ def main(argv=None):
             fetched["threads"],
             fetched["issue_comments"],
             fetched["completion_signals"],
-            gh_user=fetch_authenticated_login(),
+            gh_user=gh_user,
         )
         result["pr"] = {"number": pr["number"], "repo": pr["repo"], "url": pr["url"]}
     except (GhCommandError, ValueError, json.JSONDecodeError) as err:
