@@ -54,6 +54,7 @@ def comment(**overrides):
     item = {
         "kind": "review_comment",
         "id": "20",
+        "in_reply_to_id": "",
         "author": "coderabbitai[bot]",
         "author_association": "NONE",
         "state": "",
@@ -338,14 +339,77 @@ def test_actionable_marker_beats_summary_markers():
     assert result["actionable"][0]["author"] == "human-reviewer"
 
 
-def test_codex_inline_summary_is_not_actionable():
+def test_codex_task_completion_reply_is_not_actionable():
     body = "### Summary\n\n* Fixed something.\n\n**Testing**\n\n* ✅ pytest\n\n [View task →](https://example.test)"
     assert is_actionable_text(
         body,
         path="ai/foo.py",
         kind="review_comment",
         author="chatgpt-codex-connector[bot]",
+        in_reply_to_id="41",
     ) is False
+
+
+def test_top_level_codex_finding_with_summary_and_testing_is_actionable():
+    body = (
+        "### Summary\n\nThe final gate drops a real finding.\n\n"
+        "**Testing**\n\nAdd a regression test.\n\n"
+        "[View task →](https://example.test)"
+    )
+    comments = normalize_review_comments(
+        [
+            {
+                "id": 42,
+                "in_reply_to_id": None,
+                "pull_request_review_id": 7,
+                "commit_id": HEAD,
+                "original_commit_id": HEAD,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "path": "ai/foo.py",
+                "line": 3,
+                "body": body,
+            }
+        ],
+        set(),
+    )
+    result = evaluate_review_clean(HEAD, [review()], comments, [])
+    assert comments[0]["in_reply_to_id"] == ""
+    assert result["review_clean"] is False
+    assert result["actionable"][0]["id"] == "42"
+
+
+def test_codex_task_completion_reply_is_structurally_excluded():
+    body = "### Summary\n\nDone.\n\n**Testing**\n\nPassed."
+    comments = normalize_review_comments(
+        [
+            {
+                "id": 43,
+                "in_reply_to_id": 42,
+                "pull_request_review_id": 7,
+                "commit_id": HEAD,
+                "original_commit_id": HEAD,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "path": "ai/foo.py",
+                "line": 3,
+                "body": body,
+            }
+        ],
+        set(),
+    )
+    result = evaluate_review_clean(HEAD, [review()], comments, [])
+    assert comments[0]["in_reply_to_id"] == "42"
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+
+
+def test_non_codex_reply_remains_actionable():
+    assert is_actionable_text(
+        "This reply raises a new blocking issue.",
+        path="ai/foo.py",
+        kind="review_comment",
+        author="human-reviewer",
+        in_reply_to_id="42",
+    ) is True
 
 
 def test_codex_finding_with_view_task_link_is_actionable():
@@ -731,6 +795,7 @@ def test_normalize_keeps_commit_ids():
     )
     assert comments[0]["commit_id"] == HEAD
     assert comments[0]["original_commit_id"] == OLD
+    assert comments[0]["in_reply_to_id"] == ""
 
 
 def test_normalize_threads_keeps_commit_and_unresolved():
@@ -744,6 +809,7 @@ def test_normalize_threads_keeps_commit_and_unresolved():
                     "nodes": [
                         {
                             "databaseId": 44,
+                            "replyTo": None,
                             "body": "Fix this race.",
                             "path": "src/a.py",
                             "author": {"login": "coderabbitai[bot]"},
@@ -761,6 +827,7 @@ def test_normalize_threads_keeps_commit_and_unresolved():
     assert threads[0]["node_id"].startswith("PRRT_")
     assert threads[0]["authors"] == ["coderabbitai[bot]"]
     assert threads[0]["comment_ids"] == ["44"]
+    assert threads[0]["comment_reply_to_ids"] == [""]
 
 
 def test_current_head_codex_thumbs_up_is_clean():

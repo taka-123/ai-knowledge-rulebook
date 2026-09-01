@@ -65,6 +65,7 @@ query($owner: String!, $name: String!, $number: Int!, $after: String) {
             nodes {
               id
               databaseId
+              replyTo { databaseId }
               body
               path
               author { login }
@@ -300,18 +301,6 @@ def extract_bound_sha(body, head_sha=""):
     return ""
 
 
-def is_codex_inline_summary(body, author=None, path=None):
-    if not path or not is_codex_reviewer(author):
-        return False
-    text = (body or "").strip()
-    if not text.startswith("### Summary"):
-        return False
-    if has_finding_badge(text):
-        return False
-    # Codex task-completion summaries use a ### Summary + **Testing** block.
-    return "**testing**" in text.lower()
-
-
 def is_summary_only(body, path=None):
     if path:
         return False
@@ -336,8 +325,22 @@ def has_actionable_marker(body):
     return has_finding_badge(body) or has_changes_requested_marker(body)
 
 
-def is_actionable_text(body, path=None, review_state=None, kind=None, author=None, gh_user=""):
+def is_actionable_text(
+    body,
+    path=None,
+    review_state=None,
+    kind=None,
+    author=None,
+    gh_user="",
+    in_reply_to_id="",
+):
     if str(kind or "") in COMPLETION_ONLY_KINDS:
+        return False
+    if (
+        kind == "review_comment"
+        and str(in_reply_to_id or "")
+        and is_codex_reviewer(author)
+    ):
         return False
     if is_disposition_reply(body) and is_trusted_disposition_author(author, gh_user):
         return False
@@ -351,8 +354,6 @@ def is_actionable_text(body, path=None, review_state=None, kind=None, author=Non
     if has_changes_requested_marker(body):
         return True
     if is_summary_only(body, path):
-        return False
-    if is_codex_inline_summary(body, author, path):
         return False
     if path:
         return True
@@ -663,6 +664,7 @@ def normalize_review_comments(payload, pending_review_ids):
             {
                 "kind": "review_comment",
                 "id": str(item.get("id") or ""),
+                "in_reply_to_id": str(item.get("in_reply_to_id") or ""),
                 "author": extract_login(item.get("user")),
                 "author_association": str(item.get("author_association") or ""),
                 "state": "",
@@ -731,6 +733,7 @@ def normalize_threads(payload):
         authors = []
         comment_ids = []
         comment_node_ids = []
+        comment_reply_to_ids = []
         comment_bodies = []
         comment_authors = []
         for comment in comments:
@@ -746,6 +749,8 @@ def normalize_threads(payload):
             if comment_id not in (None, ""):
                 comment_ids.append(str(comment_id))
             comment_node_ids.append(str(comment.get("id") or ""))
+            reply_to = comment.get("replyTo") or {}
+            comment_reply_to_ids.append(str(reply_to.get("databaseId") or ""))
             comment_bodies.append(str(comment.get("body") or ""))
             comment_authors.append(login)
         first_id = str((first or {}).get("databaseId") or "")
@@ -760,6 +765,7 @@ def normalize_threads(payload):
                 "authors": authors,
                 "comment_ids": comment_ids,
                 "comment_node_ids": comment_node_ids,
+                "comment_reply_to_ids": comment_reply_to_ids,
                 "comment_bodies": comment_bodies,
                 "comment_authors": comment_authors,
                 "comments_complete": comments_complete,
@@ -1003,6 +1009,7 @@ def evaluate_review_clean(
             item.get("kind"),
             item.get("author"),
             gh_user,
+            item.get("in_reply_to_id"),
         ):
             actionable.append(item)
 
