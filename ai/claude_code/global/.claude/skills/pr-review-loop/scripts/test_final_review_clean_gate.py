@@ -358,6 +358,16 @@ def test_codex_finding_with_view_task_link_is_actionable():
     ) is True
 
 
+def test_codex_summary_heading_with_finding_prose_is_actionable():
+    body = "### Summary\n\nReal finding prose without the Testing block."
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is True
+
+
 def test_approved_review_with_extra_prose_is_not_actionable():
     body = "Approved — nice work on the tests."
     assert is_actionable_text(body, review_state="APPROVED", kind="review") is False

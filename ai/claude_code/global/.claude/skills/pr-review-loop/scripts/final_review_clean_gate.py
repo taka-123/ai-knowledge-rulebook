@@ -303,7 +303,13 @@ def extract_bound_sha(body, head_sha=""):
 def is_codex_inline_summary(body, author=None, path=None):
     if not path or not is_codex_reviewer(author):
         return False
-    return (body or "").strip().startswith("### Summary")
+    text = (body or "").strip()
+    if not text.startswith("### Summary"):
+        return False
+    if has_finding_badge(text):
+        return False
+    # Codex task-completion summaries use a ### Summary + **Testing** block.
+    return "**testing**" in text.lower()
 
 
 def is_summary_only(body, path=None):
