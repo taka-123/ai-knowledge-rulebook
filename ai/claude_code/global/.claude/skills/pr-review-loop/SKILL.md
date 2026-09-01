@@ -90,6 +90,7 @@ bot review の P0 / P1 / P2 等は参考値にする。修正要否は内容の�
 - 指摘の妥当性を判断しきれない
 - destructive operation、merge
 - 人間 reviewer への回答・交渉
+- review budget を使い切っても完了条件を満たさない場合
 - 下記の非収束
 
 返すときは未確定点と推奨判断だけ示す。人間 reviewer のコメントへ返信せず、人間の review thread を resolve しない。ASK_HUMAN の指摘は resolve しない。
@@ -118,12 +119,32 @@ Codex reviewer のみの thread（認証済み helper の前回返信だけの�
 
 ## 非収束
 
-機械的な回数上限だけで止めない。再提示された指摘も `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に再分類する。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。新しい実質的論点が続く場合は ASK_HUMAN する。
+指摘の分類を、固定回数だけで打ち切らない。再提示された指摘も `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に再分類する。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。新しい実質的論点が続く場合は ASK_HUMAN する。自動 review cycle の総量は下記 Review budget に従う。
 
 - 同じ原因の AUTO_FIX 対象が再発する
 - 修正同士が打ち消し合う
 - 修正が scope / architecture へ波及する
 - 複数 round 連続で新規 actionable 指摘が出続け、収束傾向がない
+
+## Review budget
+
+自動で行う reviewer の review cycle は、初回を含め原則最大 3 回とする。現在の primary reviewer は Codex Review だが、本予算は reviewer 非依存である。
+
+1 cycle は、1つの HEAD に対して開始した review と、その完了確認までを一まとまりとして数える。同一 HEAD に複数の completion proof がある場合や、状態確認・polling を繰り返した場合も 1 cycle のままとする。push-trigger の自動 review も cycle に含める。
+
+- 最初に review する HEAD を 1 cycle 目とする。
+- `AUTO_FIX` で HEAD が変わり、新 HEAD に対して review を開始した場合は次の 1 cycle とする。
+- 同一 HEAD に対する重複 review request は行わず、cycle も増やさない。
+- `IGNORE_WITH_REASON` のみでコード変更がない場合は、新しい review cycle を開始しない。
+
+3 回は「問題を無視して merge-ready にする」上限ではない。3 cycle 終了時点で完了条件を満たしていなければ `ASK_HUMAN` で停止する。budget 超過を理由に未解決の finding を無視したり、review-clean と判定したりしない。
+
+P2 / P3 の扱いは `REVIEW.md` の既存方針に従う。P0 や重大な hard security boundary の問題が残る場合も、自動で無限継続せず人間へ返す。ユーザーが明示的に継続を指示した場合のみ、追加 cycle を実行してよい。
+
+`REVIEW.md` の「同一 root cause の blocking review は原則最大 3 round」とは別物である。
+
+- `REVIEW.md`: 同一 root cause を無限追跡しないための制限
+- 本 Skill の review budget: PR 全体として自動レビューを無限継続しないための総量制限
 
 ## review-clean
 
@@ -139,7 +160,7 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。認証済み `gh` ユーザー取得など必要な外部状態取得を先に終え、すべての GitHub 取得のあとに final HEAD recheck を行う。final HEAD recheck 後は純粋なローカル評価だけにする。`reviewThreads` は GraphQL cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。同一 reviewer・同一 commit の published review は最新 state だけを評価する。後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず、以前の actionable な `COMMENTED` review も捨てない。`APPROVED` / `DISMISSED` / 新たな `CHANGES_REQUESTED` は、同じ reviewer・commit の保持済み COMMENTED も含めて解除する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、gate 実行時の認証済み `gh` ユーザーと同一 actor の hidden marker で、fingerprint と current HEAD が一致し、かつ item と thread/comment ID が対応する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。別 thread の同一 fingerprint は除外しない。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。GraphQL `author` が取れないコメントがある thread は不完全として IGNORE も resolve もしない。
 
-一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。
+一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。P0 / P1 finding badge と `changes requested` を actionable の主マーカーとする。P2 / P3 badge のみは `REVIEW.md` に従い review-clean を塞がない。
 
 Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。`@codex review` の issue comment と Codex 👍 は完了証明だけに使い、finding 判定から除外する。
 
@@ -150,9 +171,9 @@ Codex Review を primary reviewer として扱う。完了証明は次のどち�
 
 `@codex review` を書くときは current HEAD を本文に含める（`head: <sha>`）。gate はその SHA と Codex 👍 を対応付ける。
 
-current HEAD に対する Codex published review が既にあり、finding を IGNORE_WITH_REASON として明示処理し、他に actionable finding が無ければ、同じ HEAD へ再度 `@codex review` を要求しない。そのまま final gate → CI → mergeability を確認する。コード変更で HEAD が変わった場合だけ、新 HEAD に対して新しい Codex review を 1 回要求する。
+current HEAD に対する Codex published review が既にあり、finding を IGNORE_WITH_REASON として明示処理し、他に actionable finding が無ければ、同じ HEAD へ再度 `@codex review` を要求しない。そのまま final gate → CI → mergeability を確認する。コード変更で HEAD が変わった場合だけ、新 HEAD に対して新しい Codex review を 1 回要求する。Review budget の cycle 計数に従う。
 
-AUTO_FIX 後に push した場合は、それ以前の review-clean を無効化し、新 HEAD について review cycle を開始する。repo で push-trigger の Codex 自動再レビューが確実に動くならそれを待つ。保証されない場合は、許可された PR comment として新しい `@codex review`（`head: <sha>` 付き）を使い、人間を再レビュー開始の中継係にしない。既存 request comment の編集・再利用はしない。
+AUTO_FIX 後に push した場合は、それ以前の review-clean を無効化し、新 HEAD について review cycle を開始する。repo で push-trigger の Codex 自動再レビューが確実に動くならそれを待つ（その自動 review も budget に含める）。保証されない場合は、許可された PR comment として新しい `@codex review`（`head: <sha>` 付き）を使い、人間を再レビュー開始の中継係にしない。既存 request comment の編集・再利用はしない。budget を使い切っているときは追加 request せず `ASK_HUMAN` する。
 
 ## 完了
 

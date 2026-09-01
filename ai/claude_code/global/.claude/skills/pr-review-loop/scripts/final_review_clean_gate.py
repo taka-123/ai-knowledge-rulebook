@@ -27,9 +27,18 @@ FINDING_BADGE_MARKERS = (
     "![p0 badge]",
     "![p1 badge]",
     "![p2 badge]",
+    "![p3 badge]",
+)
+BLOCKING_FINDING_BADGE_MARKERS = (
+    "![p0 badge]",
+    "![p1 badge]",
+)
+NON_BLOCKING_FINDING_BADGE_MARKERS = (
+    "![p2 badge]",
+    "![p3 badge]",
 )
 CHANGES_REQUESTED_MARKER = "changes requested"
-ACTIONABLE_MARKERS = (*FINDING_BADGE_MARKERS, CHANGES_REQUESTED_MARKER)
+ACTIONABLE_MARKERS = (*BLOCKING_FINDING_BADGE_MARKERS, CHANGES_REQUESTED_MARKER)
 PENDING = "PENDING"
 DISMISSED = "DISMISSED"
 VALID_PROOF_REVIEW_STATES = {"COMMENTED", "APPROVED"}
@@ -317,12 +326,22 @@ def has_finding_badge(body):
     return any(marker in lower for marker in FINDING_BADGE_MARKERS)
 
 
+def has_blocking_finding_badge(body):
+    lower = (body or "").lower()
+    return any(marker in lower for marker in BLOCKING_FINDING_BADGE_MARKERS)
+
+
+def has_non_blocking_finding_badge(body):
+    lower = (body or "").lower()
+    return any(marker in lower for marker in NON_BLOCKING_FINDING_BADGE_MARKERS)
+
+
 def has_changes_requested_marker(body):
     return CHANGES_REQUESTED_MARKER in (body or "").lower()
 
 
 def has_actionable_marker(body):
-    return has_finding_badge(body) or has_changes_requested_marker(body)
+    return has_blocking_finding_badge(body) or has_changes_requested_marker(body)
 
 
 def is_actionable_text(
@@ -347,13 +366,16 @@ def is_actionable_text(
     state = str(review_state or "").upper()
     if state == "CHANGES_REQUESTED":
         return True
-    if has_finding_badge(body):
+    if has_blocking_finding_badge(body):
         return True
     if state == "APPROVED":
         return False
     if has_changes_requested_marker(body):
         return True
     if is_summary_only(body, path):
+        return False
+    # REVIEW.md: P2 / P3 only are ready; do not block review-clean on those badges.
+    if has_non_blocking_finding_badge(body) and not has_blocking_finding_badge(body):
         return False
     if path:
         return True
@@ -379,7 +401,7 @@ def normalize_finding_lines(body):
         cleaned = " ".join(line.split()).strip()
         if not cleaned:
             continue
-        if cleaned.lower() in {"p0 badge", "p1 badge", "p2 badge"}:
+        if cleaned.lower() in {"p0 badge", "p1 badge", "p2 badge", "p3 badge"}:
             continue
         if cleaned.lower().startswith("useful?"):
             continue

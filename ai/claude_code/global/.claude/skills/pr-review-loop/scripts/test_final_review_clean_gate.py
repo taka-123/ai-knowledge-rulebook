@@ -339,6 +339,84 @@ def test_actionable_marker_beats_summary_markers():
     assert result["actionable"][0]["author"] == "human-reviewer"
 
 
+def test_p2_badge_alone_does_not_block_review_clean():
+    body = (
+        "![P2 Badge](https://img.shields.io/badge/P2-yellow?style=flat) "
+        "Optional cleanup later."
+    )
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is False
+    assert is_actionable_text(body, review_state="COMMENTED", kind="review") is False
+    result = evaluate_review_clean(
+        HEAD,
+        [review()],
+        [
+            {
+                "kind": "review_comment",
+                "id": "p2-1",
+                "author": "chatgpt-codex-connector[bot]",
+                "author_association": "NONE",
+                "state": "",
+                "commit_id": HEAD,
+                "original_commit_id": HEAD,
+                "path": "ai/foo.py",
+                "line": 10,
+                "resolved": None,
+                "outdated": False,
+                "body": body,
+                "url": "",
+            }
+        ],
+        [],
+    )
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["actionable"] == []
+
+
+def test_p3_badge_alone_does_not_block_review_clean():
+    body = (
+        "![P3 Badge](https://img.shields.io/badge/P3-lightgrey?style=flat) "
+        "Naming nit."
+    )
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is False
+
+
+def test_p0_badge_still_blocks_review_clean():
+    body = (
+        "![P0 Badge](https://img.shields.io/badge/P0-red?style=flat) "
+        "Secret leak in logs."
+    )
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is True
+
+
+def test_p1_badge_still_blocks_with_path():
+    body = (
+        "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) "
+        "Please fix the public API before merge."
+    )
+    assert is_actionable_text(
+        body,
+        path="ai/foo.py",
+        kind="review_comment",
+        author="chatgpt-codex-connector[bot]",
+    ) is True
+
+
 def test_codex_task_completion_reply_is_not_actionable():
     body = "### Summary\n\n* Fixed something.\n\n**Testing**\n\n* ✅ pytest\n\n [View task →](https://example.test)"
     assert is_actionable_text(
