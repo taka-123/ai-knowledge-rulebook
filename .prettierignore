@@ -35,3 +35,6 @@ __pycache__/
 
 # スニペット（* 等の glob 表記が Prettier で破壊されるため除外）
 snippets/skill-agent-creator/
+
+# OpenAI 公式 babysit-pr の未改変 vendor
+ai/claude_code/global/.claude/skills/pr-review-loop/vendor/

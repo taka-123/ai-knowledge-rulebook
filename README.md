@@ -58,7 +58,7 @@ MCP/認証系ファイルも同期する場合は `--include-mcp` を付けま�
 
 ```bash
 npm install
-pip install check-jsonschema yamllint
+pip install check-jsonschema yamllint pytest
 ```
 
 ## 検証コマンド
@@ -79,6 +79,7 @@ npm run cursor-agents:check
 npm run codex-wiring:check
 npm run routing:check
 npm run hooks:check
+npm run pr-review-loop:check
 ```
 
 ## 日常運用フロー

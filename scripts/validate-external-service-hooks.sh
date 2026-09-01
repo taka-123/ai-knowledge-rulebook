@@ -79,8 +79,6 @@ expect_windsurf() {
   fi
 }
 
-# deny: cursor=deny, claude/windsurf=exit 2
-# allow: cursor=allow, claude/windsurf=exit 0
 deny_all() {
   local cmd="$1" cwd="${2:-$tmp_feature}"
   expect_cursor deny "$cmd" "$cwd"
@@ -107,15 +105,30 @@ allow_all "gh pr view 1"
 allow_all "/usr/local/bin/gh issue list"
 allow_all "gh pr checks 1"
 allow_all "gh api repos/owner/repo/pulls/1"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -f head_sha=abc -f per_page=100"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -fhead_sha=abc -fper_page=100"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -if head_sha=abc"
+allow_all "gh api repos/owner/repo/actions/runs/1/jobs -X GET -f per_page=100"
 allow_all "gh repo view owner/repo"
 allow_all "gh auth status"
+allow_all "python3 scripts/run-gh-pr-watch.py --pr 1 --retry-failed-now"
 deny_all "gh pr merge 1"
 deny_all "gh pr review 1 --approve"
 deny_all "gh workflow run build.yml"
 deny_all "gh run rerun 123"
+deny_all "gh run rerun 123 --failed"
 deny_all "gh repo edit owner/repo"
 deny_all "gh auth token"
 deny_all "gh api repos/owner/repo/pulls/1 -X DELETE"
+deny_all "gh api graphql -f query=foo"
+deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
+deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -Fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE"
+# compound / substitution bypass は best-effort guardrail の残余リスクとして許容
+allow_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repos/owner/repo/pulls/1 -X GET"
+allow_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
 allow_all "rg 'gh '"
 allow_all "echo 'aws s3 ls'"
 allow_all 'git commit -m "use aws cli"'

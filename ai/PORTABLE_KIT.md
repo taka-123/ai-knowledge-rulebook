@@ -56,21 +56,22 @@ Cloud Agent や「この repo 単体でも同じ手順を使いたい」とき�
 コピー先: `<project>/.claude/skills/<name>/`  
 （Cursor は互換で `.claude/skills` も探索する）
 
-| 名前                        | cloud-basic | cloud-handoff | 備考                         |
-| --------------------------- | ----------- | ------------- | ---------------------------- |
-| document-authoring          | yes         | no            | ドキュメント作成             |
-| ai-instruction-authoring    | yes         | no            | AI 指示文書向け              |
-| backlog-markdown-formatting | yes         | no            | Backlog 整形（記法変換）     |
-| handoff-html-digest         | no          | yes           | 引き継ぎ用 HTML 文書         |
-| one-page-graphic-recorder   | no          | yes           | グラレコ                     |
-| grill-me                    | no          | no            | ライブ対話。個別追加可       |
-| show-me                     | no          | no            | その場理解。個別追加可       |
-| diff-quality-gate           | no          | no            | 個別追加可                   |
-| diff-review-commit          | no          | no            | 個別追加可（依存スキルあり） |
-| commit-message-suggester    | no          | no            | 個別追加可                   |
-| prompt-evolution            | no          | no            | 個別追加可                   |
-| markdown-line-length        | no          | no            | 個別追加可                   |
-| chatwork-formatter          | no          | no            | チャット貼付。キット外でも可 |
+| 名前                        | cloud-basic | cloud-handoff | 備考                                      |
+| --------------------------- | ----------- | ------------- | ----------------------------------------- |
+| document-authoring          | yes         | no            | ドキュメント作成                          |
+| ai-instruction-authoring    | yes         | no            | AI 指示文書向け                           |
+| backlog-markdown-formatting | yes         | no            | Backlog 整形（記法変換）                  |
+| handoff-html-digest         | no          | yes           | 引き継ぎ用 HTML 文書                      |
+| one-page-graphic-recorder   | no          | yes           | グラレコ                                  |
+| grill-me                    | no          | no            | ライブ対話。個別追加可                    |
+| show-me                     | no          | no            | その場理解。個別追加可                    |
+| diff-quality-gate           | no          | no            | 個別追加可                                |
+| diff-review-commit          | no          | no            | 個別追加可（依存スキルあり）              |
+| commit-message-suggester    | no          | no            | 個別追加可                                |
+| prompt-evolution            | no          | no            | 個別追加可                                |
+| markdown-line-length        | no          | no            | 個別追加可                                |
+| pr-review-loop              | no          | no            | 個別追加可。公式 babysit-pr を内部 vendor |
+| chatwork-formatter          | no          | no            | チャット貼付。キット外でも可              |
 
 ### Agents — Claude（正本: `ai/claude_code/global/.claude/agents/`）
 

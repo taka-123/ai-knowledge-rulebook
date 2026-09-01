@@ -22,19 +22,64 @@ cwd="$(jq -r '.cwd // empty' <<<"$input")" || cwd=""
 
 [[ -z "$cmd" ]] && allow
 
-# コマンド位置（先頭、または ;|& $() backtick の直後）。引用符は剥がさない。
+cmd_scan="$(printf '%s' "$cmd" | tr -d "'\"")"
+
+# fork bomb
+if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd_scan"; then
+  deny "Fork bomb pattern is forbidden for AI agents."
+fi
+
+# 危険な rm -rf 対象
+if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
+  if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
+    if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
+      deny "Destructive rm target is forbidden for AI agents."
+    fi
+    if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd_scan"; then
+      deny "Destructive rm system path is forbidden for AI agents."
+    fi
+    if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd_scan"; then
+      deny "Destructive rm protected home path is forbidden for AI agents."
+    fi
+  fi
+fi
+
+if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd_scan"; then
+  deny "dd if/of pattern is forbidden for AI agents."
+fi
+
+if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd_scan"; then
+  deny "Download piped to shell is forbidden for AI agents."
+fi
+
+if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd_scan"; then
+  if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd_scan"; then
+    deny "Shell -c with download substitution is forbidden for AI agents."
+  fi
+fi
+
+# コマンド位置（先頭、または ;|&(){} $() backtick の直後）。引用符は剥がさない。
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(--field|--raw-field)([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-[fF]([[:space:]=]|[^[:space:]-])' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -58,10 +103,14 @@ if cli_command gh; then
     deny "Forbidden gh command: auth token/login/logout/refresh."
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      deny "Mutating gh api is forbidden."
+    fi
+  # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       deny "Mutating gh api is forbidden."
     fi
   fi

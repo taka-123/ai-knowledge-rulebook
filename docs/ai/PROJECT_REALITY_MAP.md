@@ -77,11 +77,11 @@
 
 ### 検証フロー
 
-| コマンド               | 検証対象                                                                                              | 根拠                           |
-| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `npm run check`        | Prettier + markdownlint + yamllint + JSON + 埋め込み schema                                           | `package.json` L7、`format.sh` |
-| `npm run agent:check`  | skills / global-skills / description / claude-agents / cursor-agents / codex-wiring / routing / hooks | `package.json` `agent:check`   |
-| `npm run schema:check` | `ai/**/*profile*.json`、`notes/*.json`                                                                | `package.json` L18             |
+| コマンド               | 検証対象                                                                                                               | 根拠                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `npm run check`        | Prettier + markdownlint + yamllint + JSON + 埋め込み schema                                                            | `package.json` L7、`format.sh` |
+| `npm run agent:check`  | skills / global-skills / description / claude-agents / cursor-agents / codex-wiring / routing / hooks / pr-review-loop | `package.json` `agent:check`   |
+| `npm run schema:check` | `ai/**/*profile*.json`、`notes/*.json`                                                                                 | `package.json` L18             |
 
 ## 状態遷移
 

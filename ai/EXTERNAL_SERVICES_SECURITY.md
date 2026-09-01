@@ -12,6 +12,8 @@ AI エージェントから AWS・GitHub を使うときの推奨構成。
 | MCP tool 制限 / Agent command deny | 危険な能力を減らす               | 補助   |
 | `AGENTS.md` / `CLAUDE.md` / Skill  | 行動規範（境界そのものではない） | 補助   |
 
+Hooks と command deny は **best-effort guardrail** である。敵対的な Shell 構文変形の完全防止は目的ではない。絶対禁止が必要な操作は credential 権限、sandbox、GitHub Rulesets / Branch Protection、IAM / SCP、MCP capability 制限などの **hard boundary** で制御する。guardrail は通常の Agent が自然に生成しやすい高頻度の危険操作を優先して止める。
+
 人間はこれまでどおり `aws` / `gh` を使う。
 AWS は AI を MCP 経由に限定する。GitHub は MCP と `gh` のどちらも使ってよい。GitHub MCP を使うこと自体はセキュリティ境界ではない。
 
@@ -104,8 +106,9 @@ GitHub MCP を使う場合は、可能な限り Fine-grained PAT（または同�
 - 既存 Issue の更新は明示依頼時のみ。依頼のない close / 状態変更 / 大幅本文変更はしない。
 - 既存 PR も同様。明示依頼のない close、base 変更、draft/ready 変更、reviewer 変更はしない（`update_pull_request` はそれらも可能なため）。
 - 禁止: PR merge、PR review 提出、default / protected branch への直接 push、force push、Actions 手動実行・rerun、Repository / Ruleset / Branch Protection の変更、認証情報の表示・変更。
+- Agent が直接行う `gh workflow run` / `gh run rerun` は禁止のまま。例外は、信頼する OpenAI 公式 babysit-pr watcher が current PR の failed checks を flaky/unrelated と分類し、公式 retry budget（最大 3 cycle）内で rerun する場合だけ。一般的な Actions 手動実行権限は広げない。
 - GitHub MCP を使う場合は、次の tool を渡さない: `merge_pull_request`、`pull_request_review_write`、`actions_run_trigger`、`create_or_update_file`、`push_files`、`delete_file`、`create_repository`、`update_pull_request_branch`。
-- `gh` では同等の危険操作（`gh pr merge`、`gh pr review`、`gh workflow run`、`gh run rerun`、`gh repo delete/archive/edit`、`gh auth token/login/logout/refresh`、mutating `gh api`）を hook / deny で止める。
+- `gh` では同等の危険操作（`gh pr merge`、`gh pr review`、`gh workflow run`、`gh run rerun`、`gh repo delete/archive/edit`、`gh auth token/login/logout/refresh`、mutating `gh api`）を hook / deny で止める。明示的な `-X GET -f` は query パラメータであり、mutating ではない。
 - 勝手な close 等が実害になったら、その時点で Hook 化する（初期は ask しない）。
 
 ### MCP Tool Allowlist（GitHub MCP を使う場合）

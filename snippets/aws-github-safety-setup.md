@@ -24,6 +24,7 @@ AI には次を同時に満たさせる。
 - AWS の作成・更新・削除・起動停止・デプロイ・権限変更はしない（間違って消さない）
 - GitHub は Issue / PR / CI の参照、Issue 作成、コメント、PR 作成、feature branch の通常 push まで
 - PR merge、review 提出、`main` / `master` / `develop` / `deploy` への直接 push、force push、Actions 手動起動・rerun、Ruleset 変更は禁止
+- Agent 直下の `gh workflow run` / `gh run rerun` は禁止。例外は公式 babysit-pr watcher による current PR の flaky/unrelated failed checks の bounded rerun（最大 3 cycle）のみ
 - GitHub は公式 MCP または `gh` を使ってよい。一方が使えなければ他方を試す。GitHub MCP を必須経路にしない
 - raw `aws` CLI / SDK / 絶対パス迂回は使わない。AWS 公式 MCP を使う
 
@@ -549,6 +550,7 @@ alwaysApply: true
 - 明示依頼があれば: Issue/PR/CI 参照、Issue 作成・通常編集、コメント、PR 作成・通常編集、feature branch の通常 push。
 - 明示依頼のない既存 Issue/PR の close・状態変更・大幅本文変更・base/reviewer 変更はしない。
 - 禁止: PR merge、review 提出、`main` / `master` / `develop` / `deploy` 直接 push、force push、Actions 手動起動・rerun、Ruleset/設定変更、認証情報の表示・変更。
+- Agent 直下の `gh workflow run` / `gh run rerun` は禁止。例外は公式 babysit-pr watcher による current PR の flaky/unrelated failed checks の bounded rerun（最大 3 cycle）のみ。
 ```
 
 `.cursor/permissions.json` は使わない。
@@ -600,8 +602,8 @@ MCP JSON は Cursor と同じ（`--read-only` なし、`--metadata` の作業リ
 
 ```bash
 #!/usr/bin/env bash
-# Cursor beforeShellExecution guard。
-# プロジェクトルート相対。stdin: Cursor hook JSON。
+# Cursor beforeShellExecution guard (project / Cloud Agent 向け)。
+# プロジェクトルート相対で実行される。stdin: Cursor hook JSON。
 # stdout: {"permission":"allow"|"deny"|"ask","user_message":"..."}
 # CLI 起動の best-effort 抑止。SDK・未列挙ラッパは対象外（IAM / Rulesets が本丸）。
 set -euo pipefail
@@ -623,18 +625,64 @@ cwd="$(jq -r '.cwd // empty' <<<"$input")" || cwd=""
 
 [[ -z "$cmd" ]] && allow
 
+cmd_scan="$(printf '%s' "$cmd" | tr -d "'\"")"
+
+# fork bomb
+if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd_scan"; then
+  deny "Fork bomb pattern is forbidden for AI agents."
+fi
+
+# 危険な rm -rf 対象
+if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
+  if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
+    if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
+      deny "Destructive rm target is forbidden for AI agents."
+    fi
+    if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd_scan"; then
+      deny "Destructive rm system path is forbidden for AI agents."
+    fi
+    if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd_scan"; then
+      deny "Destructive rm protected home path is forbidden for AI agents."
+    fi
+  fi
+fi
+
+if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd_scan"; then
+  deny "dd if/of pattern is forbidden for AI agents."
+fi
+
+if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd_scan"; then
+  deny "Download piped to shell is forbidden for AI agents."
+fi
+
+if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd_scan"; then
+  if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd_scan"; then
+    deny "Shell -c with download substitution is forbidden for AI agents."
+  fi
+fi
+
+# コマンド位置（先頭、または ;|&(){} $() backtick の直後）。引用符は剥がさない。
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(-f[[:space:]]|--field|--raw-field|-F[[:space:]])([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-f[^[:space:]-]' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -658,10 +706,14 @@ if cli_command gh; then
     deny "Forbidden gh command: auth token/login/logout/refresh."
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       deny "Mutating gh api is forbidden."
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      deny "Mutating gh api is forbidden."
+    fi
+  # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       deny "Mutating gh api is forbidden."
     fi
   fi
@@ -700,6 +752,11 @@ allow
 
 ```bash
 #!/usr/bin/env bash
+# Windsurf pre_run_command / pre_mcp_tool_use guard.
+# Exit 2 blocks the action. Exit 0 allows.
+# Windsurf stdin: tool_info.command_line / tool_info.mcp_* （公式 Cascade Hooks）
+# CLI 起動の best-effort 抑止。SDK・未列挙ラッパは対象外（IAM / Rulesets が本丸）。
+# pre_mcp_tool_use は command_line が空なので通過する。MCP 制限は X-MCP-Tools 側。
 set -euo pipefail
 
 input="$(cat)"
@@ -714,18 +771,61 @@ cwd="$(jq -r '.cwd // .tool_info.cwd // empty' <<<"$input")" || cwd=""
 
 [[ -z "$cmd" ]] && exit 0
 
+cmd_scan="$(printf '%s' "$cmd" | tr -d "'\"")"
+
+if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd_scan"; then
+  block "fork bomb pattern"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
+  if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
+    if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
+      block "destructive rm target"
+    fi
+    if grep -Eq '(^|[[:space:]])/(etc|bin|sbin|usr|var|System|Library|Applications|opt/homebrew)(/|\*|[[:space:]]|$)' <<<"$cmd_scan"; then
+      block "destructive rm system path"
+    fi
+    if grep -Eq '(^|[[:space:]])(~/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$)|\$HOME/(Desktop|Documents|Downloads|Library|\.ssh|\.aws|\.gcp|\.docker|\.kube|\.gnupg)(/|\*|[[:space:]]|$))' <<<"$cmd_scan"; then
+      block "destructive rm protected home path"
+    fi
+  fi
+fi
+
+if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd_scan"; then
+  block "dd if/of pattern"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd_scan"; then
+  block "download piped to shell"
+fi
+
+if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd_scan"; then
+  if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd_scan"; then
+    block "shell -c with download substitution"
+  fi
+fi
+
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(-f[[:space:]]|--field|--raw-field|-F[[:space:]])([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-f[^[:space:]-]' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -749,10 +849,13 @@ if cli_command gh; then
     block "dangerous gh command (auth)"
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       block "mutating gh api"
     fi
   fi
@@ -811,10 +914,13 @@ block() {
   exit 2
 }
 
+# fork bomb
 if grep -Eq ':\(\)[[:space:]]*\{[[:space:]]*:[[:space:]]*\|[[:space:]]*:[[:space:]]*&[[:space:]]*\}[[:space:]]*;[[:space:]]*:' <<<"$cmd_scan"; then
   block "fork bomb pattern"
 fi
 
+# rm -rf / rm -fr / rm --recursive --force のうち、危険な削除対象だけ止める。
+# プロジェクト内の rm -rf ./dist, ./build, ./node_modules, ./.claude/skills/foo などは sandbox に任せる。
 if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/rm|/usr/local/bin/rm|/opt/homebrew/bin/rm|rm)[[:space:]]+' <<<"$cmd_scan"; then
   if grep -Eq '(^|[[:space:]])(--force|--recursive|-rf|-fr|-r[[:space:]]+-f|-f[[:space:]]+-r)([[:space:]]|$)' <<<"$cmd_scan"; then
     if grep -Eq '(^|[[:space:]])(/|/\*|~|~/?\*|\$HOME|\$HOME/?\*|\.|\.\/|\.\.|\.\.\/)([[:space:]]|$)' <<<"$cmd_scan"; then
@@ -829,32 +935,45 @@ if grep -Eq '(^|[[:space:];|&])(command[[:space:]]+rm|/usr/bin/rm|/bin/rm|/sbin/
   fi
 fi
 
+# dd if= / of= はディスク破壊・大量上書きリスクが高いので止める
 if grep -Eq '(^|[[:space:];|&])dd([[:space:]]|$).*([[:space:]]if=|[[:space:]]of=)' <<<"$cmd_scan"; then
   block "dd if/of pattern"
 fi
 
+# curl/wget piped to shell
 if grep -Eq '(^|[[:space:];|&])(curl|wget)([[:space:]]|$).*?\|[[:space:]]*(sh|bash|zsh)([[:space:]]|$)' <<<"$cmd_scan"; then
   block "download piped to shell"
 fi
 
+# sh -c "$(curl ...)" / bash -c "$(wget ...)" 系
 if grep -Eq '(^|[[:space:];|&])(sh|bash|zsh)[[:space:]]+-c([[:space:]]|$)' <<<"$cmd_scan"; then
   if grep -Eq '\$\([[:space:]]*(curl|wget)([[:space:]]|$)' <<<"$cmd_scan"; then
     block "shell -c with download substitution"
   fi
 fi
 
+# コマンド位置の aws を抑止。gh は危険サブコマンドだけ止める（引用符は剥がさない。SDK は対象外）
 cli_command() {
   local name="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?${name}([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 git_push_command() {
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?git[[:space:]]+push([[:space:]|;|&]|$)" <<<"$cmd"
 }
 
 gh_subcmd() {
   local sub="$1"
-  grep -Eq "(^|[;|&]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+  grep -Eq "(^|[;|&({]|\\$\\(|\`)[[:space:]]*([^[:space:]\"']*/)?gh[[:space:]]+${sub}([[:space:]|;|&]|$)" <<<"$cmd"
+}
+
+gh_api_has_field_flag() {
+  grep -Eq '(^|[[:space:]])(-f[[:space:]]|--field|--raw-field|-F[[:space:]])([[:space:]|=]|$)' <<<"$cmd" ||
+    grep -Eq '(^|[[:space:]])-f[^[:space:]-]' <<<"$cmd"
+}
+
+gh_api_has_explicit_get() {
+  grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+GET($|[[:space:];&)])' <<<"$cmd"
 }
 
 if cli_command aws; then
@@ -878,10 +997,14 @@ if cli_command gh; then
     block "dangerous gh command (auth)"
   fi
   if gh_subcmd 'api'; then
-    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]|;|&]|$)' <<<"$cmd"; then
+    if grep -Eqi '(^|[[:space:]])(-X|--method)[[:space:]]+(POST|PUT|PATCH|DELETE)([[:space:]]|$)' <<<"$cmd"; then
       block "mutating gh api"
     fi
-    if grep -Eq '(^|[[:space:]])(-[fF]|--field|--raw-field|--input)([[:space:]|=]|$)' <<<"$cmd"; then
+    if grep -Eq '(^|[[:space:]])(--input)([[:space:]|=]|$)' <<<"$cmd"; then
+      block "mutating gh api"
+    fi
+    # -f/--field on explicit GET are query params (official babysit-pr watcher).
+    if gh_api_has_field_flag && ! gh_api_has_explicit_get; then
       block "mutating gh api"
     fi
   fi
@@ -1049,13 +1172,49 @@ allow_all "gh pr view 1"
 allow_all "/usr/local/bin/gh issue list"
 allow_all "gh pr checks 1"
 allow_all "gh api repos/owner/repo/pulls/1"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -f head_sha=abc -f per_page=100"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -fhead_sha=abc -fper_page=100"
+allow_all "gh api repos/owner/repo/actions/runs -X GET -if head_sha=abc"
 deny_all "gh pr merge 1"
 deny_all "gh pr review 1 --approve"
 deny_all "gh workflow run build.yml"
 deny_all "gh run rerun 123"
+deny_all "gh run rerun 123 --failed"
 deny_all "gh repo edit owner/repo"
 deny_all "gh auth token"
 deny_all "gh api repos/owner/repo/pulls/1 -X DELETE"
+deny_all "gh api graphql -f query=foo"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE ; gh api repos/owner/repo/pulls/1 -X GET"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE && gh api repos/owner/repo/pulls/1 -X GET"
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE $(gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE `gh api repos/owner/repo/pulls/1 -X GET`'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE < <(gh api repos/owner/repo/pulls/1 -X GET )'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE >(gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
+deny_all 'm=POST; gh api repos/owner/repo/pulls/1/reviews -X GET -X "$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET --method="$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -X"$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X "$m" -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews --method GET --method=POST -f event=APPROVE'
+deny_all '(gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET)'
+deny_all '{ gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE; gh api repos/owner/repo/pulls/1 -X GET; }'
+deny_all 'm=-; m+=X; n=POST; gh api repos/owner/repo/pulls/1/reviews -f event=APPROVE -X GET $m $n'
+deny_all 'm=-; m+=X; set -- "$m" POST; gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE "$@"'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $*'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE $1'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE -\X P\O\S\T'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -f event=APPROVE --\method POST'
+deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -'X' POST -f event=APPROVE"
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET -"X" POST -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET ?X POST -f event=APPROVE'
+deny_all 'gh api repos/owner/repo/pulls/1/reviews -X GET *X POST -f event=APPROVE'
+deny_all "gh api repos/owner/repo/pulls/1/reviews -X GET -\$'X' POST -f event=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -Fevent=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -if event=APPROVE"
+deny_all "gh api repos/owner/repo/pulls/1/reviews -iF event=APPROVE"
+deny_all "gh api repos/owner/repo/issues/1/comments -X POST -f body=hi"
+deny_all "gh api repos/owner/repo/pulls/1 --input payload.json"
 allow_all "rg 'gh '"
 allow_all "echo 'aws s3 ls'"
 allow_all 'git commit -m "use aws cli"'
