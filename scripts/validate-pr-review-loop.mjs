@@ -82,6 +82,9 @@ if (wrapper) {
     'finding 判定から除外する',
     'updatePullRequestReviewComment',
     '人間向け返信を増やさない',
+    '完了証明が出るまで',
+    'Codex の途中 finding',
+    'SHA 部分一致',
   ]
   if (wrapper.includes('cursor / cursor[bot]') || wrapper.includes('cursor[bot]')) {
     errors.push('pr-review-loop SKILL.md must not name Cursor GitHub actors as trusted helpers')

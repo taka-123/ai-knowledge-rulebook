@@ -1603,6 +1603,186 @@ def test_codex_boilerplate_review_is_proof_not_actionable():
     assert result["proof"]["author"] == "chatgpt-codex-connector[bot]"
 
 
+def test_codex_reviewed_commit_issue_comment_is_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 88,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": (
+                    "Codex Review: no blocking findings.\n\n"
+                    f"**Reviewed commit:** `{HEAD[:10]}`"
+                ),
+            }
+        ],
+        HEAD,
+    )
+    assert comments[0]["commit_id"] == HEAD
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["proof"]["kind"] == "issue_comment"
+    assert result["actionable"] == []
+
+
+def test_codex_reviewed_commit_issue_comment_on_old_head_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 89,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": f"**Reviewed commit:** `{OLD[:10]}`",
+            }
+        ],
+        HEAD,
+    )
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "only_old_head_reviews"
+
+
+def test_human_reviewed_commit_issue_comment_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 90,
+                "user": {"login": "alice"},
+                "body": f"**Reviewed commit:** `{HEAD[:10]}`",
+            }
+        ],
+        HEAD,
+    )
+    assert comments[0]["commit_id"] == ""
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_review_summary_issue_comment_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 91,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": (
+                    "<!-- codex-pull-request-review-summary -->\n"
+                    "## Codex Review Summary\n"
+                    f"| Review | Status | Commit |\n| Code Review | Completed | `{HEAD[:7]}` |"
+                ),
+            }
+        ],
+        HEAD,
+    )
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_request_issue_comment_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 92,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": f"@codex review\nhead: {HEAD}",
+            }
+        ],
+        HEAD,
+    )
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert comments[0]["commit_id"] == HEAD
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_reviewed_commit_comment_with_blocking_badge_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 93,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": (
+                    "![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) "
+                    f"Fix auth.\n**Reviewed commit:** `{HEAD[:10]}`"
+                ),
+            }
+        ],
+        HEAD,
+    )
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_reviewed_commit_comment_without_no_finding_marker_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 94,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": (
+                    "Timeout handling looks incomplete.\n"
+                    f"**Reviewed commit:** `{HEAD[:10]}`"
+                ),
+            }
+        ],
+        HEAD,
+    )
+    assert comments[0]["commit_id"] == HEAD
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+
+
+def test_codex_comment_with_head_sha_substring_is_not_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 95,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": f"Looking at {HEAD}. :+1:",
+            }
+        ],
+        HEAD,
+    )
+    assert comments[0]["commit_id"] == ""
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is False
+    assert result["proof"] is None
+    assert result["reason"] == "no_current_head_review_proof"
+
+
+def test_codex_reviewed_commit_thumbs_comment_is_proof():
+    comments = normalize_issue_comments(
+        [
+            {
+                "id": 96,
+                "user": {"login": "chatgpt-codex-connector[bot]"},
+                "body": f":+1:\n\n**Reviewed commit:** `{HEAD[:10]}`",
+            }
+        ],
+        HEAD,
+    )
+    result = evaluate_review_clean(HEAD, [], [], [], comments, [])
+    assert result["review_clean"] is True
+    assert result["reason"] == "current_head_review_complete"
+    assert result["proof"]["kind"] == "issue_comment"
+
+
+def test_explicit_no_finding_markers():
+    assert gate.has_explicit_no_finding_marker(":+1:") is True
+    assert gate.has_explicit_no_finding_marker("👍") is True
+    assert gate.has_explicit_no_finding_marker("Didn't find any major issues.") is True
+    assert gate.has_explicit_no_finding_marker("no blocking findings") is True
+    assert gate.has_explicit_no_finding_marker("Timeout handling looks incomplete.") is False
+    assert gate.extract_reviewed_commit_sha(f"Looking at {HEAD}. :+1:", HEAD) == ""
+    assert (
+        gate.extract_reviewed_commit_sha(f"**Reviewed commit:** `{HEAD[:10]}`", HEAD)
+        == HEAD
+    )
+
+
 def test_resolved_thread_without_ignore_marker_is_still_actionable():
     leftover = comment(
         id="3890915001",
@@ -1626,6 +1806,61 @@ def test_resolved_thread_without_ignore_marker_is_still_actionable():
     assert result["actionable"][0]["id"] == "3890915001"
     assert result["ignored"] == []
     assert result["unresolved_threads"] == []
+
+
+def test_retargeted_old_review_comment_does_not_block_new_head():
+    leftover = comment(
+        id="3890915002",
+        author="chatgpt-codex-connector[bot]",
+        commit_id=HEAD,
+        original_commit_id=OLD,
+        path="src/app.py",
+        body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Old finding",
+        resolved=True,
+    )
+    resolved = thread(
+        id="3890915002",
+        node_id="PRRT_old_finding",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["3890915002"],
+        commit_id=HEAD,
+        original_commit_id=OLD,
+        resolved=True,
+        path=leftover["path"],
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [resolved])
+    assert result["review_clean"] is True
+    assert result["actionable"] == []
+    assert result["old_head_items"][0]["id"] == "3890915002"
+
+
+def test_retargeted_unresolved_thread_still_blocks():
+    leftover = comment(
+        id="3890915003",
+        author="chatgpt-codex-connector[bot]",
+        commit_id=HEAD,
+        original_commit_id=OLD,
+        path="src/app.py",
+        body="![P1 Badge](https://img.shields.io/badge/P1-orange?style=flat) Still open",
+    )
+    open_thread = thread(
+        id="3890915003",
+        node_id="PRRT_still_open",
+        author="chatgpt-codex-connector[bot]",
+        authors=["chatgpt-codex-connector[bot]"],
+        comment_ids=["3890915003"],
+        commit_id=HEAD,
+        original_commit_id=OLD,
+        resolved=False,
+        path=leftover["path"],
+        body=leftover["body"],
+    )
+    result = evaluate_review_clean(HEAD, [review()], [leftover], [open_thread])
+    assert result["review_clean"] is False
+    assert result["reason"] == "actionable_review_on_current_head"
+    assert result["unresolved_threads"][0]["node_id"] == "PRRT_still_open"
 
 
 VENDOR_WATCHER = (
@@ -3083,7 +3318,10 @@ def test_ignore_helper_rebinding_ten_heads_keeps_one_human_reply(monkeypatch, ca
         gh_user=HELPER_LOGIN,
     )
     assert stale_result["ignored"] == []
-    assert stale_result["actionable"][0]["id"] == leftover["id"]
+    assert leftover["id"] not in {
+        str(item.get("id") or "") for item in stale_result["current_head_items"]
+        if item.get("kind") == "review_comment"
+    }
     assert first_marker_body is not None
     assert f"head={heads[0]}" in first_marker_body
     assert f"head={heads[-1]}" in store["helper_body"]

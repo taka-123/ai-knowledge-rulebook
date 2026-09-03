@@ -193,6 +193,9 @@ def test_wrapper_policy_strings():
         "updatePullRequestReviewComment",
         "人間向け返信を増やさない",
         "別 thread の同一 fingerprint は別 finding",
+        "完了証明が出るまで",
+        "Codex の途中 finding",
+        "SHA 部分一致",
     ]
     missing = [item for item in required if item not in text]
     assert missing == []

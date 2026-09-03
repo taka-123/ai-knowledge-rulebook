@@ -22,6 +22,7 @@ SUMMARY_MARKERS = (
     "auto-generated comment: summarize",
     "auto-generated comment: skip review",
     "review skipped",
+    "codex-pull-request-review-summary",
 )
 FINDING_BADGE_MARKERS = (
     "![p0 badge]",
@@ -46,7 +47,14 @@ COMPLETION_ONLY_KINDS = frozenset({"issue_comment", "codex_thumbs_up"})
 THUMBS_UP = {"+1", "THUMBS_UP", "thumbs_up"}
 CODEX_REVIEW_REQUEST_RE = re.compile(r"@codex\s+review\b", re.IGNORECASE)
 HEAD_FIELD_RE = re.compile(r"(?im)(?:^|\b)head\s*[:=]\s*([0-9a-f]{7,40})\b")
+REVIEWED_COMMIT_RE = re.compile(
+    r"(?im)reviewed\s+commit[^0-9a-f\n]{0,40}([0-9a-f]{7,40})"
+)
+ISSUE_COMMENT_NO_FINDING_RE = re.compile(
+    r"(?i)(?::\+1:|👍|didn't find any (?:major )?issues|no blocking findings)"
+)
 SHA_RE = re.compile(r"\b([0-9a-f]{7,40})\b", re.IGNORECASE)
+REVIEW_ORIGIN_KINDS = frozenset({"review_comment", "review_thread"})
 APPROVAL_ONLY_RE = re.compile(
     r"^\s*(?:lgtm|looks\s+(?:good|fine)(?:\s+to\s+me)?|approved|no issues found)"
     r"(?:\s*[.!]*)?\s*$",
@@ -298,7 +306,7 @@ def canonicalize_sha(value, head_sha=""):
 
 def extract_bound_sha(body, head_sha=""):
     text = body or ""
-    field = HEAD_FIELD_RE.search(text)
+    field = HEAD_FIELD_RE.search(text) or REVIEWED_COMMIT_RE.search(text)
     if field:
         return canonicalize_sha(field.group(1), head_sha)
     if head_sha and head_sha.lower() in text.lower():
@@ -308,6 +316,17 @@ def extract_bound_sha(body, head_sha=""):
     if len(full) == 1:
         return canonicalize_sha(full[0], head_sha)
     return ""
+
+
+def extract_reviewed_commit_sha(body, head_sha=""):
+    match = REVIEWED_COMMIT_RE.search(body or "")
+    if not match:
+        return ""
+    return canonicalize_sha(match.group(1), head_sha)
+
+
+def has_explicit_no_finding_marker(body):
+    return bool(ISSUE_COMMENT_NO_FINDING_RE.search(body or ""))
 
 
 def is_summary_only(body, path=None):
@@ -711,12 +730,16 @@ def normalize_issue_comments(payload, head_sha=""):
         if not isinstance(item, dict):
             continue
         body = str(item.get("body") or "")
-        commit_id = extract_bound_sha(body, head_sha) if is_codex_review_request(body) else ""
+        author = extract_login(item.get("user"))
+        bind = is_codex_review_request(body) or (
+            is_codex_reviewer(author) and bool(REVIEWED_COMMIT_RE.search(body))
+        )
+        commit_id = extract_bound_sha(body, head_sha) if bind else ""
         out.append(
             {
                 "kind": "issue_comment",
                 "id": str(item.get("id") or ""),
-                "author": extract_login(item.get("user")),
+                "author": author,
                 "author_association": str(item.get("author_association") or ""),
                 "state": "",
                 "commit_id": commit_id,
@@ -868,9 +891,21 @@ def pending_review_ids(raw_reviews):
     return ids
 
 
+def item_review_sha(item):
+    """SHA that identifies which review this item belongs to.
+
+    GitHub retargets review_comment.commit_id onto later commits while the
+    commented line still exists. original_commit_id is the reviewed commit.
+    """
+    original = str((item or {}).get("original_commit_id") or "")
+    current = str((item or {}).get("commit_id") or "")
+    if str((item or {}).get("kind") or "") in REVIEW_ORIGIN_KINDS and original:
+        return original
+    return current
+
+
 def bound_to_head(item, head_sha):
-    commit_id = str(item.get("commit_id") or "")
-    return bool(head_sha) and commit_id == head_sha
+    return bool(head_sha) and item_review_sha(item) == head_sha
 
 
 def is_codex_completion_proof(item, head_sha):
@@ -879,15 +914,26 @@ def is_codex_completion_proof(item, head_sha):
     if not is_codex_reviewer(item.get("author")):
         return False
     kind = item.get("kind")
+    body = item.get("body")
     if kind == "review":
         state = str(item.get("state") or "").upper()
         if state not in VALID_PROOF_REVIEW_STATES:
             return False
-        if is_summary_only(item.get("body"), item.get("path")):
+        if is_summary_only(body, item.get("path")):
             return False
         return True
     if kind == "codex_thumbs_up" and str(item.get("content") or "") in THUMBS_UP:
         return True
+    if kind == "issue_comment":
+        if is_codex_review_request(body):
+            return False
+        if is_summary_only(body):
+            return False
+        if has_blocking_finding_badge(body):
+            return False
+        if extract_reviewed_commit_sha(body, head_sha) != head_sha:
+            return False
+        return has_explicit_no_finding_marker(body)
     return False
 
 
@@ -989,10 +1035,10 @@ def evaluate_review_clean(
     old = []
     unbound = []
     for item in [*reviews, *comments, *issue_comments, *completion_signals]:
-        commit_id = str(item.get("commit_id") or "")
+        bind_sha = item_review_sha(item)
         if bound_to_head(item, head_sha):
             current.append(item)
-        elif commit_id:
+        elif bind_sha:
             old.append(item)
         else:
             unbound.append(item)

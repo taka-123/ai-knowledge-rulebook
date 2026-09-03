@@ -48,11 +48,11 @@ python3 <this-skill>/scripts/run-gh-pr-watch.py --pr <number-or-url> --once
 1. 対象 PR を特定する。明示された URL / 番号を優先し、無ければ現在 branch から推定する。特定できなければ停止して確認する。
 2. 公式 `vendor/openai-codex-babysit-pr/SKILL.md` を Read する。監視は継続タスクとして扱う。`--watch` を使い、一時的な `idle` や「review comment が今ない」だけでは終了しない。ユーザーへ「続きを監視しますか」と毎回確認しない。同じ PR に複数 watcher を並走させない。
 3. GitHub 操作は公式 GitHub MCP または `gh` で行う。認証は実行環境の責務であり、特定製品の token / actor / path を前提にしない。一方が使えなければ他方を試す。watcher は公式 babysit-pr の `gh` 実装を正本のまま使う（MCP へ移植し直さない）。merge / review 提出 / `gh workflow run` / Agent 直下の `gh run rerun` はしない。
-4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review は処理しない。published review と既存の未対応 review、Codex reviewer bot feedback を拾う。
-5. 未対応の指摘を `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。旧 HEAD の IGNORE marker だけでは処理済みにしない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
+4. launcher で watcher を起動し、公式の `actions` リストに従う。pending review とその inline は処理しない。current HEAD の Codex 完了証明が出るまで、Codex の途中 finding を確定扱いせず、同じ HEAD へ新たな `@codex review` も出さない。途中の Codex コメントをレビューの全部とみなして push しない。CI 失敗の修正と、人間 / CodeRabbit の既知指摘は待たない。watch を続ける。
+5. Codex 完了証明が出たら、その HEAD の未対応の指摘をまとめて `AUTO_FIX` / `IGNORE_WITH_REASON` / `ASK_HUMAN` に分類する。公式の「直してよい」判定に加え、本 Skill の AUTO_FIX を満たすものだけ直す。current HEAD に bind 済みの同一 fingerprint は新しい未処理指摘として扱わない。旧 HEAD の IGNORE marker だけでは処理済みにしない。Codex が新しい実質的論点を出した場合だけ別指摘にする。
 6. `AUTO_FIX` だけを必要最小限で直す。関連する test / lint / build を実行する。commit 前に `commit-message-suggester` Skill が利用可能か確認し、存在する場合はその `SKILL.md` を Read する。利用可能な場合は staged を含む未コミット差分全体を確認し、その Skill の自律作業モードに従ってコミットメッセージを決定する。利用できない場合も `<prefix>: <日本語1行>` の形式で差分全体を一つの意図として扱う。commit + push したら **完了ではない**。旧 HEAD の review-clean を破棄する。原則として「修正しました」の返信コメントはしない。その push で直した Codex-only thread だけ、`scripts/resolve_codex_threads.py --pr <number-or-url> --head <new-sha> --thread-id <graphql-id>` で resolve してよい。IGNORE_WITH_REASON はコードを変えず、`scripts/ignore_codex_threads.py --pr <number-or-url> --head <current-sha> --reason "<短い理由>" --thread-id <graphql-id>` で Codex-only thread に理由を返す。同一 thread と同一 fingerprint なら既存の helper 返信を更新し、人間向け返信を増やさない。人間 / CodeRabbit の thread には返信も resolve もしない。ASK_HUMAN は GitHub 上で反論・resolve せず人間へ返す。その後 launcher で `--watch` を新 HEAD に対して即再開する。
 7. CI が失敗したら公式 heuristic で branch 起因と flaky / runner / network / external を分ける。branch 起因ならコードを直す。launcher は `--retry-failed-now` を拒否する。vendor の `retry_failed_checks` は flaky 分類を検証しない。Agent が直接 `gh run rerun` / `gh workflow run` しない。review fix で新 commit を出すときは、古い SHA の failed run を先に rerun しない。
-8. watcher の `idle` / `ready_to_merge` だけでは完了しない。完了判定の直前に `scripts/final_review_clean_gate.py` を current HEAD で実行する。gate が `review_clean: false` なら watch を続ける。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
+8. watcher の `idle` / `ready_to_merge` だけでは完了しない。監視の待ちは公式 `--watch` に任せる。`final_review_clean_gate.py` を sleep ループの代替にしない。watcher が新しい published review または Codex 完了シグナルを出したら、完了判定の直前に gate を current HEAD で一度実行する。gate が `review_clean: false` なら `--watch` に戻る。true で、かつ他の完了条件も満たすときだけ watch を止め、`merge可能。最終merge判断は人間。` と返す。
 
 上位の repository / tool policy を本手順より優先する。repository に `REVIEW.md` があれば PR review 時は Read し、指摘の分類・優先度・非収束方針に従う。触るのは PR head branch だけ。同じ PR に複数の修正 Agent を並走させない。別の人・Agent が新しい commit を push したら、最新状態を読み直してから動く。
 
@@ -158,20 +158,25 @@ python3 <this-skill>/scripts/final_review_clean_gate.py --pr <number-or-url> --h
 
 `--head` は検証用である。GitHub 上の current `headRefOid` と一致しないときは fail し、古い SHA を上書きして完了判定しない。wrapper の検証は `npm run pr-review-loop:check`（Node の policy 検査と `python3 -m pytest` の wrapper / vendor suite）。Python 3 と pytest が必要。
 
-gate は GitHub から published review / review comments / unresolved threads / `@codex review` への reaction を再取得する。認証済み `gh` ユーザー取得など必要な外部状態取得を先に終え、すべての GitHub 取得のあとに final HEAD recheck を行う。final HEAD recheck 後は純粋なローカル評価だけにする。`reviewThreads` は GraphQL cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。同一 reviewer・同一 commit の published review は最新 state だけを評価する。後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず、以前の actionable な `COMMENTED` review も捨てない。`APPROVED` / `DISMISSED` / 新たな `CHANGES_REQUESTED` は、同じ reviewer・commit の保持済み COMMENTED も含めて解除する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、gate 実行時の認証済み `gh` ユーザーと同一 actor の hidden marker で、fingerprint と current HEAD が一致し、かつ item と thread/comment ID が対応する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。別 thread の同一 fingerprint は除外しない。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持し、current HEAD に紐づくものだけを review-clean に使う。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。GraphQL `author` が取れないコメントがある thread は不完全として IGNORE も resolve もしない。
+gate は GitHub から published review / review comments / unresolved threads / Codex 完了シグナルを再取得する。認証済み `gh` ユーザー取得など必要な外部状態取得を先に終え、すべての GitHub 取得のあとに final HEAD recheck を行う。final HEAD recheck 後は純粋なローカル評価だけにする。`reviewThreads` は GraphQL cursor pagination で全ページ取る。API 先は PR URL の base repository を使う。pending は無視する。同一 reviewer・同一 commit の published review は最新 state だけを評価する。後続の `COMMENTED` では以前の `CHANGES_REQUESTED` を解除せず、以前の actionable な `COMMENTED` review も捨てない。`APPROVED` / `DISMISSED` / 新たな `CHANGES_REQUESTED` は、同じ reviewer・commit の保持済み COMMENTED も含めて解除する。Codex 以外の review bot と正当な external reviewer の finding も actionable 確認に含める。published review の本文は bot マーカーがなくても、summary / approval 以外なら確認する。単なる resolved thread だけでは actionable から外さない。本 Skill が IGNORE_WITH_REASON として明示処理し、gate 実行時の認証済み `gh` ユーザーと同一 actor の hidden marker で、fingerprint と current HEAD が一致し、かつ item と thread/comment ID が対応する指摘だけを除外する。fingerprint は path と正規化した指摘本文から取る。別 thread の同一 fingerprint は除外しない。AUTO_FIX 済み（marker なしの resolve）と IGNORE_WITH_REASON 済みを混同しない。各項目の `commit_id` / `original_commit_id` を保持する。published review と completion は `commit_id`、inline finding は `original_commit_id` を優先して current HEAD に紐づける。GitHub が後続 commit へ付け替えた `commit_id` だけでは、過去 review の指摘を新 HEAD の未処理にしない。未 resolve の live thread は残す。収集後に `headRefOid` を再取得し、開始時または `--head` と不一致なら fail する。GraphQL `author` が取れないコメントがある thread は不完全として IGNORE も resolve もしない。
 
 一瞬 review comment がないこと、watcher の一時的な `idle`、CodeRabbit 等の Walkthrough / summary だけでは完了しない。過去 HEAD の review 結果を新 HEAD へ流用しない。current HEAD に未対応の actionable review または unresolved な live thread があるとき、current HEAD に対する Codex 完了証明がないときも完了しない。P0 / P1 finding badge と `changes requested` を actionable の主マーカーとする。P2 / P3 badge のみは `REVIEW.md` に従い review-clean を塞がない。
 
-Codex Review を primary reviewer として扱う。完了証明は次のどちらかに限定する。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。`@codex review` の issue comment と Codex 👍 は完了証明だけに使い、finding 判定から除外する。
+Codex Review を primary reviewer として扱う。完了証明は、Codex reviewer が current HEAD の review を出し終えたシグナルに限る。CodeRabbit・人間・external reviewer の review 自体は完了証明にしない。`DISMISSED` / `PENDING` は使わない。old HEAD や無関係な reaction は使わない。公式 identity は `chatgpt-codex-connector` / `chatgpt-codex-connector[bot]` / `codex[bot]` に限る。
 
-- current HEAD（`commit_id` が現在 SHA）に対する Codex reviewer の published review（`DISMISSED` / `PENDING` は使わない）。公式 identity は `chatgpt-codex-connector` / `chatgpt-codex-connector[bot]` / `codex[bot]` に限る
-- current HEAD に bind した **未編集** の `@codex review` request への Codex 👍（`+1`）。old HEAD や無関係な reaction は使わない
+次のいずれかを current HEAD に bind できたときだけ完了証明とする。
+
+- Codex reviewer の published review
+- current HEAD に bind した **未編集** の `@codex review` request への Codex 👍（`+1`）
+- Codex reviewer 自身の issue comment で、`Reviewed commit` 形式により current HEAD を明示し、指摘なしの既知マーカー（`:+1:` / 👍、または同等の明示文）があるもの。本文への SHA 部分一致や、blocking badge の不在だけでは証明にしない。
+
+`@codex review` の issue comment、Codex 👍、Codex の HEAD 結び完了コメントは完了証明だけに使い、finding 判定から除外する。
 
 `@codex review` request は immutable とする。新しい HEAD では新しい `@codex review` comment を作る。過去 request を編集して別 HEAD へ再 bind しない。編集済み request comment は completion proof にしない。reaction の `created_at` と comment の `updated_at` の秒単位比較で前後関係を推定しない。
 
-`@codex review` を書くときは current HEAD を本文に含める（`head: <sha>`）。gate はその SHA と Codex 👍 を対応付ける。
+`@codex review` を書くときは current HEAD を本文に含める（`head: <sha>`）。gate は request の SHA と Codex 👍、および Codex 完了コメントの Reviewed commit を current HEAD に対応付ける。
 
-current HEAD に対する Codex published review が既にあり、finding を IGNORE_WITH_REASON として明示処理し、他に actionable finding が無ければ、同じ HEAD へ再度 `@codex review` を要求しない。そのまま final gate → CI → mergeability を確認する。コード変更で HEAD が変わった場合だけ、新 HEAD に対して新しい Codex review を 1 回要求する。Review budget の cycle 計数に従う。
+current HEAD の Codex 完了証明が出る前に、同じ HEAD へ再度 `@codex review` を要求しない。完了証明のあと、finding を IGNORE_WITH_REASON として明示処理し、他に actionable finding が無ければ、同じ HEAD へ再度要求しない。そのまま final gate → CI → mergeability を確認する。完了証明のあとに AUTO_FIX して HEAD が変わった場合だけ、新 HEAD に対して新しい Codex review を 1 回要求する。Review budget の cycle 計数に従う。
 
 AUTO_FIX 後に push した場合は、それ以前の review-clean を無効化し、新 HEAD について review cycle を開始する。repo で push-trigger の Codex 自動再レビューが確実に動くならそれを待つ（その自動 review も budget に含める）。保証されない場合は、許可された PR comment として新しい `@codex review`（`head: <sha>` 付き）を使い、人間を再レビュー開始の中継係にしない。既存 request comment の編集・再利用はしない。budget を使い切っているときは追加 request せず `ASK_HUMAN` する。
 
@@ -200,7 +205,7 @@ merge可能。最終merge判断は人間。
 ## GitHub 操作の境界
 
 - 読み取りの `gh` / GitHub MCP と、公式 watcher 内部の read-only `gh api -X GET -f ...` は使ってよい。
-- 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 👍 を再取得する。Agent が直接 GraphQL を叩く必要はない。
+- 完了直前の `final_review_clean_gate.py` が published review / threads / Codex 完了シグナルを再取得する。Agent が直接 GraphQL を叩く必要はない。
 - AUTO_FIX 後の Codex-only thread resolve は、commit + push の後に `resolve_codex_threads.py` だけが `resolveReviewThread` を呼ぶ。返信しない。各 mutation の直前に `headRefOid` を再取得し、対象 thread を再取得して comments_complete と参加者が引き続き Codex-only であることを確認する。thread 再取得の後と各 mutation の直前にも `headRefOid` を再確認する。不一致なら fail closed する。
 - IGNORE_WITH_REASON の Codex-only 返信と resolve は `ignore_codex_threads.py` だけが `addPullRequestReviewThreadReply` / `updatePullRequestReviewComment` / `resolveReviewThread` を呼ぶ。同一 thread と同一 fingerprint の既存 helper 返信は更新して current HEAD に再bindし、新しい返信を増やさない。各 mutation の直前に `headRefOid` と対象 thread の参加者を再検証する。thread 再取得の後と各 mutation の直前にも `headRefOid` を再確認する。不一致なら fail closed する。
 - 人間 thread の resolve、人間 / CodeRabbit 等への自動返信、review 提出、任意 GraphQL mutation は禁止のまま。ASK_HUMAN の指摘は GitHub 上で反論・resolve しない。
